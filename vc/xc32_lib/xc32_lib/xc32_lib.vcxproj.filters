@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="XC32">
+      <UniqueIdentifier>{9d86793e-097f-409e-8f15-5c9629fcd456}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\adc.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\clock.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\device.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\exceptions.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\i2c.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\interrupt.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\interrupt_safe_allocator.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\longtimer.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\pin.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\spi.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\timer.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uart.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wdt.hpp">
+      <Filter>XC32</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\clock.cpp">
+      <Filter>XC32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\interrupt.cpp">
+      <Filter>XC32</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
