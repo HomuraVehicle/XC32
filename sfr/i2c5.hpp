@@ -1,39 +1,39 @@
-#ifndef XC32LIB_SFR_I2C5_INC
-#define XC32LIB_SFR_I2C5_INC 100
+#ifndef XC32_SFR_I2C5_INC
+#define XC32_SFR_I2C5_INC 100
 #
-#include<XC32Lib_config.hpp>
+#include<XC32_config.hpp>
 #include"device_include.h"
 #include"interrupt.hpp"
 #include"exclusive_mixin.hpp"
 #include"sfr_register_mixin.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_I2C5_IRQ 42
-#	define XC32LIB_I2C5_VEC 32
-#	define XC32LIB_I2C5_IF IFS1bits.I2C5MIF
-#	define XC32LIB_I2C5_IE IEC1bits.I2C5MIE
-#	define XC32LIB_I2C5_IP IPC8bits.I2C5MIP
-#	define XC32LIB_I2C5_IS IPC8bits.I2C5MIS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_I2C5_IRQ 184
-#	define XC32LIB_I2C5_VEC _I2C5_MASTER_VECTOR
-#	define XC32LIB_I2C5_IF IFS5bits.I2C5MIF
-#	define XC32LIB_I2C5_IE IEC5bits.I2C5MIE
-#	define XC32LIB_I2C5_IP IPC46bits.I2C5MIP
-#	define XC32LIB_I2C5_IS IPC46bits.I2C5MIS
+#if defined(XC32_PIC32MX)
+#	define XC32_I2C5_IRQ 42
+#	define XC32_I2C5_VEC 32
+#	define XC32_I2C5_IF IFS1bits.I2C5MIF
+#	define XC32_I2C5_IE IEC1bits.I2C5MIE
+#	define XC32_I2C5_IP IPC8bits.I2C5MIP
+#	define XC32_I2C5_IS IPC8bits.I2C5MIS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_I2C5_IRQ 184
+#	define XC32_I2C5_VEC _I2C5_MASTER_VECTOR
+#	define XC32_I2C5_IF IFS5bits.I2C5MIF
+#	define XC32_I2C5_IE IEC5bits.I2C5MIE
+#	define XC32_I2C5_IP IPC46bits.I2C5MIP
+#	define XC32_I2C5_IS IPC46bits.I2C5MIS
 #else
 #	error Unknown device!
 #endif
 
-#ifndef XC32LIB_SFR_I2C5_EXPLICITINTERRUPT
-#	ifndef XC32LIB_DEBUGMODE
-#		define x_xc32_sfr_i2c5_interrupt(void) __ISR(XC32LIB_I2C5_VEC, XC32LIB_I2C5_IPL_FOR_ISR) I2C5Interrupt(void)//*/func(void)
+#ifndef XC32_SFR_I2C5_EXPLICITINTERRUPT
+#	ifndef XC32_DEBUGMODE
+#		define x_xc32_sfr_i2c5_interrupt(void) __ISR(XC32_I2C5_VEC, XC32_I2C5_IPL_FOR_ISR) I2C5Interrupt(void)//*/func(void)
 #	else
 extern "C"{void x_xc32_sfr_i2c5_interrupt(void); }
 #	endif
 #else
-#	ifndef XC32LIB_DEBUGMODE
-#		define xc32_sfr_i2c5_interrupt(void) __ISR(XC32LIB_I2C5_VEC, XC32LIB_I2C5_IPL_FOR_ISR) I2C5Interrupt(void)//*/func(void)
+#	ifndef XC32_DEBUGMODE
+#		define xc32_sfr_i2c5_interrupt(void) __ISR(XC32_I2C5_VEC, XC32_I2C5_IPL_FOR_ISR) I2C5Interrupt(void)//*/func(void)
 #	else
 extern "C"{void xc32_sfr_i2c5_interrupt(void); }
 #	endif
@@ -62,17 +62,17 @@ namespace xc32{
 			//ACK Data bit : I2CxCONbits.ACKDT
 			void ack_data(bool val_){I2C5CONbits.ACKDT=static_cast<unsigned char>(val_);}
 			//Master Interrupt Flag : IFSxbits.I2CxMIF
-			void interrupt_flag(bool val_){XC32LIB_I2C5_IF=static_cast<unsigned char>(val_);}
-			bool interrupt_flag()const {return static_cast<bool>(XC32LIB_I2C5_IF);}
+			void interrupt_flag(bool val_){XC32_I2C5_IF=static_cast<unsigned char>(val_);}
+			bool interrupt_flag()const {return static_cast<bool>(XC32_I2C5_IF);}
 			//interrupt enable bit : IECxbits.I2CxMIE
-			void interrupt_enable(bool val_){XC32LIB_I2C5_IE=static_cast<unsigned char>(val_);}
-			bool interrupt_enable()const{return static_cast<bool>(XC32LIB_I2C5_IE);}
+			void interrupt_enable(bool val_){XC32_I2C5_IE=static_cast<unsigned char>(val_);}
+			bool interrupt_enable()const{return static_cast<bool>(XC32_I2C5_IE);}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_priority_level(unsigned char val_){XC32LIB_I2C5_IP=val_;}
-			unsigned char interrupt_priority_level(){return XC32LIB_I2C5_IP;}
+			void interrupt_priority_level(unsigned char val_){XC32_I2C5_IP=val_;}
+			unsigned char interrupt_priority_level(){return XC32_I2C5_IP;}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_sub_priority_level(unsigned char val_){XC32LIB_I2C5_IS=val_;}
-			unsigned char interrupt_sub_priority_level(){return XC32LIB_I2C5_IS;}
+			void interrupt_sub_priority_level(unsigned char val_){XC32_I2C5_IS=val_;}
+			unsigned char interrupt_sub_priority_level(){return XC32_I2C5_IS;}
 			//Receive Data Register : I2CxRCV
 			unsigned char receive_data(){return static_cast<unsigned char>(I2C5RCV);}
 			//Transmit Data Register : I2CxTRN

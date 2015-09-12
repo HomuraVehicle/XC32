@@ -1,5 +1,5 @@
-#ifndef XC32LIB_ADC_INC
-#define XC32LIB_ADC_INC 100
+#ifndef XC32_ADC_INC
+#define XC32_ADC_INC 100
 #
 #include<XCBase/future.hpp>
 #include<XCBase/array_queue.hpp>

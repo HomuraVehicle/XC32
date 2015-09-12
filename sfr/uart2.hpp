@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_UART2_INC
-#define XC32LIB_SFR_UART2_INC 101
+#ifndef XC32_SFR_UART2_INC
+#define XC32_SFR_UART2_INC 101
 #
 /*=== uart2 ===
 êVå^äÑÇËçûÇ›ä÷êîñºÇ…ïœçX
@@ -16,61 +16,61 @@ v1_01/140630 hmIto
 #include"interrupt.hpp"
 #include"uart_base.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_UART2_TX_IRQ 42
-#	define XC32LIB_UART2_RX_IRQ 41
-#	define XC32LIB_UART2_VEC 32
-#	define XC32LIB_UART2_TX_IF IFS1bits.U2TXIF
-#	define XC32LIB_UART2_TX_IE IEC1bits.U2TXIE
-#	define XC32LIB_UART2_TX_IP IPC8bits.U2IP
-#	define XC32LIB_UART2_TX_IS IPC8bits.U2IS
-#	define XC32LIB_UART2_RX_IF IFS1bits.U2RXIF
-#	define XC32LIB_UART2_RX_IE IEC1bits.U2RXIE
-#	define XC32LIB_UART2_RX_IP IPC8bits.U2IP
-#	define XC32LIB_UART2_RX_IS IPC8bits.U2IS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_UART2_TX_IRQ 147
-#	define XC32LIB_UART2_TX_VEC _UART2_TX_VECTOR
-#	define XC32LIB_UART2_TX_IF IFS4bits.U2TXIF
-#	define XC32LIB_UART2_TX_IE IEC4bits.U2TXIE
-#	define XC32LIB_UART2_TX_IP IPC36bits.U2TXIP
-#	define XC32LIB_UART2_TX_IS IPC36bits.U2TXIS
-#	define XC32LIB_UART2_RX_IRQ 146
-#	define XC32LIB_UART2_RX_VEC _UART2_RX_VECTOR
-#	define XC32LIB_UART2_RX_IF IFS4bits.U2RXIF
-#	define XC32LIB_UART2_RX_IE IEC4bits.U2RXIE
-#	define XC32LIB_UART2_RX_IP IPC36bits.U2RXIP
-#	define XC32LIB_UART2_RX_IS IPC36bits.U2RXIS
+#if defined(XC32_PIC32MX)
+#	define XC32_UART2_TX_IRQ 42
+#	define XC32_UART2_RX_IRQ 41
+#	define XC32_UART2_VEC 32
+#	define XC32_UART2_TX_IF IFS1bits.U2TXIF
+#	define XC32_UART2_TX_IE IEC1bits.U2TXIE
+#	define XC32_UART2_TX_IP IPC8bits.U2IP
+#	define XC32_UART2_TX_IS IPC8bits.U2IS
+#	define XC32_UART2_RX_IF IFS1bits.U2RXIF
+#	define XC32_UART2_RX_IE IEC1bits.U2RXIE
+#	define XC32_UART2_RX_IP IPC8bits.U2IP
+#	define XC32_UART2_RX_IS IPC8bits.U2IS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_UART2_TX_IRQ 147
+#	define XC32_UART2_TX_VEC _UART2_TX_VECTOR
+#	define XC32_UART2_TX_IF IFS4bits.U2TXIF
+#	define XC32_UART2_TX_IE IEC4bits.U2TXIE
+#	define XC32_UART2_TX_IP IPC36bits.U2TXIP
+#	define XC32_UART2_TX_IS IPC36bits.U2TXIS
+#	define XC32_UART2_RX_IRQ 146
+#	define XC32_UART2_RX_VEC _UART2_RX_VECTOR
+#	define XC32_UART2_RX_IF IFS4bits.U2RXIF
+#	define XC32_UART2_RX_IE IEC4bits.U2RXIE
+#	define XC32_UART2_RX_IP IPC36bits.U2RXIP
+#	define XC32_UART2_RX_IS IPC36bits.U2RXIS
 #else
 #	error Unknown device!
 #endif
 
-#if defined(XC32LIB_PIC32MX)
-#	ifndef XC32LIB_SFR_UART2_EXPLICITINTERRUPT
-#		ifndef XC32LIB_DEBUGMODE
-#			define x_xc32_sfr_uart2_interrupt(void) __ISR(XC32LIB_UART2_VEC, IPL7AUTO) U2Interrupt(void)//*/func(void)
+#if defined(XC32_PIC32MX)
+#	ifndef XC32_SFR_UART2_EXPLICITINTERRUPT
+#		ifndef XC32_DEBUGMODE
+#			define x_xc32_sfr_uart2_interrupt(void) __ISR(XC32_UART2_VEC, IPL7AUTO) U2Interrupt(void)//*/func(void)
 #		else
 extern "C"{void x_xc32_sfr_uart2_interrupt(void); }
 #		endif
 #	else
-#		ifndef XC32LIB_DEBUGMODE
-#			define xc32_sfr_uart2_interrupt(void) __ISR(XC32LIB_UART2_VEC, IPL7AUTO) U2Interrupt(void)//*/func(void)
+#		ifndef XC32_DEBUGMODE
+#			define xc32_sfr_uart2_interrupt(void) __ISR(XC32_UART2_VEC, IPL7AUTO) U2Interrupt(void)//*/func(void)
 #		else
 extern "C"{void xc32_sfr_uart2_interrupt(void); }
 #		endif
 #	endif
-#elif defined(XC32LIB_PIC32MZ)
-#	ifndef XC32LIB_SFR_UART2_EXPLICITINTERRUPT
-#		ifndef XC32LIB_DEBUGMODE
-#			define x_xc32_sfr_uart2_tx_interrupt(void) __ISR(XC32LIB_UART2_TX_VEC, XC32LIB_UART2_TX_IPL_FOR_ISR) U2TXInterrupt(void)//*/func(void)
-#			define x_xc32_sfr_uart2_rx_interrupt(void) __ISR(XC32LIB_UART2_RX_VEC, XC32LIB_UART2_RX_IPL_FOR_ISR) U2RXInterrupt(void)//*/func(void)
+#elif defined(XC32_PIC32MZ)
+#	ifndef XC32_SFR_UART2_EXPLICITINTERRUPT
+#		ifndef XC32_DEBUGMODE
+#			define x_xc32_sfr_uart2_tx_interrupt(void) __ISR(XC32_UART2_TX_VEC, XC32_UART2_TX_IPL_FOR_ISR) U2TXInterrupt(void)//*/func(void)
+#			define x_xc32_sfr_uart2_rx_interrupt(void) __ISR(XC32_UART2_RX_VEC, XC32_UART2_RX_IPL_FOR_ISR) U2RXInterrupt(void)//*/func(void)
 #		else
 extern "C"{void x_xc32_sfr_uart2_tx_interrupt(void); void x_xc32_sfr_uart2_rx_interrupt(void); }
 #		endif
 #	else
-#		ifndef XC32LIB_DEBUGMODE
-#			define xc32_sfr_uart2_tx_interrupt(void) __ISR(XC32LIB_UART2_TX_VEC, XC32LIB_UART2_TX_IPL_FOR_ISR) U2TXInterrupt(void)//*/func(void)
-#			define xc32_sfr_uart2_rx_interrupt(void) __ISR(XC32LIB_UART2_RX_VEC, XC32LIB_UART2_RX_IPL_FOR_ISR) U2RXInterrupt(void)//*/func(void)
+#		ifndef XC32_DEBUGMODE
+#			define xc32_sfr_uart2_tx_interrupt(void) __ISR(XC32_UART2_TX_VEC, XC32_UART2_TX_IPL_FOR_ISR) U2TXInterrupt(void)//*/func(void)
+#			define xc32_sfr_uart2_rx_interrupt(void) __ISR(XC32_UART2_RX_VEC, XC32_UART2_RX_IPL_FOR_ISR) U2RXInterrupt(void)//*/func(void)
 #		else
 extern "C"{void xc32_sfr_uart2_tx_interrupt(void); void xc32_sfr_uart2_rx_interrupt(void); }
 #		endif
@@ -85,29 +85,29 @@ namespace xc32{
 			static unsigned int uart_no(){ return 1; }
 		public:
 			//Receive Interrupt Enable bit : IECxbits.UxRXIE
-			void rx_interrupt_enable(bool val_){XC32LIB_UART2_RX_IE=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_enable()const{return static_cast<bool>(XC32LIB_UART2_RX_IE);}
+			void rx_interrupt_enable(bool val_){XC32_UART2_RX_IE=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_enable()const{return static_cast<bool>(XC32_UART2_RX_IE);}
 			//Receive Interrupt Flag bit : IFSxbits.UxRXIF
-			void rx_interrupt_flag(bool val_){XC32LIB_UART2_RX_IF=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_flag()const {return static_cast<bool>(XC32LIB_UART2_RX_IF);}
+			void rx_interrupt_flag(bool val_){XC32_UART2_RX_IF=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_flag()const {return static_cast<bool>(XC32_UART2_RX_IF);}
 			//Interrupt priority level : IPCxbits.UxIP
-			void rx_interrupt_priority_level(unsigned char val_){XC32LIB_UART2_RX_IP=val_;}
-			unsigned char rx_interrupt_priority_level(){return XC32LIB_UART2_RX_IP;}
+			void rx_interrupt_priority_level(unsigned char val_){XC32_UART2_RX_IP=val_;}
+			unsigned char rx_interrupt_priority_level(){return XC32_UART2_RX_IP;}
 			//Interrupt priority level : IPCxbits.UxIP
-			void rx_interrupt_sub_priority_level(unsigned char val_){XC32LIB_UART2_RX_IS=val_;}
-			unsigned char rx_interrupt_sub_priority_level(){return XC32LIB_UART2_RX_IS;}
+			void rx_interrupt_sub_priority_level(unsigned char val_){XC32_UART2_RX_IS=val_;}
+			unsigned char rx_interrupt_sub_priority_level(){return XC32_UART2_RX_IS;}
 			//Transmit Interrupt Enable bit : IECxbits.UxTXIE
-			void tx_interrupt_enable(bool val_){XC32LIB_UART2_TX_IE=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_enable()const{return static_cast<bool>(XC32LIB_UART2_TX_IE);}
+			void tx_interrupt_enable(bool val_){XC32_UART2_TX_IE=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_enable()const{return static_cast<bool>(XC32_UART2_TX_IE);}
 			//Transmit Interrupt Flag : IFSxbits.UxTXIF
-			void tx_interrupt_flag(bool val_){XC32LIB_UART2_TX_IF=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_flag()const {return static_cast<bool>(XC32LIB_UART2_TX_IF);}
+			void tx_interrupt_flag(bool val_){XC32_UART2_TX_IF=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_flag()const {return static_cast<bool>(XC32_UART2_TX_IF);}
 			//Interrupt priority level : IPCxbits.UxIP
-			void tx_interrupt_priority_level(unsigned char val_){XC32LIB_UART2_TX_IP=val_;}
-			unsigned char tx_interrupt_priority_level(){return XC32LIB_UART2_TX_IP;}
+			void tx_interrupt_priority_level(unsigned char val_){XC32_UART2_TX_IP=val_;}
+			unsigned char tx_interrupt_priority_level(){return XC32_UART2_TX_IP;}
 			//Interrupt priority level : IPCxbits.UxIP
-			void tx_interrupt_sub_priority_level(unsigned char val_){XC32LIB_UART2_TX_IS=val_;}
-			unsigned char tx_interrupt_sub_priority_level(){return XC32LIB_UART2_TX_IS;}
+			void tx_interrupt_sub_priority_level(unsigned char val_){XC32_UART2_TX_IS=val_;}
+			unsigned char tx_interrupt_sub_priority_level(){return XC32_UART2_TX_IS;}
 			//Receive Buffer Data Available bit : UxSTATbits.URXDA
 			bool rx_buf_full()const {return static_cast<bool>(U2STAbits.URXDA);}
 			//Receive Register : UxRXREG

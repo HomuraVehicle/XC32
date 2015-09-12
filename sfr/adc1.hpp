@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_ADC1_INC
-#define XC32LIB_SFR_ADC1_INC 100
+#ifndef XC32_SFR_ADC1_INC
+#define XC32_SFR_ADC1_INC 100
 #
 #include"device_include.h"
 #include<XCBase/type.hpp>

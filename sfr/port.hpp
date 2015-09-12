@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_PORT_INC
-#define XC32LIB_SFR_PORT_INC 100
+#ifndef XC32_SFR_PORT_INC
+#define XC32_SFR_PORT_INC 100
 #
 #include"device_include.h"
 #ifdef PORT_A

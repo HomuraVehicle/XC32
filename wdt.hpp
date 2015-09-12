@@ -1,5 +1,5 @@
-#ifndef XC32LIB_WDT_INC
-#define XC32LIB_WDT_INC 100
+#ifndef XC32_WDT_INC
+#define XC32_WDT_INC 100
 #
 #include"sfr/wdt.hpp"
 #include"exceptions.hpp"

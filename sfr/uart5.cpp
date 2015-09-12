@@ -1,10 +1,10 @@
-#ifndef XC32LIB_SFR_UART5_CPP_INC
-#define XC32LIB_SFR_UART5_CPP_INC 100
+#ifndef XC32_SFR_UART5_CPP_INC
+#define XC32_SFR_UART5_CPP_INC 100
 #
 #include"uart5.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	ifndef XC32LIB_SFR_UART5_EXPLICITINTERRUPT
+#if defined(XC32_PIC32MX)
+#	ifndef XC32_SFR_UART5_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_uart5_interrupt(void) {
 		static xc32::sfr::uart5 UART5;
@@ -25,8 +25,8 @@ extern "C"{
 	}
 }
 #	endif
-#elif defined(XC32LIB_PIC32MZ)
-#	ifndef XC32LIB_SFR_UART5_EXPLICITINTERRUPT
+#elif defined(XC32_PIC32MZ)
+#	ifndef XC32_SFR_UART5_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_uart5_tx_interrupt(void) {
 		static xc32::sfr::uart5 UART5;
@@ -54,8 +54,8 @@ namespace xc32{
 	namespace sfr{
 		interrupt::function* uart5::tx_interrupt_ptr;
 		interrupt::function* uart5::rx_interrupt_ptr;
-		const unsigned char uart5::tx_ipl = XC32LIB_UART5_TX_IPL;
-		const unsigned char uart5::rx_ipl = XC32LIB_UART5_RX_IPL;
+		const unsigned char uart5::tx_ipl = XC32_UART5_TX_IPL;
+		const unsigned char uart5::rx_ipl = XC32_UART5_RX_IPL;
 	}
 }
 

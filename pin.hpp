@@ -1,5 +1,5 @@
-#ifndef XC32LIB_PIN_INC
-#define XC32LIB_PIN_INC 100
+#ifndef XC32_PIN_INC
+#define XC32_PIN_INC 100
 #
 namespace xc32 {
 	template<typename pin_register_,bool IsNegativeLogic=false,bool OpenDrain=false>

@@ -1,39 +1,39 @@
-#ifndef XC32LIB_SFR_I2C1_INC
-#define XC32LIB_SFR_I2C1_INC 100
+#ifndef XC32_SFR_I2C1_INC
+#define XC32_SFR_I2C1_INC 100
 #
-#include<XC32Lib_config.hpp>
+#include<XC32_config.hpp>
 #include"device_include.h"
 #include"interrupt.hpp"
 #include"exclusive_mixin.hpp"
 #include"sfr_register_mixin.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_I2C1_IRQ 31
-#	define XC32LIB_I2C1_VEC 25
-#	define XC32LIB_I2C1_IF IFS0bits.I2C1MIF
-#	define XC32LIB_I2C1_IE IEC0bits.I2C1MIE
-#	define XC32LIB_I2C1_IP IPC6bits.I2C1MIP
-#	define XC32LIB_I2C1_IS IPC8bits.I2C1MIS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_I2C1_IRQ 117
-#	define XC32LIB_I2C1_VEC _I2C1_MASTER_VECTOR
-#	define XC32LIB_I2C1_IF IFS3bits.I2C1MIF
-#	define XC32LIB_I2C1_IE IEC3bits.I2C1MIE
-#	define XC32LIB_I2C1_IP IPC29bits.I2C1MIP
-#	define XC32LIB_I2C1_IS IPC29bits.I2C1MIS
+#if defined(XC32_PIC32MX)
+#	define XC32_I2C1_IRQ 31
+#	define XC32_I2C1_VEC 25
+#	define XC32_I2C1_IF IFS0bits.I2C1MIF
+#	define XC32_I2C1_IE IEC0bits.I2C1MIE
+#	define XC32_I2C1_IP IPC6bits.I2C1MIP
+#	define XC32_I2C1_IS IPC8bits.I2C1MIS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_I2C1_IRQ 117
+#	define XC32_I2C1_VEC _I2C1_MASTER_VECTOR
+#	define XC32_I2C1_IF IFS3bits.I2C1MIF
+#	define XC32_I2C1_IE IEC3bits.I2C1MIE
+#	define XC32_I2C1_IP IPC29bits.I2C1MIP
+#	define XC32_I2C1_IS IPC29bits.I2C1MIS
 #else
 #	error Unknown device!
 #endif
 
-#ifndef XC32LIB_SFR_I2C1_EXPLICITINTERRUPT
-#	ifndef XC32LIB_DEBUGMODE
-#		define x_xc32_sfr_i2c1_interrupt(void) __ISR(XC32LIB_I2C1_VEC, XC32LIB_I2C1_IPL_FOR_ISR) I2C1Interrupt(void)//__attribute__((vector(25), interrupt(1), nomips16)) I2C1Interrupt(void)//__ISR(x_xc32_sfr_i2c1_interrupt_vector, x_xc32_sfr_i2c1_interrupt_default_priority) I2C1Interrupt(void)//*/func(void)
+#ifndef XC32_SFR_I2C1_EXPLICITINTERRUPT
+#	ifndef XC32_DEBUGMODE
+#		define x_xc32_sfr_i2c1_interrupt(void) __ISR(XC32_I2C1_VEC, XC32_I2C1_IPL_FOR_ISR) I2C1Interrupt(void)//__attribute__((vector(25), interrupt(1), nomips16)) I2C1Interrupt(void)//__ISR(x_xc32_sfr_i2c1_interrupt_vector, x_xc32_sfr_i2c1_interrupt_default_priority) I2C1Interrupt(void)//*/func(void)
 #	else
 extern "C"{void x_xc32_sfr_i2c1_interrupt(void); }
 #	endif
 #else
-#	ifndef XC32LIB_DEBUGMODE
-#		define xc32_sfr_i2c1_interrupt(void) __ISR(XC32LIB_I2C1_VEC, XC32LIB_I2C1_IPL_FOR_ISR) I2C1Interrupt(void)//*/func(void)
+#	ifndef XC32_DEBUGMODE
+#		define xc32_sfr_i2c1_interrupt(void) __ISR(XC32_I2C1_VEC, XC32_I2C1_IPL_FOR_ISR) I2C1Interrupt(void)//*/func(void)
 #	else
 extern "C"{void xc32_sfr_i2c1_interrupt(void); }
 #	endif
@@ -62,17 +62,17 @@ namespace xc32{
 			//ACK Data bit : I2CxCONbits.ACKDT
 			void ack_data(bool val_){I2C1CONbits.ACKDT=static_cast<unsigned char>(val_);}
 			//Master Interrupt Flag : IFSxbits.I2CxMIF
-			void interrupt_flag(bool val_){XC32LIB_I2C1_IF=static_cast<unsigned char>(val_);}
-			bool interrupt_flag()const {return static_cast<bool>(XC32LIB_I2C1_IF);}
+			void interrupt_flag(bool val_){XC32_I2C1_IF=static_cast<unsigned char>(val_);}
+			bool interrupt_flag()const {return static_cast<bool>(XC32_I2C1_IF);}
 			//interrupt enable bit : IECxbits.I2CxMIE
-			void interrupt_enable(bool val_){XC32LIB_I2C1_IE=static_cast<unsigned char>(val_);}
-			bool interrupt_enable()const{return static_cast<bool>(XC32LIB_I2C1_IE);}
+			void interrupt_enable(bool val_){XC32_I2C1_IE=static_cast<unsigned char>(val_);}
+			bool interrupt_enable()const{return static_cast<bool>(XC32_I2C1_IE);}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_priority_level(unsigned char val_){XC32LIB_I2C1_IP=val_;}
-			unsigned char interrupt_priority_level(){return XC32LIB_I2C1_IP;}
+			void interrupt_priority_level(unsigned char val_){XC32_I2C1_IP=val_;}
+			unsigned char interrupt_priority_level(){return XC32_I2C1_IP;}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_sub_priority_level(unsigned char val_){XC32LIB_I2C1_IS=val_;}
-			unsigned char interrupt_sub_priority_level(){return XC32LIB_I2C1_IS;}
+			void interrupt_sub_priority_level(unsigned char val_){XC32_I2C1_IS=val_;}
+			unsigned char interrupt_sub_priority_level(){return XC32_I2C1_IS;}
 			//Receive Data Register : I2CxRCV
 			unsigned char receive_data(){return static_cast<unsigned char>(I2C1RCV);}
 			//Transmit Data Register : I2CxTRN

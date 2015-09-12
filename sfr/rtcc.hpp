@@ -1,40 +1,40 @@
-#ifndef XC32LIB_SFR_RTCC_INC
-#define XC32LIB_SFR_RTCC_INC 100
+#ifndef XC32_SFR_RTCC_INC
+#define XC32_SFR_RTCC_INC 100
 #
 //====================RTCC====================
-#include <XC32Lib_config.hpp>
+#include <XC32_config.hpp>
 #include "device_include.h"
 #include "interrupt.hpp"
 #include "exclusive_mixin.hpp"
 #include "sfr_register_mixin.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_RTCC_IRQ 42
-#	define XC32LIB_RTCC_VEC 32
-#	define XC32LIB_RTCC_IF IFS1bits.RTCCIF
-#	define XC32LIB_RTCC_IE IEC1bits.RTCCIE
-#	define XC32LIB_RTCC_IP IPC8bits.RTCCIP
-#	define XC32LIB_RTCC_IS IPC8bits.RTCCIS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_RTCC_IRQ 166
-#	define XC32LIB_RTCC_VEC _RTCC_VECTOR
-#	define XC32LIB_RTCC_IF IFS5bits.RTCCIF
-#	define XC32LIB_RTCC_IE IEC5bits.RTCCIE
-#	define XC32LIB_RTCC_IP IPC41bits.RTCCIP
-#	define XC32LIB_RTCC_IS IPC41bits.RTCCIS
+#if defined(XC32_PIC32MX)
+#	define XC32_RTCC_IRQ 42
+#	define XC32_RTCC_VEC 32
+#	define XC32_RTCC_IF IFS1bits.RTCCIF
+#	define XC32_RTCC_IE IEC1bits.RTCCIE
+#	define XC32_RTCC_IP IPC8bits.RTCCIP
+#	define XC32_RTCC_IS IPC8bits.RTCCIS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_RTCC_IRQ 166
+#	define XC32_RTCC_VEC _RTCC_VECTOR
+#	define XC32_RTCC_IF IFS5bits.RTCCIF
+#	define XC32_RTCC_IE IEC5bits.RTCCIE
+#	define XC32_RTCC_IP IPC41bits.RTCCIP
+#	define XC32_RTCC_IS IPC41bits.RTCCIS
 #else
 #	error Unknown device!
 #endif
 
-#ifndef XC32LIB_SFR_RTCC_EXPLICITINTERRUPT
-#	ifndef XC32LIB_DEBUGMODE
-#		define x_xc32_sfr_rtcc_interrupt(void) __ISR(XC32LIB_RTCC_VEC, IPL7AUTO) RTCCInterrupt(void)//*/func(void)
+#ifndef XC32_SFR_RTCC_EXPLICITINTERRUPT
+#	ifndef XC32_DEBUGMODE
+#		define x_xc32_sfr_rtcc_interrupt(void) __ISR(XC32_RTCC_VEC, IPL7AUTO) RTCCInterrupt(void)//*/func(void)
 #	else
 extern "C"{void x_xc32_sfr_rtcc_interrupt(void); }
 #	endif
 #else
-#	ifndef XC32LIB_DEBUGMODE
-#		define xc32_sfr_rtcc_interrupt(void) __ISR(XC32LIB_RTCC_VEC, IPL7AUTO) RTCCInterrupt(void)//*/func(void)
+#	ifndef XC32_DEBUGMODE
+#		define xc32_sfr_rtcc_interrupt(void) __ISR(XC32_RTCC_VEC, IPL7AUTO) RTCCInterrupt(void)//*/func(void)
 #	else
 extern "C"{void xc32_sfr_rtcc_interrupt(void); }
 #	endif
@@ -77,17 +77,17 @@ namespace xc32{
 			void alarm_date(unsigned long val_){ALRMDATE=val_;}
 			unsigned long alarm_date()const{return ALRMDATE;}
 			//RTCC interrupt enable bit : IEC1bits.RTCCIE
-			void interrupt_enable(bool val_){XC32LIB_RTCC_IE=static_cast<unsigned char>(val_);}
-			bool interrupt_enable()const{return static_cast<bool>(XC32LIB_RTCC_IE);}
+			void interrupt_enable(bool val_){XC32_RTCC_IE=static_cast<unsigned char>(val_);}
+			bool interrupt_enable()const{return static_cast<bool>(XC32_RTCC_IE);}
 			//RTCC interrupt flag : IFS1bits.RTCCIF
-			void interrupt_flag(bool val_){XC32LIB_RTCC_IF=static_cast<unsigned char>(val_);}
-			bool interrupt_flag()const{return static_cast<bool>(XC32LIB_RTCC_IF);}
+			void interrupt_flag(bool val_){XC32_RTCC_IF=static_cast<unsigned char>(val_);}
+			bool interrupt_flag()const{return static_cast<bool>(XC32_RTCC_IF);}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_priority_level(unsigned char val_){XC32LIB_RTCC_IP=val_;}
-			unsigned char interrupt_priority_level(){return XC32LIB_RTCC_IP;}
+			void interrupt_priority_level(unsigned char val_){XC32_RTCC_IP=val_;}
+			unsigned char interrupt_priority_level(){return XC32_RTCC_IP;}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_sub_priority_level(unsigned char val_){XC32LIB_RTCC_IS=val_;}
-			unsigned char interrupt_sub_priority_level(){return XC32LIB_RTCC_IS;}
+			void interrupt_sub_priority_level(unsigned char val_){XC32_RTCC_IS=val_;}
+			unsigned char interrupt_sub_priority_level(){return XC32_RTCC_IS;}
 			//Control Register : I2CxCON
 			void reset_all_config(){
 				RTCCON &= 0x00010000;			//ONˆÈŠO‚ð0‚ÅƒtƒBƒ‹

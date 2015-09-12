@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SPI_INC
-#define XC32LIB_SPI_INC 101
+#ifndef XC32_SPI_INC
+#define XC32_SPI_INC 101
 #
 #include"exceptions.hpp"
 #include"sfr/interrupt.hpp"

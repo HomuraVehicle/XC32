@@ -1,5 +1,5 @@
-#ifndef XC32LIB_UART_INC
-#define XC32LIB_UART_INC 101
+#ifndef XC32_UART_INC
+#define XC32_UART_INC 101
 #
 /*
 === xc32::uart ===

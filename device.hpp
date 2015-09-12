@@ -1,5 +1,5 @@
-#ifndef XC32LIB_DEVICE_INC
-#define XC32LIB_DEVICE_INC
+#ifndef XC32_DEVICE_INC
+#define XC32_DEVICE_INC
 #
 #include"clock.hpp"
 #include"interrupt.hpp"

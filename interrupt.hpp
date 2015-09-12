@@ -1,5 +1,5 @@
-#ifndef XC32LIB_INTERRUPT_INC
-#define XC32LIB_INTERRUPT_INC 100
+#ifndef XC32_INTERRUPT_INC
+#define XC32_INTERRUPT_INC 100
 #
 #include<XCBase/lock.hpp>
 #include"sfr/interrupt.hpp"
@@ -88,7 +88,7 @@ namespace xc32{
 	private:
 		//interruptèâä˙âªä÷êî
 		static void initialize() {
-#ifndef XC32LIB_DEBUGMODE
+#ifndef XC32_DEBUGMODE
 			__asm("nop");
 			sfr::interrupt::enable_all();
 			//			INTEnableInterrupts();

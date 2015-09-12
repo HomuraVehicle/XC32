@@ -1,5 +1,5 @@
-#ifndef XC32LIB_TIMER_INC
-#define XC32LIB_TIMER_INC 100
+#ifndef XC32_TIMER_INC
+#define XC32_TIMER_INC 100
 #
 #include<XCBase/type.hpp>
 #include"exceptions.hpp"

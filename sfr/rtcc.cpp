@@ -1,9 +1,9 @@
-#ifndef XC32LIB_SFR_RTCC_CPP_INC
-#define XC32LIB_SFR_RTCC_CPP_INC 100
+#ifndef XC32_SFR_RTCC_CPP_INC
+#define XC32_SFR_RTCC_CPP_INC 100
 #
 #include"rtcc.hpp"
 
-#ifndef XC32LIB_SFR_RTCC_EXPLICITINTERRUPT
+#ifndef XC32_SFR_RTCC_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_rtcc_interrupt(void) {
 		static xc32::sfr::rtcc RTCC;

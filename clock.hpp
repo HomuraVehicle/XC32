@@ -1,9 +1,9 @@
-#ifndef XC32LIB_CLOCK_INC
-#define XC32LIB_CLOCK_INC
-#include <XC32Lib_config.hpp>
+#ifndef XC32_CLOCK_INC
+#define XC32_CLOCK_INC
+#include <XC32_config.hpp>
 #include <device_include.h>
 //#define HMLIB_NOLIB
-#ifndef XC32LIB_DEBUGMODE
+#ifndef XC32_DEBUGMODE
 //#	include <peripheral/timer.h>
 #endif
 #include<XCBase/type.hpp>
@@ -57,14 +57,14 @@ namespace xc32{
 		typedef xc::unique_lock<mutex> unique_lock;
 	}
 	namespace clock_div {
-#if defined(XC32LIB_PIC32MX)
+#if defined(XC32_PIC32MX)
 		enum type {
 			div1=0,
 			div2=1,
 			div4=2,
 			div8=3
 		};
-#elif defined(XC32LIB_PIC32MZ)
+#elif defined(XC32_PIC32MZ)
 		enum type {
 			div1=0,
 			div2=1,
@@ -119,11 +119,11 @@ namespace xc32{
 			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);
 
-#if defined(XC32LIB_PIC32MX)
+#if defined(XC32_PIC32MX)
 			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			//while(!OSCCONbits.PBDIVRDY);
 			OSCCONbits.PBDIV = static_cast<unsigned char>(Div_);
-#elif defined(XC32LIB_PIC32MZ)
+#elif defined(XC32_PIC32MZ)
 			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			while(!PB1DIVbits.PBDIVRDY);
 			PB1DIVbits.PBDIV = static_cast<unsigned char>(Div_);
@@ -145,9 +145,9 @@ namespace xc32{
 			BusDiv = Div_;
 		}
 		static uint64 get_bus_clock() {
-#if defined(XC32LIB_PIC32MX)
+#if defined(XC32_PIC32MX)
 			return (SystemClock >> static_cast<unsigned int>(BusDiv));
-#elif defined(XC32LIB_PIC32MZ)
+#elif defined(XC32_PIC32MZ)
 			return (SystemClock / (static_cast<unsigned int>(BusDiv) + 1));
 #endif
 		}
@@ -155,11 +155,11 @@ namespace xc32{
 			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);
 
-#if defined(XC32LIB_PIC32MX)
+#if defined(XC32_PIC32MX)
 			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			//while(!OSCCONbits.PBDIVRDY);
 			OSCCONbits.PBDIV = static_cast<unsigned char>(Div_);
-#elif defined(XC32LIB_PIC32MZ)
+#elif defined(XC32_PIC32MZ)
 			//PBCLK7がCPUに対応する
 			while(!PB7DIVbits.PBDIVRDY);
 			PB7DIVbits.PBDIV = static_cast<unsigned char>(Div_);
@@ -171,7 +171,7 @@ namespace xc32{
 		static void initialize(uint64 Hz_, clock_div::type Div_ = clock_div::div8) {
 			set_system_clock(Hz_);
 			set_bus_div(Div_);
-#if defined(XC32LIB_PIC32MZ)
+#if defined(XC32_PIC32MZ)
 
 			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);

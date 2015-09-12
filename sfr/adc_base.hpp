@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_ADCBASE_INC
-#define XC32LIB_SFR_ADCBASE_INC 100
+#ifndef XC32_SFR_ADCBASE_INC
+#define XC32_SFR_ADCBASE_INC 100
 #
 namespace xc32 {
 	namespace sfr {

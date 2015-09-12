@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_SPI4_INC
-#define XC32LIB_SFR_SPI4_INC 100
+#ifndef XC32_SFR_SPI4_INC
+#define XC32_SFR_SPI4_INC 100
 #
 //*********** SPI関連関数 ***********************
 //SPIの初期設定を行った後、書き込んで、読み取って関数を使う
@@ -10,37 +10,37 @@
 #include"sfr_register_mixin.hpp"
 #include"interrupt.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_SPI4_RX_IRQ 41
-#	define XC32LIB_SPI4_RX_VEC 32
-#	define XC32LIB_SPI4_RXIF IFS1bits.SPI4RXIF
-#	define XC32LIB_SPI4_RXIE IEC1bits.SPI4RXIE
-#	define XC32LIB_SPI4_TXIF IFS1bits.SPI4TXIF
-#	define XC32LIB_SPI4_TXIE IEC1bits.SPI4TXIE
-#	define XC32LIB_SPI4_IP IPC8bits.SPI4IP
-#	define XC32LIB_SPI4_IS IPC8bits.SPI4IS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_SPI4_RX_IRQ 164
-#	define XC32LIB_SPI4_RX_VEC _SPI4_RX_VECTOR
-#	define XC32LIB_SPI4_RXIF IFS5bits.SPI4RXIF
-#	define XC32LIB_SPI4_RXIE IEC5bits.SPI4RXIE
-#	define XC32LIB_SPI4_TXIF IFS5bits.SPI4TXIF
-#	define XC32LIB_SPI4_TXIE IEC5bits.SPI4TXIE
-#	define XC32LIB_SPI4_IP IPC41bits.SPI4RXIP
-#	define XC32LIB_SPI4_IS IPC41bits.SPI4RXIS
+#if defined(XC32_PIC32MX)
+#	define XC32_SPI4_RX_IRQ 41
+#	define XC32_SPI4_RX_VEC 32
+#	define XC32_SPI4_RXIF IFS1bits.SPI4RXIF
+#	define XC32_SPI4_RXIE IEC1bits.SPI4RXIE
+#	define XC32_SPI4_TXIF IFS1bits.SPI4TXIF
+#	define XC32_SPI4_TXIE IEC1bits.SPI4TXIE
+#	define XC32_SPI4_IP IPC8bits.SPI4IP
+#	define XC32_SPI4_IS IPC8bits.SPI4IS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_SPI4_RX_IRQ 164
+#	define XC32_SPI4_RX_VEC _SPI4_RX_VECTOR
+#	define XC32_SPI4_RXIF IFS5bits.SPI4RXIF
+#	define XC32_SPI4_RXIE IEC5bits.SPI4RXIE
+#	define XC32_SPI4_TXIF IFS5bits.SPI4TXIF
+#	define XC32_SPI4_TXIE IEC5bits.SPI4TXIE
+#	define XC32_SPI4_IP IPC41bits.SPI4RXIP
+#	define XC32_SPI4_IS IPC41bits.SPI4RXIS
 #else
 #	error Unknown device!
 #endif
 
-#ifndef XC32LIB_SFR_SPI4_EXPLICITINTERRUPT
-#	ifndef XC32LIB_DEBUGMODE
-#		define x_xc32_sfr_spi4_interrupt(void) __ISR(XC32LIB_SPI4_RX_VEC, XC32LIB_SPI4_RX_IPL_FOR_ISR) SPI4Interrupt(void)//*/func(void)
+#ifndef XC32_SFR_SPI4_EXPLICITINTERRUPT
+#	ifndef XC32_DEBUGMODE
+#		define x_xc32_sfr_spi4_interrupt(void) __ISR(XC32_SPI4_RX_VEC, XC32_SPI4_RX_IPL_FOR_ISR) SPI4Interrupt(void)//*/func(void)
 #	else
 extern "C"{void x_xc32_sfr_spi4_interrupt(void); }
 #	endif
 #else
-#	ifndef XC32LIB_DEBUGMODE
-#		define xc32_sfr_spi4_interrupt(void) __ISR(XC32LIB_SPI4_RX_VEC, XC32LIB_SPI4_RX_IPL_FOR_ISR) SPI4Interrupt(void)//*/func(void)
+#	ifndef XC32_DEBUGMODE
+#		define xc32_sfr_spi4_interrupt(void) __ISR(XC32_SPI4_RX_VEC, XC32_SPI4_RX_IPL_FOR_ISR) SPI4Interrupt(void)//*/func(void)
 #	else
 extern "C"{void xc32_sfr_spi4_interrupt(void); }
 #	endif
@@ -87,23 +87,23 @@ namespace xc32{
 				rx_interrupt_function(0);
 			}
 			//SPI Receive data available interrupt enable bit : IECxbits.SPIxRXIE
-			void rx_interrupt_enable(bool val_){XC32LIB_SPI4_TXIE=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_enable()const{return static_cast<bool>(XC32LIB_SPI4_RXIE);}
+			void rx_interrupt_enable(bool val_){XC32_SPI4_TXIE=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_enable()const{return static_cast<bool>(XC32_SPI4_RXIE);}
 			//SPI Receive data available interrupt flag bit : IFSxbits.SPIxRXIF
-			void rx_interrupt_flag(bool val_){XC32LIB_SPI4_RXIF=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_flag()const {return static_cast<bool>(XC32LIB_SPI4_RXIF);}
+			void rx_interrupt_flag(bool val_){XC32_SPI4_RXIF=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_flag()const {return static_cast<bool>(XC32_SPI4_RXIF);}
 			//SPI Transnit Buffer Empty interrupt enable bit : IECxbits.SPIxTXIE
-			void tx_interrupt_enable(bool val_){XC32LIB_SPI4_TXIE=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_enable()const{return static_cast<bool>(XC32LIB_SPI4_TXIE);}
+			void tx_interrupt_enable(bool val_){XC32_SPI4_TXIE=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_enable()const{return static_cast<bool>(XC32_SPI4_TXIE);}
 			//SPI Transmit Buffer Empty interrupt flag bit : IFSxbits.SPIxTXIF
-			void tx_interrupt_flag(bool val_){XC32LIB_SPI4_TXIF=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_flag()const {return static_cast<bool>(XC32LIB_SPI4_TXIF);}
+			void tx_interrupt_flag(bool val_){XC32_SPI4_TXIF=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_flag()const {return static_cast<bool>(XC32_SPI4_TXIF);}
 			//Interrupt priority level : IPCxbits.SPIxIP
-			void interrupt_priority_level(unsigned char val_){XC32LIB_SPI4_IP=val_;}
-			unsigned char interrupt_priority_level(){return XC32LIB_SPI4_IP;}
+			void interrupt_priority_level(unsigned char val_){XC32_SPI4_IP=val_;}
+			unsigned char interrupt_priority_level(){return XC32_SPI4_IP;}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_sub_priority_level(unsigned char val_){XC32LIB_SPI4_IS=val_;}
-			unsigned char interrupt_sub_priority_level(){return XC32LIB_SPI4_IS;}
+			void interrupt_sub_priority_level(unsigned char val_){XC32_SPI4_IS=val_;}
+			unsigned char interrupt_sub_priority_level(){return XC32_SPI4_IS;}
 		private:
 			static interrupt::function* tx_interrupt_ptr;
 			static interrupt::function* rx_interrupt_ptr;

@@ -1,9 +1,9 @@
-#ifndef XC32LIB_SFR_I2C2_CPP_INC
-#define XC32LIB_SFR_I2C2_CPP_INC 100
+#ifndef XC32_SFR_I2C2_CPP_INC
+#define XC32_SFR_I2C2_CPP_INC 100
 #
 #include"i2c2.hpp"
 
-#ifndef XC32LIB_SFR_I2C2_EXPLICITINTERRUPT
+#ifndef XC32_SFR_I2C2_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_i2c2_interrupt(void) {
 		static xc32::sfr::i2c2 I2C2;
@@ -23,7 +23,7 @@ extern "C"{
 namespace xc32{
 	namespace sfr{
 		interrupt::function* i2c2::interrupt_ptr;
-		const unsigned char i2c2::ipl = XC32LIB_I2C2_IPL;
+		const unsigned char i2c2::ipl = XC32_I2C2_IPL;
 	}
 }
 

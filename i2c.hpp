@@ -1,5 +1,5 @@
-#ifndef XC32LIB_I2CBASE_INC
-#define XC32LIB_I2CBASE_INC 100
+#ifndef XC32_I2CBASE_INC
+#define XC32_I2CBASE_INC 100
 #
 #include"exceptions.hpp"
 #include"sfr/interrupt.hpp"

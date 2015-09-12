@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_PORTD_INC
-#define XC32LIB_SFR_PORTD_INC 100
+#ifndef XC32_SFR_PORTD_INC
+#define XC32_SFR_PORTD_INC 100
 #
 #include"device_include.h"
 #include<XCBase/constexpr_no.hpp>

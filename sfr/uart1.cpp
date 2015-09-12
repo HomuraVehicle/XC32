@@ -1,10 +1,10 @@
-#ifndef XC32LIB_SFR_UART1_CPP_INC
-#define XC32LIB_SFR_UART1_CPP_INC 100
+#ifndef XC32_SFR_UART1_CPP_INC
+#define XC32_SFR_UART1_CPP_INC 100
 #
 #include"uart1.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	ifndef XC32LIB_SFR_UART1_EXPLICITINTERRUPT
+#if defined(XC32_PIC32MX)
+#	ifndef XC32_SFR_UART1_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_uart1_interrupt(void) {
 		static xc32::sfr::uart1 UART1;
@@ -30,8 +30,8 @@ extern "C"{
 	}
 }
 #	endif
-#elif defined(XC32LIB_PIC32MZ)
-#	ifndef XC32LIB_SFR_UART1_EXPLICITINTERRUPT
+#elif defined(XC32_PIC32MZ)
+#	ifndef XC32_SFR_UART1_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_uart1_tx_interrupt(void) {
 		static xc32::sfr::uart1 UART1;
@@ -59,8 +59,8 @@ namespace xc32{
 	namespace sfr{
 		interrupt::function* uart1::tx_interrupt_ptr;
 		interrupt::function* uart1::rx_interrupt_ptr;
-		const unsigned char uart1::tx_ipl=XC32LIB_UART1_TX_IPL;
-		const unsigned char uart1::rx_ipl=XC32LIB_UART1_RX_IPL;
+		const unsigned char uart1::tx_ipl=XC32_UART1_TX_IPL;
+		const unsigned char uart1::rx_ipl=XC32_UART1_RX_IPL;
 	}
 }
 

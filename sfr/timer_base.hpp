@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_TIMERBASE_INC
-#define XC32LIB_SFR_TIMERBASE_INC 100
+#ifndef XC32_SFR_TIMERBASE_INC
+#define XC32_SFR_TIMERBASE_INC 100
 #
 #include<XCBase/type_traits.hpp>
 #include<XCBase/type.hpp>

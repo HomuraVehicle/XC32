@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_TIMER8_INC
-#define XC32LIB_SFR_TIMER8_INC 100
+#ifndef XC32_SFR_TIMER8_INC
+#define XC32_SFR_TIMER8_INC 100
 #
 /*=====timer8=====*/
 #include<XCBase/type_traits.hpp>
@@ -10,27 +10,27 @@
 #include"timer_base.hpp"
 #include"timer9.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_TIMER8_IRQ 36
-#	define XC32LIB_TIMER8_VEC _TIMER_8_VECTOR
-#	define XC32LIB_TIMER8_IF IFS1bits.T8IF
-#	define XC32LIB_TIMER8_IE IEC1bits.T8IE
-#	define XC32LIB_TIMER8_IP IPC9bits.T8IP
-#	define XC32LIB_TIMER8_IS IPC9bits.T8IS
+#if defined(XC32_PIC32MX)
+#elif defined(XC32_PIC32MZ)
+#	define XC32_TIMER8_IRQ 36
+#	define XC32_TIMER8_VEC _TIMER_8_VECTOR
+#	define XC32_TIMER8_IF IFS1bits.T8IF
+#	define XC32_TIMER8_IE IEC1bits.T8IE
+#	define XC32_TIMER8_IP IPC9bits.T8IP
+#	define XC32_TIMER8_IS IPC9bits.T8IS
 #else
 #	error Unknown device!
 #endif
 
-#ifndef XC32LIB_SFR_TIMER8_EXPLICITINTERRUPT
-#	ifndef XC32LIB_DEBUGMODE
-#		define x_xc32_sfr_timer8_interrupt(void) __ISR(XC32LIB_TIMER8_VEC, XC32LIB_TIMER8_IPL_FOR_ISR) T8Interrupt(void)//*/func(void)
+#ifndef XC32_SFR_TIMER8_EXPLICITINTERRUPT
+#	ifndef XC32_DEBUGMODE
+#		define x_xc32_sfr_timer8_interrupt(void) __ISR(XC32_TIMER8_VEC, XC32_TIMER8_IPL_FOR_ISR) T8Interrupt(void)//*/func(void)
 #	else
 extern "C"{void x_xc32_sfr_timer8_interrupt(void); }
 #	endif
 #else
-#	ifndef XC32LIB_DEBUGMODE
-#		define xc32_sfr_timer8_interrupt(void) __ISR(XC32LIB_TIMER8_VEC, XC32LIB_TIMER8_IPL_FOR_ISR) T8Interrupt(void)//*/func(void)
+#	ifndef XC32_DEBUGMODE
+#		define xc32_sfr_timer8_interrupt(void) __ISR(XC32_TIMER8_VEC, XC32_TIMER8_IPL_FOR_ISR) T8Interrupt(void)//*/func(void)
 #	else
 extern "C"{void xc32_sfr_timer8_interrupt(void); }
 #	endif
@@ -49,17 +49,17 @@ namespace xc32{
 			void gate_enable(bool val_){T8CONbits.TGATE=static_cast<unsigned char>(val_);}
 			bool gate_enable()const{return static_cast<bool>(T8CONbits.TGATE);}
 			//Interrupt Flag : IFSxbits.I2CxMIF
-			void interrupt_flag(bool val_){XC32LIB_TIMER8_IF=static_cast<unsigned char>(val_);}
-			bool interrupt_flag()const {return static_cast<bool>(XC32LIB_TIMER8_IF);}
+			void interrupt_flag(bool val_){XC32_TIMER8_IF=static_cast<unsigned char>(val_);}
+			bool interrupt_flag()const {return static_cast<bool>(XC32_TIMER8_IF);}
 			//interrupt enable bit : IECxbits.I2CxMIE
-			void interrupt_enable(bool val_){XC32LIB_TIMER8_IE=static_cast<unsigned char>(val_);}
-			bool interrupt_enable()const{return static_cast<bool>(XC32LIB_TIMER8_IE);}
+			void interrupt_enable(bool val_){XC32_TIMER8_IE=static_cast<unsigned char>(val_);}
+			bool interrupt_enable()const{return static_cast<bool>(XC32_TIMER8_IE);}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_priority_level(unsigned char val_){XC32LIB_TIMER8_IP=val_;}
-			unsigned char interrupt_priority_level(){return XC32LIB_TIMER8_IP;}
+			void interrupt_priority_level(unsigned char val_){XC32_TIMER8_IP=val_;}
+			unsigned char interrupt_priority_level(){return XC32_TIMER8_IP;}
 			//Interrupt priority level : IPCxbits.I2CxIP
-			void interrupt_sub_priority_level(unsigned char val_){XC32LIB_TIMER8_IS=val_;}
-			unsigned char interrupt_sub_priority_level(){return XC32LIB_TIMER8_IS;}
+			void interrupt_sub_priority_level(unsigned char val_){XC32_TIMER8_IS=val_;}
+			unsigned char interrupt_sub_priority_level(){return XC32_TIMER8_IS;}
 			//Timer ON bit : TxCONbits.ON
 			void enable(bool val_){T8CONbits.ON=static_cast<unsigned char>(val_);}
 			bool enable()const{return static_cast<bool>(T8CONbits.ON);}

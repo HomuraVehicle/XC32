@@ -1,5 +1,5 @@
-#ifndef XC32LIB_EXCEPTIONS_INC
-#define XC32LIB_EXCEPTIONS_INC 100
+#ifndef XC32_EXCEPTIONS_INC
+#define XC32_EXCEPTIONS_INC 100
 #
 #include <XCBase/exceptions.hpp>
 namespace xc32 {
@@ -10,9 +10,9 @@ namespace xc32 {
 	};
 
 }
-#define XC32LIB_NOEXCEPT
+#define XC32_NOEXCEPT
 
-#ifndef  XC32LIB_NOEXCEPT
+#ifndef  XC32_NOEXCEPT
 #	define xc32_throw(except) throw except
 #	define xc32_assert(condition,except) if(!(condition))xc32_throw(except)
 #else

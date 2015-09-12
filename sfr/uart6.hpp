@@ -1,5 +1,5 @@
-#ifndef XC32LIB_SFR_UART6_INC
-#define XC32LIB_SFR_UART6_INC 101
+#ifndef XC32_SFR_UART6_INC
+#define XC32_SFR_UART6_INC 101
 #
 /*=== uart6 ===
 êVå^äÑÇËçûÇ›ä÷êîñºÇ…ïœçX
@@ -16,61 +16,61 @@ v1_01/140630 hmIto
 #include"interrupt.hpp"
 #include"uart_base.hpp"
 
-#if defined(XC32LIB_PIC32MX)
-#	define XC32LIB_UART6_TX_IRQ 72
-#	define XC32LIB_UART6_RX_IRQ 71
-#	define XC32LIB_UART6_VEC 50
-#	define XC32LIB_UART6_TX_IF IFS2bits.U6TXIF
-#	define XC32LIB_UART6_TX_IE IEC2bits.U6TXIE
-#	define XC32LIB_UART6_TX_IP IPC12bits.U6IP
-#	define XC32LIB_UART6_TX_IS IPC12bits.U6IS
-#	define XC32LIB_UART6_RX_IF IFS2bits.U6RXIF
-#	define XC32LIB_UART6_RX_IE IEC2bits.U6RXIE
-#	define XC32LIB_UART6_RX_IP IPC12bits.U6IP
-#	define XC32LIB_UART6_RX_IS IPC12bits.U6IS
-#elif defined(XC32LIB_PIC32MZ)
-#	define XC32LIB_UART6_TX_IRQ 190
-#	define XC32LIB_UART6_TX_VEC _UART6_TX_VECTOR
-#	define XC32LIB_UART6_TX_IF IFS5bits.U6TXIF
-#	define XC32LIB_UART6_TX_IE IEC5bits.U6TXIE
-#	define XC32LIB_UART6_TX_IP IPC47bits.U6TXIP
-#	define XC32LIB_UART6_TX_IS IPC47bits.U6TXIS
-#	define XC32LIB_UART6_RX_IRQ 189
-#	define XC32LIB_UART6_RX_VEC _UART6_RX_VECTOR
-#	define XC32LIB_UART6_RX_IF IFS5bits.U6RXIF
-#	define XC32LIB_UART6_RX_IE IEC5bits.U6RXIE
-#	define XC32LIB_UART6_RX_IP IPC47bits.U6RXIP
-#	define XC32LIB_UART6_RX_IS IPC47bits.U6RXIS
+#if defined(XC32_PIC32MX)
+#	define XC32_UART6_TX_IRQ 72
+#	define XC32_UART6_RX_IRQ 71
+#	define XC32_UART6_VEC 50
+#	define XC32_UART6_TX_IF IFS2bits.U6TXIF
+#	define XC32_UART6_TX_IE IEC2bits.U6TXIE
+#	define XC32_UART6_TX_IP IPC12bits.U6IP
+#	define XC32_UART6_TX_IS IPC12bits.U6IS
+#	define XC32_UART6_RX_IF IFS2bits.U6RXIF
+#	define XC32_UART6_RX_IE IEC2bits.U6RXIE
+#	define XC32_UART6_RX_IP IPC12bits.U6IP
+#	define XC32_UART6_RX_IS IPC12bits.U6IS
+#elif defined(XC32_PIC32MZ)
+#	define XC32_UART6_TX_IRQ 190
+#	define XC32_UART6_TX_VEC _UART6_TX_VECTOR
+#	define XC32_UART6_TX_IF IFS5bits.U6TXIF
+#	define XC32_UART6_TX_IE IEC5bits.U6TXIE
+#	define XC32_UART6_TX_IP IPC47bits.U6TXIP
+#	define XC32_UART6_TX_IS IPC47bits.U6TXIS
+#	define XC32_UART6_RX_IRQ 189
+#	define XC32_UART6_RX_VEC _UART6_RX_VECTOR
+#	define XC32_UART6_RX_IF IFS5bits.U6RXIF
+#	define XC32_UART6_RX_IE IEC5bits.U6RXIE
+#	define XC32_UART6_RX_IP IPC47bits.U6RXIP
+#	define XC32_UART6_RX_IS IPC47bits.U6RXIS
 #else
 #	error Unknown device!
 #endif
 
-#if defined(XC32LIB_PIC32MX)
-#	ifndef XC32LIB_SFR_UART6_EXPLICITINTERRUPT
-#		ifndef XC32LIB_DEBUGMODE
-#			define x_xc32_sfr_uart6_interrupt(void) __ISR(XC32LIB_UART6_VEC, IPL7AUTO) U6Interrupt(void)//*/func(void)
+#if defined(XC32_PIC32MX)
+#	ifndef XC32_SFR_UART6_EXPLICITINTERRUPT
+#		ifndef XC32_DEBUGMODE
+#			define x_xc32_sfr_uart6_interrupt(void) __ISR(XC32_UART6_VEC, IPL7AUTO) U6Interrupt(void)//*/func(void)
 #		else
 extern "C"{void x_xc32_sfr_uart6_interrupt(void); }
 #		endif
 #	else
-#		ifndef XC32LIB_DEBUGMODE
-#			define xc32_sfr_uart6_interrupt(void) __ISR(XC32LIB_UART6_VEC, IPL7AUTO) U6Interrupt(void)//*/func(void)
+#		ifndef XC32_DEBUGMODE
+#			define xc32_sfr_uart6_interrupt(void) __ISR(XC32_UART6_VEC, IPL7AUTO) U6Interrupt(void)//*/func(void)
 #		else
 extern "C"{void xc32_sfr_uart6_interrupt(void); }
 #		endif
 #	endif
-#elif defined(XC32LIB_PIC32MZ)
-#	ifndef XC32LIB_SFR_UART6_EXPLICITINTERRUPT
-#		ifndef XC32LIB_DEBUGMODE
-#			define x_xc32_sfr_uart6_tx_interrupt(void) __ISR(XC32LIB_UART6_TX_VEC, XC32LIB_UART6_TX_IPL_FOR_ISR) U6TXInterrupt(void)//*/func(void)
-#			define x_xc32_sfr_uart6_rx_interrupt(void) __ISR(XC32LIB_UART6_RX_VEC, XC32LIB_UART6_RX_IPL_FOR_ISR) U6RXInterrupt(void)//*/func(void)
+#elif defined(XC32_PIC32MZ)
+#	ifndef XC32_SFR_UART6_EXPLICITINTERRUPT
+#		ifndef XC32_DEBUGMODE
+#			define x_xc32_sfr_uart6_tx_interrupt(void) __ISR(XC32_UART6_TX_VEC, XC32_UART6_TX_IPL_FOR_ISR) U6TXInterrupt(void)//*/func(void)
+#			define x_xc32_sfr_uart6_rx_interrupt(void) __ISR(XC32_UART6_RX_VEC, XC32_UART6_RX_IPL_FOR_ISR) U6RXInterrupt(void)//*/func(void)
 #		else
 extern "C"{void x_xc32_sfr_uart6_tx_interrupt(void); void x_xc32_sfr_uart6_rx_interrupt(void); }
 #		endif
 #	else
-#		ifndef XC32LIB_DEBUGMODE
-#			define xc32_sfr_uart6_tx_interrupt(void) __ISR(XC32LIB_UART6_TX_VEC, XC32LIB_UART6_TX_IPL_FOR_ISR) U6TXInterrupt(void)//*/func(void)
-#			define xc32_sfr_uart6_rx_interrupt(void) __ISR(XC32LIB_UART6_RX_VEC, XC32LIB_UART6_RX_IPL_FOR_ISR) U6RXInterrupt(void)//*/func(void)
+#		ifndef XC32_DEBUGMODE
+#			define xc32_sfr_uart6_tx_interrupt(void) __ISR(XC32_UART6_TX_VEC, XC32_UART6_TX_IPL_FOR_ISR) U6TXInterrupt(void)//*/func(void)
+#			define xc32_sfr_uart6_rx_interrupt(void) __ISR(XC32_UART6_RX_VEC, XC32_UART6_RX_IPL_FOR_ISR) U6RXInterrupt(void)//*/func(void)
 #		else
 extern "C"{void xc32_sfr_uart6_tx_interrupt(void); void xc32_sfr_uart6_rx_interrupt(void); }
 #		endif
@@ -85,29 +85,29 @@ namespace xc32{
 			static unsigned int uart_no(){ return 1; }
 		public:
 			//Receive Interrupt Enable bit : IECxbits.UxRXIE
-			void rx_interrupt_enable(bool val_){XC32LIB_UART6_RX_IE=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_enable()const{return static_cast<bool>(XC32LIB_UART6_RX_IE);}
+			void rx_interrupt_enable(bool val_){XC32_UART6_RX_IE=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_enable()const{return static_cast<bool>(XC32_UART6_RX_IE);}
 			//Receive Interrupt Flag bit : IFSxbits.UxRXIF
-			void rx_interrupt_flag(bool val_){XC32LIB_UART6_RX_IF=static_cast<unsigned char>(val_);}
-			bool rx_interrupt_flag()const {return static_cast<bool>(XC32LIB_UART6_RX_IF);}
+			void rx_interrupt_flag(bool val_){XC32_UART6_RX_IF=static_cast<unsigned char>(val_);}
+			bool rx_interrupt_flag()const {return static_cast<bool>(XC32_UART6_RX_IF);}
 			//Interrupt priority level : IPCxbits.UxIP
-			void rx_interrupt_priority_level(unsigned char val_){XC32LIB_UART6_RX_IP=val_;}
-			unsigned char rx_interrupt_priority_level(){return XC32LIB_UART6_RX_IP;}
+			void rx_interrupt_priority_level(unsigned char val_){XC32_UART6_RX_IP=val_;}
+			unsigned char rx_interrupt_priority_level(){return XC32_UART6_RX_IP;}
 			//Interrupt priority level : IPCxbits.UxIP
-			void rx_interrupt_sub_priority_level(unsigned char val_){XC32LIB_UART6_RX_IS=val_;}
-			unsigned char rx_interrupt_sub_priority_level(){return XC32LIB_UART6_RX_IS;}
+			void rx_interrupt_sub_priority_level(unsigned char val_){XC32_UART6_RX_IS=val_;}
+			unsigned char rx_interrupt_sub_priority_level(){return XC32_UART6_RX_IS;}
 			//Transmit Interrupt Enable bit : IECxbits.UxTXIE
-			void tx_interrupt_enable(bool val_){XC32LIB_UART6_TX_IE=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_enable()const{return static_cast<bool>(XC32LIB_UART6_TX_IE);}
+			void tx_interrupt_enable(bool val_){XC32_UART6_TX_IE=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_enable()const{return static_cast<bool>(XC32_UART6_TX_IE);}
 			//Transmit Interrupt Flag : IFSxbits.UxTXIF
-			void tx_interrupt_flag(bool val_){XC32LIB_UART6_TX_IF=static_cast<unsigned char>(val_);}
-			bool tx_interrupt_flag()const {return static_cast<bool>(XC32LIB_UART6_TX_IF);}
+			void tx_interrupt_flag(bool val_){XC32_UART6_TX_IF=static_cast<unsigned char>(val_);}
+			bool tx_interrupt_flag()const {return static_cast<bool>(XC32_UART6_TX_IF);}
 			//Interrupt priority level : IPCxbits.UxIP
-			void tx_interrupt_priority_level(unsigned char val_){XC32LIB_UART6_TX_IP=val_;}
-			unsigned char tx_interrupt_priority_level(){return XC32LIB_UART6_TX_IP;}
+			void tx_interrupt_priority_level(unsigned char val_){XC32_UART6_TX_IP=val_;}
+			unsigned char tx_interrupt_priority_level(){return XC32_UART6_TX_IP;}
 			//Interrupt priority level : IPCxbits.UxIP
-			void tx_interrupt_sub_priority_level(unsigned char val_){XC32LIB_UART6_TX_IS=val_;}
-			unsigned char tx_interrupt_sub_priority_level(){return XC32LIB_UART6_TX_IS;}
+			void tx_interrupt_sub_priority_level(unsigned char val_){XC32_UART6_TX_IS=val_;}
+			unsigned char tx_interrupt_sub_priority_level(){return XC32_UART6_TX_IS;}
 			//Receive Buffer Data Available bit : UxSTATbits.URXDA
 			bool rx_buf_full()const {return static_cast<bool>(U6STAbits.URXDA);}
 			//Receive Register : UxRXREG

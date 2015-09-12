@@ -3,7 +3,7 @@
 #
 #include"timer6.hpp"
 
-#ifndef XC32LIB_SFR_TIMER6_EXPLICITINTERRUPT
+#ifndef XC32_SFR_TIMER6_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_timer6_interrupt(void) {
 		static xc32::sfr::timer6 Timer6;
@@ -18,7 +18,7 @@ extern "C"{
 namespace xc32 {
 	namespace sfr {
 		interrupt::function* timer6::interrupt_ptr;
-		const unsigned char timer6::ipl = XC32LIB_TIMER6_IPL;
+		const unsigned char timer6::ipl = XC32_TIMER6_IPL;
 	}
 }
 

@@ -1,5 +1,5 @@
-#ifndef XC32LIB_LONGTIMER_INC
-#define XC32LIB_LONGTIMER_INC 100
+#ifndef XC32_LONGTIMER_INC
+#define XC32_LONGTIMER_INC 100
 #
 #include<XCBase/type_traits.hpp>
 #include<XCBase/type.hpp>

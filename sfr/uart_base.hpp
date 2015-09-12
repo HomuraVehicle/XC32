@@ -1,7 +1,7 @@
-#ifndef XC32LIB_SFR_UARTBASE_INC
-#define XC32LIB_SFR_UARTBASE_INC 100
+#ifndef XC32_SFR_UARTBASE_INC
+#define XC32_SFR_UARTBASE_INC 100
 #
-#include<XC32Lib/clock.hpp>
+#include<XC32/clock.hpp>
 namespace xc32 {
 	namespace sfr {
 		namespace uart {

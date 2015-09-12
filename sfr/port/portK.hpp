@@ -1,8 +1,8 @@
-#ifndef XC32LIB_SFR_PORTK_INC
-#define XC32LIB_SFR_PORTK_INC 100
+#ifndef XC32_SFR_PORTK_INC
+#define XC32_SFR_PORTK_INC 100
 #
 #include"device_include.h"
-#include<homuXCBasera/constexpr_no.hpp>
+#include<XCBase/constexpr_no.hpp>
 namespace xc32 {
 	namespace sfr{
 		struct portK{

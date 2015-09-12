@@ -1,5 +1,5 @@
-#ifndef XC32LIB_CLOCK_CPP_INC
-#define XC32LIB_CLOCK_CPP_INC
+#ifndef XC32_CLOCK_CPP_INC
+#define XC32_CLOCK_CPP_INC
 #
 #include"clock.hpp"
 namespace xc32{

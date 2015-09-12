@@ -1,9 +1,9 @@
-#ifndef XC32LIB_SFR_SPI1_CPP_INC
-#define XC32LIB_SFR_SPI1_CPP_INC 100
+#ifndef XC32_SFR_SPI1_CPP_INC
+#define XC32_SFR_SPI1_CPP_INC 100
 #
 #include"spi1.hpp"
 
-#ifndef XC32LIB_SFR_SPI1_EXPLICITINTERRUPT
+#ifndef XC32_SFR_SPI1_EXPLICITINTERRUPT
 extern "C"{
 	void x_xc32_sfr_spi1_interrupt(void) {
 		static xc32::sfr::spi1 SPI1;
@@ -34,7 +34,7 @@ namespace xc32{
 	namespace sfr{
 		interrupt::function* spi1::tx_interrupt_ptr;
 		interrupt::function* spi1::rx_interrupt_ptr;
-		const unsigned char spi1::rx_ipl = XC32LIB_SPI1_RX_IPL;
+		const unsigned char spi1::rx_ipl = XC32_SPI1_RX_IPL;
 	}
 }
 
