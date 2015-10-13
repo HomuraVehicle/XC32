@@ -80,7 +80,7 @@ namespace xc32{
 			//ACK Status bti : I2CxSTATbits.ACKSTAT(0:ACK was received,1:ACK was not received)
 			bool ack_status()const {return static_cast<bool>(I2C2STATbits.ACKSTAT);}
 			//Receive Buffer Full Status bit : I2CxSTATbits.RBF
-			bool receive_buf_full()const {static_cast<bool>(I2C2STATbits.RBF);}
+			bool receive_buf_full()const {return static_cast<bool>(I2C2STATbits.RBF);}
 			//Transmit Buffer Full Status bit : I2CxSTATbits.TBF
 			bool transmit_buf_full()const{return static_cast<bool>(I2C2STATbits.TBF);}
 

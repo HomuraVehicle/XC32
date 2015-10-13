@@ -43,8 +43,8 @@ namespace xc{
 	template<>
 	struct unique_lock < xc32::interrupt::mutex > {
 	private:
-		unsigned int OriginalPriority;
 		xc32::interrupt::mutex* ptr;
+		unsigned int OriginalPriority;
 	private:
 		unique_lock(const unique_lock&);
 		const unique_lock& operator=(const unique_lock&);
