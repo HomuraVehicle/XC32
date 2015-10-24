@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,13 +18,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -38,7 +38,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Users\homura\Documents\Git\Common\XC32;C:\Users\homura\Documents\Git\Common\XC32\hmLib;C:\Users\homura\Documents\Git\Common\XC32\vc\xc32_lib\xc32_lib;C:\Users\homura\Documents\Git\Common;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Users\homura\Documents\Git\Common\XC32;C:\Users\homura\Documents\Git\Common\XC32\hmLib;C:\Users\homura\Documents\Git\Common\XC32\vc\xc32_lib\xc32_lib;C:\Users\homura\Documents\Git\Common;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -73,6 +78,53 @@
     <ClInclude Include="..\..\..\interrupt_safe_allocator.hpp" />
     <ClInclude Include="..\..\..\longtimer.hpp" />
     <ClInclude Include="..\..\..\pin.hpp" />
+    <ClInclude Include="..\..\..\sfr\adc1.hpp" />
+    <ClInclude Include="..\..\..\sfr\adc_base.hpp" />
+    <ClInclude Include="..\..\..\sfr\analog.hpp" />
+    <ClInclude Include="..\..\..\sfr\exclusive_mixin.hpp" />
+    <ClInclude Include="..\..\..\sfr\i2c1.hpp" />
+    <ClInclude Include="..\..\..\sfr\i2c2.hpp" />
+    <ClInclude Include="..\..\..\sfr\i2c3.hpp" />
+    <ClInclude Include="..\..\..\sfr\i2c4.hpp" />
+    <ClInclude Include="..\..\..\sfr\i2c5.hpp" />
+    <ClInclude Include="..\..\..\sfr\interrupt.hpp" />
+    <ClInclude Include="..\..\..\sfr\port.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portA.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portB.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portC.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portD.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portE.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portF.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portG.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portH.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portI.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portJ.hpp" />
+    <ClInclude Include="..\..\..\sfr\port\portK.hpp" />
+    <ClInclude Include="..\..\..\sfr\reset.hpp" />
+    <ClInclude Include="..\..\..\sfr\rtcc.hpp" />
+    <ClInclude Include="..\..\..\sfr\sfr_register_mixin.hpp" />
+    <ClInclude Include="..\..\..\sfr\spi1.hpp" />
+    <ClInclude Include="..\..\..\sfr\spi2.hpp" />
+    <ClInclude Include="..\..\..\sfr\spi3.hpp" />
+    <ClInclude Include="..\..\..\sfr\spi4.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer1.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer2.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer3.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer4.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer5.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer6.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer7.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer8.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer9.hpp" />
+    <ClInclude Include="..\..\..\sfr\timer_base.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart1.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart2.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart3.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart4.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart5.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart6.hpp" />
+    <ClInclude Include="..\..\..\sfr\uart_base.hpp" />
+    <ClInclude Include="..\..\..\sfr\wdt.hpp" />
     <ClInclude Include="..\..\..\spi.hpp" />
     <ClInclude Include="..\..\..\timer.hpp" />
     <ClInclude Include="..\..\..\uart.hpp" />
@@ -81,6 +133,32 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\clock.cpp" />
     <ClCompile Include="..\..\..\interrupt.cpp" />
+    <ClCompile Include="..\..\..\sfr\i2c1.cpp" />
+    <ClCompile Include="..\..\..\sfr\i2c2.cpp" />
+    <ClCompile Include="..\..\..\sfr\i2c3.cpp" />
+    <ClCompile Include="..\..\..\sfr\i2c4.cpp" />
+    <ClCompile Include="..\..\..\sfr\i2c5.cpp" />
+    <ClCompile Include="..\..\..\sfr\rtcc.cpp" />
+    <ClCompile Include="..\..\..\sfr\spi1.cpp" />
+    <ClCompile Include="..\..\..\sfr\spi2.cpp" />
+    <ClCompile Include="..\..\..\sfr\spi3.cpp" />
+    <ClCompile Include="..\..\..\sfr\spi4.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer1.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer2.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer3.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer4.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer5.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer6.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer7.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer8.cpp" />
+    <ClCompile Include="..\..\..\sfr\timer9.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart1.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart2.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart3.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart4.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart5.cpp" />
+    <ClCompile Include="..\..\..\sfr\uart6.cpp" />
+    <ClCompile Include="test_XC32.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
