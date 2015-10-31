@@ -8,7 +8,6 @@
 namespace xc32{
 	template <class T>
 	class interrupt_safe_allocator {
-		typedef interrupt_safe_allocator<T> my_type;
 		typedef std::allocator<T> my_allocator;
 	public:
 		// Œ^’è‹`
@@ -68,7 +67,6 @@ namespace xc32{
 	};
 	template <>
 	class interrupt_safe_allocator<void> {
-		typedef interrupt_safe_allocator<void> my_type;
 		typedef std::allocator<void> my_allocator;
 	public:
 		// Œ^’è‹`
