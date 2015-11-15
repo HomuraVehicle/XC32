@@ -11,13 +11,13 @@ namespace xc32{
 		typedef std::allocator<T> my_allocator;
 	public:
 		// 型定義	
-		typedef my_allocator::size_type size_type;
-		typedef my_allocator::difference_type difference_type;
-		typedef my_allocator::pointer pointer;
-		typedef my_allocator::const_pointer const_pointer;
-		typedef my_allocator::reference reference;
-		typedef my_allocator::const_reference const_reference;
-		typedef my_allocator::value_type value_type;
+		typedef typename my_allocator::size_type size_type;
+		typedef typename my_allocator::difference_type difference_type;
+		typedef typename my_allocator::pointer pointer;
+		typedef typename my_allocator::const_pointer const_pointer;
+		typedef typename my_allocator::reference reference;
+		typedef typename my_allocator::const_reference const_reference;
+		typedef typename my_allocator::value_type value_type;
 		// アロケータをU型にバインドする
 		template <class U>
 		struct rebind{
