@@ -37,12 +37,15 @@ typedef xc32::output_pin<xc32::sfr::portE::pin2> pinRF3Pw;
 typedef xc32::output_pin<xc32::sfr::portD::pin11> pinMagAxcelPower;
 typedef xc32::input_pin<xc32::sfr::portA::pin10> Vref;
 typedef xc32::output_pin<xc32::sfr::portB::pin2> pinPowerAD1to4;
+typedef xc32::output_pin<xc32::sfr::portB::pin4> pinPowerAD0;
 typedef xc32::output_pin<xc32::sfr::portF::pin12> pinPowerCamera0;
 typedef xc32::output_pin<xc32::sfr::portF::pin13> pinPowerCamera1;
 typedef xc32::output_pin<xc32::sfr::portA::pin0> pinPowerGPS0;
 typedef xc32::output_pin<xc32::sfr::portB::pin5> pinPowerGPS1;
+typedef xc32::sfr::portB::pin3 pinAD0;
 typedef xc32::sfr::portB::pin1 pinAD1;
 typedef xc32::sfr::portA::pin9 pinAD2;
+typedef xc32::sfr::portB::pin8 pinAD3;
 typedef xc32::sfr::portC::pin1 pinBattAD;
 typedef xc32::input_pin<xc32::sfr::portE::pin0> pinDip1;
 typedef xc32::input_pin<xc32::sfr::portB::pin11> PathVdd1;
@@ -378,7 +381,13 @@ int main() {
 	TRISF=0xCED4;
 	TRISG=0x4CBD;
 
-	sync_uart3 Sync_uart1;
+//	ADC0CFG=DEVADC0;
+//	ADC1CFG=DEVADC1;
+//	ADC2CFG=DEVADC2;
+//	ADC3CFG=DEVADC3;
+//	ADC4CFG=DEVADC4;
+
+	sync_uart1 Sync_uart1;
 	delay_ms1 delay_ms;
 	xc32::sfr::adc1 ADC;
 
@@ -409,11 +418,21 @@ int main() {
 	PowerAD.lock();
 	PowerAD(1);
 
+	pinPowerAD0 PowerAD0;
+	PowerAD0.lock();
+	PowerAD0(1);
+
 	xc32::input_pin<pinAD2> PinAD2;
 	PinAD2.lock();
 
 	xc32::input_pin<pinAD1> PinAD1;
 	PinAD1.lock();
+
+	xc32::input_pin<pinAD0> PinAD0;
+	PinAD0.lock();
+
+	xc32::input_pin<pinAD3> PinAD3;
+	PinAD3.lock();
 
 	red_led Red_LED;
 	Red_LED.lock();
@@ -426,9 +445,151 @@ int main() {
 	Red_LED(1);
 	delay_ms(200);
 	Red_LED(0);
+
+	int res[3];
+	
 	ADCCON1=0;
+	
 	ADCCON2=0;
+	
 	ADCANCON=0;
+	ADCANCONbits.WKUPCLKCNT=5;
+
+	ADCCON1bits.AICPMPEN=1;
+	CFGCONbits.IOANCPN=1;
+
+	ADCCON3=0;
+	//ADCCON3bits.ADCSEL=1;
+	ADC.clock_select(1);
+	//ADCCON3bits.CONCLKDIV=2;
+	ADC.clock_div(2);
+	//ADCCON3bits.VREFSEL=1;
+	ADC.reference_voltage(1);
+
+	ADC0TIMEbits.ADCDIV=1;
+	ADC0TIMEbits.SAMC=5;
+
+	ADC0TIMEbits.SELRES=3;
+	ADC1TIMEbits.ADCDIV=1;
+	ADC1TIMEbits.SAMC=5;
+	ADC1TIMEbits.SELRES=3;
+	ADC2TIMEbits.ADCDIV=1;
+	ADC2TIMEbits.SAMC=5;
+	ADC2TIMEbits.SELRES=3;
+	ADC3TIMEbits.ADCDIV=1;
+	ADC3TIMEbits.SAMC=5;
+	ADC3TIMEbits.SELRES=3;
+
+	ADCTRGMODEbits.SH0ALT=0;
+	ADCTRGMODEbits.SH1ALT=0;
+	ADCTRGMODEbits.SH2ALT=0;
+	ADCTRGMODEbits.SH3ALT=1;
+
+	ADCIMCON1=0;
+	ADCIMCON2=0;
+	ADCIMCON3=0;
+//	ADCIMCON1bits.SIGN0=0;
+//	ADCIMCON1bits.DIFF0=0;
+//	ADCIMCON1bits.SIGN1=0;
+//	ADCIMCON1bits.DIFF1=0;
+//	ADCIMCON1bits.SIGN2=0;
+//	ADCIMCON1bits.DIFF2=0;
+
+	ADCGIRQEN1=0;
+	ADCGIRQEN2=0;
+
+	ADCCMP1=0;
+	ADCCMP2=0;
+	ADCCMP3=0;
+	ADCCMP4=0;
+	ADCCMP5=0;
+	ADCCMP6=0;
+
+	ADCFLTR1=0;
+	ADCFLTR2=0;
+	ADCFLTR3=0;
+	ADCFLTR4=0;
+	ADCFLTR5=0;
+	ADCFLTR6=0;
+
+	ADCTRGSNSbits.LVL0=0;
+	ADCTRGSNSbits.LVL1=0;
+	ADCTRGSNSbits.LVL2=0;
+	ADCTRG1bits.TRGSRC0=1;
+	ADCTRG1bits.TRGSRC1=1;
+	ADCTRG1bits.TRGSRC2=1;
+	ADCTRG1bits.TRGSRC3=1;
+	
+	ADCEIEN1=0;
+	ADCEIEN2=0;
+
+	ADCCON1bits.ON=1;
+
+	while(!ADCCON2bits.BGVRRDY);
+	while(ADCCON2bits.REFFLT);
+
+	ADCANCONbits.ANEN0=1;
+	ADCANCONbits.ANEN1=1;
+	ADCANCONbits.ANEN2=1;
+	ADCANCONbits.ANEN3=1;
+	ADCANCONbits.ANEN4=1;
+	ADCANCONbits.ANEN7=1;
+	while(!ADCANCONbits.WKRDY0);
+	while(!ADCANCONbits.WKRDY1);
+	while(!ADCANCONbits.WKRDY2);
+	while(!ADCANCONbits.WKRDY3);
+	while(!ADCANCONbits.WKRDY4);
+	while(!ADCANCONbits.WKRDY7);
+
+	ADCCON3bits.DIGEN0=1;
+	ADCCON3bits.DIGEN1=1;
+	ADCCON3bits.DIGEN2=1;
+	ADCCON3bits.DIGEN3=1;
+	ADCCON3bits.DIGEN4=1;
+	ADCCON3bits.DIGEN7=1;
+
+    const int n=1000;
+
+	ADC.individual_convert_input_select(3);
+	int cnt=0;
+	while(1){
+		ADCTRGMODEbits.SH3ALT=cnt%2;
+		res[0]=0;
+        res[1]=0;
+        res[2]=0;
+		long long tmp=0;
+        Red_LED(1);
+        for(int i=0;i<n;++i){
+            //ADCCON3bits.GSWTRG=1;
+			ADC.individual_convert(1);
+            //while(ADCDSTAT1bits.ARDY1==0);
+			while(ADCDSTAT1bits.ARDY3==0);
+			//tmp+=ADCDATA1;
+			tmp+=ADCDATA3;
+        }
+		tmp/=n;
+		res[1]=tmp;
+
+		
+		Sync_uart1.putc(cnt%2);
+		Sync_uart1.putc(res[1]>>8);
+		Sync_uart1.putc(res[1]);
+		Sync_uart1.putc(0x0d);
+		Sync_uart1.putc(0x0a);
+
+
+		delay_ms(200);
+		Red_LED(0);
+		delay_ms(200);
+		++cnt;
+	}
+
+
+
+
+	ADCCON1bits.AICPMPEN=0;
+	CFGCONbits.IOANCPN=0;
+
 /*	ADCIMCON1=0;
 	ADCIMCON2=0;
 	ADCIMCON3=0;*/
@@ -493,9 +654,9 @@ int main() {
 		Sync_uart1.putc(0x0a);
 
 		Red_LED(1);
-		delay_ms(100);
+		//delay_ms(100);
 		Red_LED(0);
-		delay_ms(100);
+		//delay_ms(100);
 	}
 	return 0;
 }
