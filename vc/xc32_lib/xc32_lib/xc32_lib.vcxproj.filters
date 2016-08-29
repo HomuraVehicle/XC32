@@ -14,17 +14,13 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="XC32">
-      <UniqueIdentifier>{9d86793e-097f-409e-8f15-5c9629fcd456}</UniqueIdentifier>
+      <UniqueIdentifier>{e53ef9e3-0c64-4819-be29-6852fffc9090}</UniqueIdentifier>
     </Filter>
     <Filter Include="XC32\sfr">
-<<<<<<< Updated upstream
-      <UniqueIdentifier>{6dfbc144-f522-44f1-a0b3-8f2c8b8c6f84}</UniqueIdentifier>
+      <UniqueIdentifier>{7ede7a19-e0b4-4c27-a67a-b54f95ae8614}</UniqueIdentifier>
     </Filter>
     <Filter Include="XC32\sfr\port">
-      <UniqueIdentifier>{4b6ddcbf-261f-457e-9b5b-4b3d839a96b8}</UniqueIdentifier>
-=======
-      <UniqueIdentifier>{e356f23e-8148-4bff-8b9e-d1b9701e7d45}</UniqueIdentifier>
->>>>>>> Stashed changes
+      <UniqueIdentifier>{b7076a32-9f6d-49b7-82ff-d72819273133}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -175,7 +171,6 @@
     <ClInclude Include="..\..\..\sfr\wdt.hpp">
       <Filter>XC32\sfr</Filter>
     </ClInclude>
-<<<<<<< Updated upstream
     <ClInclude Include="..\..\..\sfr\port\portA.hpp">
       <Filter>XC32\sfr\port</Filter>
     </ClInclude>
@@ -209,8 +204,6 @@
     <ClInclude Include="..\..\..\sfr\port\portK.hpp">
       <Filter>XC32\sfr\port</Filter>
     </ClInclude>
-=======
->>>>>>> Stashed changes
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\clock.cpp">
@@ -293,13 +286,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\sfr\uart6.cpp">
       <Filter>XC32\sfr</Filter>
-    </ClCompile>
-<<<<<<< Updated upstream
-    <ClCompile Include="test_XC32.cpp">
-=======
-    <ClCompile Include="patial_specialization_cpp.cpp">
->>>>>>> Stashed changes
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

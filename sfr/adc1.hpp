@@ -9,7 +9,7 @@
 namespace xc32 {
 	using namespace xc;
 	namespace sfr {
-		struct adc1 :public sfr_register_mixin<adc1>, public exclusive_mixin<adc1> {
+		struct adc_block :public sfr_register_mixin<adc_block>, public exclusive_mixin<adc_block> {
 		public:
 			//ADCモシュールON
 			void enable(bool val_) { ADCCON1bits.ON = static_cast<unsigned char>(val_); }
@@ -21,10 +21,10 @@ namespace xc32 {
 			unsigned char scan_trigger_select()const { return ADCCON1bits.STRGSRC; }
 			//グローバルソフトウェアトリガビット
 			void global_software_trigger() { ADCCON3bits.GSWTRG = 1; }
-			//ADCクロック源(T_Q)ビット，1:Tcy,2:REFCLK3,3:FRCオシレータ出力,0:予約済み
+			//ADCマスタークロック源(T_Q)ビット，1:Tcy,2:REFCLK3,3:FRCオシレータ出力,0:予約済み
 			void clock_select(unsigned char val_) { ADCCON3bits.ADCSEL = val_; }
 			unsigned char clock_select()const { return ADCCON3bits.ADCSEL; }
-			//ADCクロック分周比ビット(0～127)：clock_div==0ならT_AD = T_Q ,T_AD = 2 * T_Q * clock_div
+			//ADCマスタークロック分周比ビット(0～127)：clock_div==0ならT_AD = T_Q ,T_AD = 2 * T_Q * clock_div
 			void clock_div(unsigned char val_) { ADCCON3bits.CONCLKDIV = val_; }
 			unsigned char clock_div()const { return ADCCON3bits.CONCLKDIV; }
 			//単独ADC変換要求ビット
@@ -36,17 +36,443 @@ namespace xc32 {
 			//Vref選択ビット.0:VrefH=AVdd VrefL=AVss,1:VrefH=Vref+ VrefL=AVss,2:VrefH=AVdd VrefL=Vref-,3:VrefH=Vref+ VrefL=Vref-
 			void reference_voltage(unsigned char val_) { ADCCON3bits.VREFSEL = val_; }
 			unsigned char reference_voltage()const { return ADCCON3bits.VREFSEL; }
-			//ADC入力スキャン選択ビット(AN0～AN31まで)
-			//void scan_select1(uint32 val_) { AD1CSS1 = val_; }
-			//uint32 scan_select1()const { return AD1CSS1; }
-			//ADC入力スキャン選択ビット(AN32～AN44まで)
-			//void scan_select2(uint16 val_) { AD1CSS2 = val_; }
-			//uint16 scan_select2()const { return static_cast<uint16>(AD1CSS2); }
-			//ADCデータレディビット(AN0～AN31まで,データを読み出すとクリアされる)
-			//uint32 data_ready1()const { return AD1DSTAT1; }
-			//ADCデータレディビット(AN32～AN44まで,データを読み出すとクリアされる)
-			//uint32 data_ready2()const { return AD1DSTAT2; }
+
+			//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+			template<unsigned int adc_no>
+			void adc_clock_div(unsigned char val_);
+			template<unsigned int adc_no>
+			unsigned char adc_clock_div();
+			//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+			template<unsigned int adc_no>
+			void sampling_time(unsigned char val_);
+			template<unsigned int adc_no>
+			unsigned char sampling_time();
+			//ADCのbit精度　resolution_modeから選択
+			template<unsigned int adc_no>
+			void resolution_bits(unsigned char val_);
+			template<unsigned int adc_no>
+			unsigned char resolution_bits();
+			//excluded ADC専用　割り当ての別のpinwを使うか
+			template<unsigned int adc_no>
+			void use_alternative_input_pin(bool val_);
+			template<unsigned int adc_no>
+			bool use_alternative_input_pin();
+			//ADCごとのclockスタート
+			template<unsigned int adc_no>
+			void adc_clock_enable(bool val_);
+			template<unsigned int adc_no>
+			bool adc_clock_enable();
+			//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+			template<unsigned int adc_no>
+			bool adc_work_ready();
+			//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+			template<unsigned int adc_no>
+			void adc_work_enable(bool val_);
+			template<unsigned int adc_no>
+			bool adc_work_enable();
 		};
+
+	#ifdef ADCXXX_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<XXX>(unsigned char val_){
+			ADCXXXTIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<XXX>(){
+			return ADCXXXTIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<XXX>(unsigned char val_){
+			ADCXXXTIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<XXX>(){
+			return ADCXXXTIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<XXX>(unsigned char val_){
+			ADCXXXTIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<XXX>(){
+			return ADCXXXTIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<XXX>(bool val_){
+			ADCTRGMODEbits.SHXXXALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<XXX>(){
+			return ADCTRGMODEbits.SHXXXALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<XXX>(bool val_){
+			ADCANCONbits.ANENXXX = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<XXX>(){
+			return ADCANCONbits.ANENXXX;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<XXX>(){
+			return ADCANCONbits.WKRDYXXX;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGENXXX = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGENXXX;
+		}
+	#endif
+	#ifdef ADC0_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<0>(unsigned char val_){
+			ADC0TIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<0>(){
+			return ADC0TIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<0>(unsigned char val_){
+			ADC0TIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<0>(){
+			return ADC0TIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<0>(unsigned char val_){
+			ADC0TIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<0>(){
+			return ADC0TIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<0>(bool val_){
+			ADCTRGMODEbits.SH0ALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<0>(){
+			return ADCTRGMODEbits.SH0ALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<0>(bool val_){
+			ADCANCONbits.ANEN0 = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<0>(){
+			return ADCANCONbits.ANEN0;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<0>(){
+			return ADCANCONbits.WKRDY0;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGEN0 = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGEN0;
+		}
+	#endif
+	#ifdef ADC1_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<1>(unsigned char val_){
+			ADC1TIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<1>(){
+			return ADC1TIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<1>(unsigned char val_){
+			ADC1TIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<1>(){
+			return ADC1TIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<1>(unsigned char val_){
+			ADC1TIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<1>(){
+			return ADC1TIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<1>(bool val_){
+			ADCTRGMODEbits.SH1ALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<1>(){
+			return ADCTRGMODEbits.SH1ALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<1>(bool val_){
+			ADCANCONbits.ANEN1 = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<1>(){
+			return ADCANCONbits.ANEN1;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<1>(){
+			return ADCANCONbits.WKRDY1;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGEN1 = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGEN1;
+		}
+	#endif
+	#ifdef ADC2_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<2>(unsigned char val_){
+			ADC2TIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<2>(){
+			return ADC2TIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<2>(unsigned char val_){
+			ADC2TIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<2>(){
+			return ADC2TIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<2>(unsigned char val_){
+			ADC2TIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<2>(){
+			return ADC2TIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<2>(bool val_){
+			ADCTRGMODEbits.SH2ALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<2>(){
+			return ADCTRGMODEbits.SH2ALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<2>(bool val_){
+			ADCANCONbits.ANEN2 = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<2>(){
+			return ADCANCONbits.ANEN2;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<2>(){
+			return ADCANCONbits.WKRDY2;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGEN2 = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGEN2;
+		}
+	#endif
+	#ifdef ADC3_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<3>(unsigned char val_){
+			ADC3TIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<3>(){
+			return ADC3TIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<3>(unsigned char val_){
+			ADC3TIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<3>(){
+			return ADC3TIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<3>(unsigned char val_){
+			ADC3TIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<3>(){
+			return ADC3TIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<3>(bool val_){
+			ADCTRGMODEbits.SH3ALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<3>(){
+			return ADCTRGMODEbits.SH3ALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<3>(bool val_){
+			ADCANCONbits.ANEN3 = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<3>(){
+			return ADCANCONbits.ANEN3;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<3>(){
+			return ADCANCONbits.WKRDY3;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGEN3 = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGEN3;
+		}
+	#endif
+	#ifdef ADC4_EXCLUDED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<4>(unsigned char val_){
+			ADC4TIMEbits.ADCDIV = val_;
+		}
+		template<>
+		unsigned char adc_block::adc_clock_div<4>(){
+			return ADC4TIMEbits.ADCDIV;
+		}
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<4>(unsigned char val_){
+			ADC4TIMEbits.SAMC = val_;
+		}
+		template<>
+		unsigned char adc_block::sampling_time<4>(){
+			return ADC4TIMEbits.SAMC;
+		}
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<4>(unsigned char val_){
+			ADC4TIMEbits.SELRES = val_;
+		}
+		template<>
+		unsigned char adc_block::resolution_bits<4>(){
+			return ADC4TIMEbits.SELRES;
+		}
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<4>(bool val_){
+			ADCTRGMODEbits.SH4ALT = val_;
+		}
+		template<>
+		bool adc_block::use_alternative_input_pin<4>(){
+			return ADCTRGMODEbits.SH4ALT;
+		}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<4>(bool val_){
+			ADCANCONbits.ANEN4 = val_;
+		}
+		template<>
+		bool adc_block::adc_clock_enable<4>(){
+			return ADCANCONbits.ANEN4;
+		}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<4>(){
+			return ADCANCONbits.WKRDY4;
+		}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){
+			ADCCON3bits.DIGEN4 = val_;
+		}
+		template<>
+		bool adc_block::adc_work_enable(){
+			return ADCCON3bits.DIGEN4;
+		}
+	#endif
+	#ifdef ADC7_SHARED
+		//ADCごとの固有のクロック分周比(1-127) この値の2倍の周期になる
+		template<>
+		void adc_block::adc_clock_div<7>(unsigned char val_){ ADCCON2bits.ADCDIV = val_; }
+		template<>
+		unsigned char adc_block::adc_clock_div<7>(){ return ADCCON2bits.ADCDIV; }
+		//ADCごとのサンプリングタイム(0-1023)　val+2のクロック周期だけサンプリングにかかる？
+		template<>
+		void adc_block::sampling_time<7>(unsigned char val_){ ADCCON2bits.SAMC = val_; }
+		template<>
+		unsigned char adc_block::sampling_time<7>(){ return ADCCON2bits.SAMC; }
+		//ADCのbit精度　resolution_modeから選択
+		template<>
+		void adc_block::resolution_bits<7>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
+		template<>
+		unsigned char adc_block::resolution_bits<7>(){ return ADCCON1bits.SELRES; }
+		//excluded ADC専用　割り当ての別のpinwを使うか
+		template<>
+		void adc_block::use_alternative_input_pin<7>(bool val_){}
+		template<>
+		bool adc_block::use_alternative_input_pin<7>(){return false;}
+		//ADCごとのclockスタート
+		template<>
+		void adc_block::adc_clock_enable<7>(bool val_){ADCANCONbits.ANEN7 = val_;}
+		template<>
+		bool adc_block::adc_clock_enable<7>(){return ADCANCONbits.ANEN7;}
+		//ADCごとのクロック同調確認　clock_enable後にwork_readyを待つ
+		template<>
+		bool adc_block::adc_work_ready<7>(){return ADCANCONbits.WKRDY7;}
+		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
+		template<>
+		void adc_block::adc_work_enable(bool val_){ ADCCON3bits.DIGEN7 = val_; }
+		template<>
+		bool adc_block::adc_work_enable(){return ADCCON3bits.DIGEN7;}
+	#endif
 	}
 }
 #
