@@ -14,8 +14,9 @@ namespace xc32{
 		using namespace sfr::adc;
 	}
 	//同期型ADC
-	//	ADCをRefで複数のanalog_pinから利用する
-	//	ADCのlock/unlockでenable/disableが実行される
+	//	一つのadc_registerを一つのsynchronous_adcが排他的に利用する
+	//	analog_pinは複数宣言できるが内部でsynchronous_adcを参照している
+	//	analog_pinからの読み出しは重複しうるため、利用者が明示的に避ける必要がある
 	template<typename adc_register_>
 	class synchronous_adc{
 		typedef adc_register_ adc_register;
@@ -164,8 +165,11 @@ namespace xc32{
 	};
 
 	//共有型のADC
-	//	複数のanalog_pinの間で、一つのadcを共有する
-	//	すべてのlockが解除されたときにdisableになる
+	//	一つのadc_registerを複数のshared_adcが共有する
+	//	内部でLockCntを持ち、すべてのshared_adcが解除されたときにのみdisableになる
+	//	analog_pinは複数宣言できるが内部でshared_adcの静的メンバを参照している
+	//	analog_pinの読み出し処理は重複していないことの確認がなされる。
+	//	他のanalog_pinがすでに読み出し処理を行っている場合、読みだしに失敗して0xffffが返る
 	template<typename adc_register_, typename identifier_>
 	class shared_adc{
 		typedef shared_adc<adc_register_, identifier_> my_type;
@@ -382,8 +386,10 @@ namespace xc32{
 	uint8 shared_adc<adc_register_, shared_adc_ch_>::ApplyClockDiv;
 */
 	//非同期型のADC
-	//	analog_pinから読みだすと、その場で実行はされず、queueにadc用のtaskが積まれる
-	//	adcのoperator()で随時処理が実行され次第、futureに対して値が返される
+	//	一つのadc_registerを一つのasync_functional_adcが排他的に利用する
+	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される
+	//	同時に、内部ではqueueにadc用のtaskが積まれ、operator()(void)の実行時に順次処理される
+	//	queueで明示的に処理の重複を阻害している
 	template<typename adc_register_,unsigned int QueueSize_=10>
 	class async_functional_adc{
 		friend class test_async_functional_adc;
