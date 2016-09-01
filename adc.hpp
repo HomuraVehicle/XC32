@@ -10,13 +10,25 @@
 #include"sfr/analog.hpp"
 namespace xc32{
 	using namespace xc;
-	namespace adc {
+
+	namespace adc{
 		using namespace sfr::adc;
+		struct adc_block_setting{
+			sfr::adc::vref_mode VrefMode;
+			unsigned char ClockDiv;
+			adc_block_setting() :VrefMode(sfr::adc::vref_Vref_Gnd), ClockDiv(0){}
+		};
+		struct adc_setting{
+			unsigned char ClockDiv;
+			unsigned char SamplingTime;
+			sfr::adc::resolution_mode ResolutionMode;
+			adc_setting() : ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
+		};
 	}
+
 	//独占型ADC
-	//	一つのadc_block_registerを一つのsynchronous_adcが排他的に利用する
-	//	synchronous_adc、converterは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要
-	//	analog_pinからの読み出しは重複しうるため、利用者が明示的に避ける必要がある
+	//	synchronous_adc、converterは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要があるタイプ。
+	//	用意されている機能は最小限。analog_pinから利用する際のconverterの競合チェックやlock済みかどうかの確認すら行わない。
 	template<typename adc_block_register_>
 	class exclusive_adc{
 		typedef adc_block_register_ adc_block_register;
@@ -230,22 +242,9 @@ namespace xc32{
 		};
 	};
 
-	namespace adc{
-		struct adc_block_setting{
-			sfr::adc::vref_mode VrefMode;
-			unsigned char ClockDiv;
-			adc_block_setting() :VrefMode(sfr::adc::vref_Vref_Gnd), ClockDiv(0){}
-		};
-		struct adc_setting{
-			unsigned char ClockDiv;
-			unsigned char SamplingTime;
-			sfr::adc::resolution_mode ResolutionMode;
-			adc_setting() : ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
-		};
-	}
 	//共有型のADC
-	//	一つのadc_block_registerを複数のshared_adcが共有する
-	//	shared_adcは実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化される。
+	//	shared_adcは実体を用意する必要がない。代わりにanalog_pinからのlock/unclockで適宜初期化/終端化される。
+	//	逆に言えば、shared_adcを解放するためには、すべてのanalog_pinでunlockする必要がある。
 	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
 	template<typename adc_block_register_, typename identifier_>
 	class shared_adc{
@@ -478,8 +477,16 @@ namespace xc32{
 			const my_pin& operator=(const my_pin&);
 		public:
 			analog_pin()
-				:IsLock(false){}
+				:IsLock(false), pBlockSetting(0), pADCSetting(0){}
 			~analog_pin(){ unlock(); }
+			void config(const adc::adc_block_setting* pBlockSetting_, const adc::adc_setting* pADCSetting_){
+				pBlockSetting = pBlockSetting_;
+				pADCSetting = pADCSetting_;
+			}
+			bool lock(const adc::adc_block_setting* pBlockSetting_, const adc::adc_setting* pADCSetting_){
+				config(pBlockSetting_, pADCSetting_);
+				return lock();
+			}
 			bool lock(){
 				if(is_lock())return false;
 
@@ -587,23 +594,23 @@ namespace xc32{
 	const adc::adc_setting* shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
 
 	//非同期型のADC
+	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
-	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される
-	//	同時に、内部ではqueueにadc用のtaskが積まれ、operator()(void)の実行時に順次処理される
-	//	queueで明示的に処理の重複を阻害している
-	template<typename adc_block_register_,unsigned int QueueSize_=10>
+	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される。内部ではqueueにadc用のtaskが積まれる。
+	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_=10>
 	class async_functional_adc{
 		friend class test_async_functional_adc;
 	private:
 		typedef adc_block_register_ adc_block_register;
-		typedef async_functional_adc<adc_block_register_> my_type;
+		typedef async_functional_adc<adc_block_register_, identifier_, QueueSize_> my_type;
 	private:
-		struct itf_request_data{
-			adc::vref_mode VrefMode;
-			uint8 ClockDiv;
+		struct data_request{
+			const adc::adc_block_setting* pBlockSetting;
+			const adc::adc_setting* pADCSetting;
 			unsigned char Num;
 			promise<uint16>& Ref;
-			itf_request_data(promise<uint16>& Ref_)
+			data_request(promise<uint16>& Ref_)
 				: Ref(Ref_)
 				, VrefMode(xc32::adc::vref_Vref_Gnd)
 				, ClockDiv(0)
@@ -612,7 +619,7 @@ namespace xc32{
 			virtual unsigned char getAN() = 0;
 			virtual uint16 read_data() = 0;
 		};
-		static array_queue<itf_request_data*, QueueSize_> RequestQueue;
+		static array_queue<data_request*, QueueSize_> RequestQueue;
 	public:
 		template<typename pin_register_>
 		struct analog_pin {
@@ -621,9 +628,9 @@ namespace xc32{
 			typedef typename pin_register_::analog_no analog_no;
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 		private:
-			struct request_data:public itf_request_data{
+			struct an_data_request :public data_request{
 				an_register AN;
-				request_data(promise<uint16>& Ref_) :itf_request_data(Ref_){}
+				an_data_request(promise<uint16>& Ref_) :itf_request_data(Ref_){}
 				virtual unsigned char getAN(){ return analog_no::No; }
 				virtual uint16 read_data(){
 					//スキャン待ち
@@ -801,6 +808,373 @@ namespace xc32{
 	};
 	template<typename adc_block_register_, unsigned int QueueSize_>
 	array_queue<typename async_functional_adc<adc_block_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_block_register_, QueueSize_>::RequestQueue;
+
+
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_ = 10>
+	class async_adc{
+		typedef async_adc<adc_block_register_, identifier_, QueueSize_> my_type;
+	private:
+		struct data_request{
+			const adc::adc_block_setting* pBlockSetting;
+			const adc::adc_setting* pADCSetting;
+			unsigned char Num;
+			promise<uint16>& Ref;
+			data_request(promise<uint16>& Ref_)
+				: Ref(Ref_)
+				, VrefMode(xc32::adc::vref_Vref_Gnd)
+				, ClockDiv(0)
+				, Num(1){}
+			virtual unsigned char getAN() = 0;
+			virtual uint16 read_data() = 0;
+		};
+	private:
+		struct block{
+		private:
+			static adc_block_register_ ADC;
+			static unique_lock<adc_block_register_> ADCLock;
+		private:
+			static unsigned int LockCnt;
+			static adc::adc_block_setting Default;
+			static const adc::adc_block_setting* Apply;
+		private:
+			static void set_default(const adc::adc_block_setting& Setting){
+				Default = Setting;
+			}
+		private:
+			static bool lock(){
+				if(++LockCnt == 1){
+					if(ADCLock.lock())return true;
+
+					//参照電圧を設定
+					ADC.reference_voltage(Default.VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Default.ClockDiv & 0x7F));
+					__asm("nop");
+					//ADC始動！
+					ADC.enable(1);
+					__asm("nop");
+
+					//self calibration待ち
+					while(!ADC.module_ready());
+				}
+
+				return false;
+			}
+			static void unlock(){
+				if(--LockCnt == 0){
+					//ADC停止
+					ADC.enable(0);
+
+					//ロック解除
+					ADCLock.unlock();
+				}
+			}
+			static bool is_lock(){ return LockCnt>0; }
+			//再起動時にtrueを返す
+			static bool start(const adc::adc_block_setting* pSetting, bool ForceReset = false){
+				//一緒ならパス
+				if(pSetting == Apply && !ForceReset)return false;
+
+				//一旦ストップ
+				ADC.enable(0);
+
+				if(pSetting == 0){
+					//参照電圧を設定
+					ADC.reference_voltage(Default.VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Default.ClockDiv & 0x7F));
+					__asm("nop");
+					Apply = 0;
+				} else{
+					//参照電圧を設定
+					ADC.reference_voltage(Apply->VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Apply->ClockDiv & 0x7F));
+					__asm("nop");
+					Apply = pSetting;
+				}
+
+				//ADC再始動
+				ADC.enable(1);
+				__asm("nop");
+				//self calibration待ち
+				while(!ADC.module_ready());
+
+				return true;
+			}
+			static void stop(){}
+		public:
+			template<typename converter_no_>
+			struct converter{
+			private:
+				static unsigned int LockCnt;
+				static bool IsUsed;
+
+				static adc::adc_setting Default;
+				static adc::adc_setting* Apply;
+
+				static array_queue<data_request*, QueueSize_> RequestQueue;
+				static itf_request_data* Request;
+			private:
+				static bool lock(){
+					//adc_blockをロック
+					if(block::lock())return true;
+
+					if(++LockCnt == 0){
+						//スタートアップ処理
+						block::ADC.adc_clock_div<converter_no_>(Default.ClockDiv);
+						block::ADC.sampling_time<converter_no_>(Default.SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(Default.ResolutionMode);
+						Apply = 0;
+
+						//ADC 準備を待つ
+						block::ADC.adc_enable<converter_no_>(true);
+						while(!block::ADC.adc_ready<converter_no_>());
+
+						block::ADC.adc_work_enable<converter_no_>(true);
+					}
+
+					return false;
+				}
+				static void unlock(){
+					if(--Lock == 0){
+						block::ADC.adc_work_enable<converter_no_>(false);
+						block::ADC.adc_enable<converter_no_>(false);
+					}
+
+					//adc_blockをアンロック
+					block::unlock();
+				}
+				static bool is_lock()const{ return LockCnt != 0; }
+				static void use_alternative_pin(bool val_){
+					block::ADC.use_alternative_pin<converter_no_>(val_);
+				}
+				//失敗した場合にtrueを返す
+				//blockのstartと戻り値の意味が違うので注意
+				static bool start(const adc::adc_block_setting* pBlockSetting, const adc::adc_setting* pSetting, bool ForceReset = false){
+					if(IsUsed)return true;
+					IsUsed = true;
+
+					//再起動が必要な設定だった場合は、こちらも強制的に再起動
+					ForceReset = block::start(pBlockSetting, ForceReset);
+
+					//一緒ならパス
+					if(pSetting == Apply && !ForceReset)return false;
+
+					//一旦ストップ
+					block::ADC.adc_work_enable<converter_no_>(false);
+					block::ADC.adc_enable<converter_no_>(false);
+
+					//スタートアップ処理
+					if(pSetting == 0){
+						block::ADC.adc_clock_div<converter_no_>(Default.ClockDiv);
+						block::ADC.sampling_time<converter_no_>(Default.SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(Default.ResolutionMode);
+						Apply = 0;
+					} else{
+						block::ADC.adc_clock_div<converter_no_>(pSetting->ClockDiv);
+						block::ADC.sampling_time<converter_no_>(pSetting->SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(pSetting->ResolutionMode);
+						Apply = pSetting;
+					}
+
+					//ADC 準備を待つ
+					block::ADC.adc_enable<converter_no_>(true);
+					while(!block::ADC.adc_ready<converter_no_>());
+
+					block::ADC.adc_work_enable<converter_no_>(true);
+
+					return false;
+				}
+				static void stop(){
+					block::stop();
+
+					IsUsed = false;
+				}
+				static void read_data(){
+					block::ADC.individual_convert(true);
+					__asm("nop");
+				}
+			public:
+				static void set_default(const adc::adc_block_setting& BlcokSetting, const adc::adc_setting& Setting){
+					block::set_default(BlcokSetting);
+					Default = Setting;
+
+					//すでにロックして起動済みなら、明示的にDefaultで再起動
+					if(is_lock() && Apply == 0){
+						start(0, 0, true);
+						stop();
+					}
+				}
+				static void set_default(const adc::adc_setting& Setting){
+					Default = Setting;
+
+					//すでにロックして起動済みなら、明示的にDefaultで再起動
+					if(is_lock() && Apply == 0){
+						Apply = reinterpret_cast<const adc::adc_setting*>(1);
+						start(0, 0);
+						stop();
+					}
+				}
+				static bool request(data_request& Request_){
+					return RequestQueue.push(&Request_);
+				}
+				static void work(){
+					if(!is_lock())return;
+
+					//リクエスト中のデータがある場合
+					if(Request != 0){
+						if(ADC.module_ready()){
+							//Request->Ref.ref() = read(Request->getAN(), Request, Request->Num);
+							//Request->Ref.end_write();
+							Request->Ref.set_value(read(Request->getAN(), Request, Request->Num));
+							Request = 0;
+
+						}
+					}
+
+					//リクエスト中のデータがない場合
+					if(Request == 0 && !RequestQueue.empty()){
+						Request = RequestQueue.next();
+						RequestQueue.pop();
+						restart(Request->VrefMode, Request->ClockDiv);
+					}
+				}
+			};
+		};
+	public:
+		template<typename converter_no_>
+		static void set_default(const adc::adc_block_setting& BlockSetting, const adc::adc_setting& ADCSetting){
+			block::converter<converter_no_>::set_default(BlockSetting, ADCSetting);
+		}
+		template<typename converter_no_>
+		static void set_default(const adc::adc_setting& ADCSetting){
+			block::converter<converter_no_>::set_default(ADCSetting);
+		}
+		template<typename converter_no_>
+		static void work(){
+			converter<converter_no_>::work();
+		}
+	public:
+		template<typename pin_register_>
+		class analog_pin{
+			typedef pin_register_ pin_register;
+			typedef typename pin_register::analog_no analog_no;
+			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
+			typedef typename an_register::converter_no converter_no;
+			typedef typename block::converter<converter_no> my_converter;
+			typedef analog_pin<pin_register_> my_pin;
+		private:
+			struct an_data_request :public data_request{
+				an_register AN;
+				an_data_request(promise<uint16>& Ref_) :itf_request_data(Ref_){}
+				virtual unsigned char getAN(){ return analog_no::No; }
+				virtual uint16 read_data(){
+					//スキャン待ち
+					while(!AN.data_ready());
+					//データを加算
+					return AN.data();
+				}
+			}RequestData;
+		private:
+			bool IsLock;
+			pin_register Pin;
+			an_register AN;
+			const adc::adc_block_setting* pBlockSetting;
+			const adc::adc_setting* pADCSetting;
+
+			promise<uint16> Promise;
+		private:
+			analog_pin(const my_pin&);
+			const my_pin& operator=(const my_pin&);
+		public:
+			analog_pin()
+				:IsLock(false){}
+			~analog_pin(){ unlock(); }
+			bool lock(){
+				if(is_lock())return false;
+
+				if(my_converter::lock())return true;
+
+				Pin.tris(true);
+				Pin.analog(true);
+				Pin.opendrain(false);
+
+				IsLock = true;
+				return false;
+			}
+			bool is_lock()const{
+				return IsLock;
+			}
+			void unlock(){
+				if(!is_lock())return;
+
+				Pin.tris(false);
+				Pin.analog(false);
+				Pin.opendrain(false);
+
+				my_converter::unlock();
+
+				IsLock = false;
+			}
+		public:
+			future<uint16> operator()(void){
+				if(!Promise.can_get_future())return future<uint16>();
+
+				RequestData.Num = 1;
+				if(my_converter::request(RequestData))return future<uint16>();
+
+				return Promise.get_future();
+			}
+			future<uint16> operator()(uint16 ObserveNum_){
+				if(!Promise.can_get_future())return future<uint16>();
+				if(ObserveNum_ == 0)return future<uint16>();
+
+				if(ObserveNum_ > 0xff)ObserveNum_ = 0xff;
+				RequestData.Num = static_cast<unsigned char>(ObserveNum_);
+				if(my_converter::request(RequestData))return future<uint16>();
+
+				return Promise.get_future();
+			}
+
+		};
+	};
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	adc_block_register_ async_adc<adc_block_register_, identifier_>::block::ADC;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	unique_lock<adc_block_register_> async_adc<adc_block_register_, identifier_>::block::ADCLock(ADC, true);
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	unsigned int async_adc<adc_block_register_, identifier_>::block::LockCnt = 0;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	adc::adc_block_setting async_adc<adc_block_register_, identifier_>::block::Default;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	const adc::adc_block_setting* async_adc<adc_block_register_, identifier_>::block::Apply;
+
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	template<typename converter_no_>
+	unsigned int async_adc<adc_block_register_, identifier_>::converter<converter_no_>::LockCnt = 0;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	template<typename converter_no_>
+	bool async_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::IsUsed = false;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	template<typename converter_no_>
+	adc::adc_setting async_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Default;
+	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
+	template<typename converter_no_>
+	const adc::adc_setting* async_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
+
 }
 #
 #endif
