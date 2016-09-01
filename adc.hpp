@@ -230,6 +230,19 @@ namespace xc32{
 		};
 	};
 
+	namespace adc{
+		struct adc_block_setting{
+			sfr::adc::vref_mode VrefMode;
+			unsigned char ClockDiv;
+			adc_block_setting() :VrefMode(sfr::adc::vref_Vref_Gnd), ClockDiv(0){}
+		};
+		struct adc_setting{
+			unsigned char ClockDiv;
+			unsigned char SamplingTime;
+			sfr::adc::resolution_mode ResolutionMode;
+			adc_setting() : ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
+		};
+	}
 	//共有型のADC
 	//	一つのadc_block_registerを複数のshared_adcが共有する
 	//	shared_adcは実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化される。
@@ -238,168 +251,239 @@ namespace xc32{
 	class shared_adc{
 		typedef shared_adc<adc_block_register_, identifier_> my_type;
 	private:
-		static adc_block_register_ ADC;
-		static unique_lock<adc_block_register_> ADCLock;
-	private:
-		static unsigned int LockCnt;
-		static bool IsUsed;
-		static sfr::adc::vref_mode ApplyVrefMode;
-		static uint8 ApplyClockDiv;
-	private:
-		static bool lock(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_){
-			if (++LockCnt == 1){
-				if (ADCLock.lock())return true;
-
-				//Applyを更新
-				ApplyVrefMode = VrefMode_;
-				ApplyClockDiv = ClockDiv_;
-
-				//参照電圧を設定
-				ADC.reference_voltage(ApplyVrefMode);
-				__asm("nop");
-				//クロックをTcyに設定
-				ADC.clock_select(1);
-				__asm("nop");
-				//クロック分周設定(0～127までなので高位のビットを削除)
-				ADC.clock_div((ApplyClockDiv & 0x7F));
-				__asm("nop");
-				//ADC始動！
-				ADC.enable(1);
-				__asm("nop");
-
-				//self calibration待ち
-				while (!ADC.module_ready());
-			}
-
-			return false;
-		}
-		static void unlock(){
-			if (--LockCnt == 0){
-				//ADC停止
-				ADC.enable(0);
-
-				//ロック解除
-				ADCLock.unlock();
-			}
-		}
-		static bool is_lock(){ return LockCnt>0; }
-		static bool start(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_){
-			if (IsUsed)return true;
-			IsUsed = true;
-
-			//一緒ならパス
-			if (ApplyVrefMode == VrefMode_ && ApplyClockDiv == ClockDiv_)return false;
-
-			//一旦ストップ
-			ADC.enable(0);
-
-			//Applyを更新
-			ApplyVrefMode = VrefMode_;
-			ApplyClockDiv = ClockDiv_;
-
-			//再起動
-			//参照電圧を設定
-			ADC.reference_voltage(ApplyVrefMode);
-			__asm("nop");
-			//クロックをTcyに設定
-			ADC.clock_select(1);
-			__asm("nop");
-			//クロック分周設定(0～127までなので高位のビットを削除)
-			ADC.clock_div((ApplyClockDiv & 0x7F));
-			__asm("nop");
-			//ADC始動！
-			ADC.enable(1);
-			__asm("nop");
-			//self calibration待ち
-			while (!ADC.module_ready());
-
-			return false;
-		}
-		static void stop(){
-			IsUsed = false;
-		}
-		static void read_data(){
-			ADC.individual_convert(true);
-			__asm("nop");
-		}
-	private:
-		template<typename converter_no_>
-		struct converter{
+		struct block{
 		private:
-			static unsigned bool LockCnt;
-
-			static unsigned char ClockDiv;
-			static unsigned char SamplingTime;
-			static sfr::adc::resolution_mode ResolutionMode;
-		public:
-			static void config(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
-				ClockDiv = ClockDiv_;
-				SamplingTime = SamplingTime_;
-				ResolutionMode = ResolutionMode_;
+			static adc_block_register_ ADC;
+			static unique_lock<adc_block_register_> ADCLock;
+		private:
+			static unsigned int LockCnt;
+			static adc::adc_block_setting Default;
+			static const adc::adc_block_setting* Apply;
+		private:
+			static void set_default(const adc::adc_block_setting& Setting){
+				Default = Setting;
 			}
-			static bool lock(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
-				config(ClockDiv_, SamplingTime_, ResolutionMode_);
-				return lock();
-			}
+		private:
 			static bool lock(){
-				if(++LockCnt == 0){
-					//メインデバイスがロックされていなければ、初期化作業は失敗
-					if(!my_type::ADC.is_lock())return true;
+				if(++LockCnt == 1){
+					if(ADCLock.lock())return true;
 
-					//スタートアップ処理
-					my_type::ADC.adc_clock_div<converter_no_>(ClockDiv);
-					my_type::ADC.sampling_time<converter_no_>(SamplingTime);
-					my_type::ADC.resolution_bits<converter_no_>(ResolutionMode);
+					//参照電圧を設定
+					ADC.reference_voltage(Default.VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Default.ClockDiv & 0x7F));
+					__asm("nop");
+					//ADC始動！
+					ADC.enable(1);
+					__asm("nop");
 
-					//ADC 準備を待つ
-					my_type::ADC.adc_enable<converter_no_>(true);
-					while(!my_type::ADC.adc_ready<converter_no_>());
-
-					my_type::ADC.adc_work_enable<converter_no_>(true);
+					//self calibration待ち
+					while(!ADC.module_ready());
 				}
-				
+
 				return false;
 			}
 			static void unlock(){
-				if(--Lock == 0){
-					my_type::ADC.adc_work_enable<converter_no_>(false);
-					my_type::ADC.adc_enable<converter_no_>(false);
+				if(--LockCnt == 0){
+					//ADC停止
+					ADC.enable(0);
+
+					//ロック解除
+					ADCLock.unlock();
 				}
 			}
-			static bool is_lock()const{ return LockCnt!=0; }
-			static void use_alternative_pin(bool val_){
-				my_type::ADC.use_alternative_pin<converter_no_>(val_);
+			static bool is_lock(){ return LockCnt>0; }
+			//再起動時にtrueを返す
+			static bool start(const adc::adc_block_setting* pSetting, bool ForceReset = false){
+				//一緒ならパス
+				if(pSetting == Apply && !ForceReset)return false;
+
+				//一旦ストップ
+				ADC.enable(0);
+
+				if(pSetting == 0){
+					//参照電圧を設定
+					ADC.reference_voltage(Default.VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Default.ClockDiv & 0x7F));
+					__asm("nop");
+					Apply = 0;
+				} else{
+					//参照電圧を設定
+					ADC.reference_voltage(Apply->VrefMode);
+					__asm("nop");
+					//クロックをTcyに設定
+					ADC.clock_select(1);
+					__asm("nop");
+					//クロック分周設定(0～127までなので高位のビットを削除)
+					ADC.clock_div((Apply->ClockDiv & 0x7F));
+					__asm("nop");
+					Apply = pSetting;
+				}
+
+				//ADC再始動
+				ADC.enable(1);
+				__asm("nop");
+				//self calibration待ち
+				while(!ADC.module_ready());
+
+				return true;
 			}
+			static void stop(){}
+		public:
+			template<typename converter_no_>
+			struct converter{
+			private:
+				static unsigned int LockCnt;
+				static bool IsUsed;
+
+				static adc::adc_setting Default;
+				static adc::adc_setting* Apply;
+			public:
+				static void set_default(const adc::adc_block_setting& BlcokSetting, const adc::adc_setting& Setting){
+					block::set_default(BlcokSetting);
+					Default = Setting;
+
+					//すでにロックして起動済みなら、明示的にDefaultで再起動
+					if(is_lock() && Apply == 0){
+						start(0, 0, true);
+						stop();
+					}
+				}
+				static void set_default(const adc::adc_setting& Setting){
+					Default = Setting;
+
+					//すでにロックして起動済みなら、明示的にDefaultで再起動
+					if(is_lock() && Apply == 0){
+						Apply = reinterpret_cast<const adc::adc_setting*>(1);
+						start(0, 0);
+						stop();
+					}
+				}
+				static bool lock(){
+					//adc_blockをロック
+					if(block::lock())return true;
+
+					if(++LockCnt == 0){
+						//スタートアップ処理
+						block::ADC.adc_clock_div<converter_no_>(Default.ClockDiv);
+						block::ADC.sampling_time<converter_no_>(Default.SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(Default.ResolutionMode);
+						Apply = 0;
+
+						//ADC 準備を待つ
+						block::ADC.adc_enable<converter_no_>(true);
+						while(!block::ADC.adc_ready<converter_no_>());
+
+						block::ADC.adc_work_enable<converter_no_>(true);
+					}
+
+					return false;
+				}
+				static void unlock(){
+					if(--Lock == 0){
+						block::ADC.adc_work_enable<converter_no_>(false);
+						block::ADC.adc_enable<converter_no_>(false);
+					}
+
+					//adc_blockをアンロック
+					block::unlock();
+				}
+				static bool is_lock()const{ return LockCnt != 0; }
+				static void use_alternative_pin(bool val_){
+					block::ADC.use_alternative_pin<converter_no_>(val_);
+				}
+				//失敗した場合にtrueを返す
+				//blockのstartと戻り値の意味が違うので注意
+				static bool start(const adc::adc_block_setting* pBlockSetting, const adc::adc_setting* pSetting, bool ForceReset = false){
+					if(IsUsed)return true;
+					IsUsed = true;
+
+					//再起動が必要な設定だった場合は、こちらも強制的に再起動
+					ForceReset = block::start(pBlockSetting, ForceReset);
+
+					//一緒ならパス
+					if(pSetting == Apply && !ForceReset)return false;
+
+					//一旦ストップ
+					block::ADC.adc_work_enable<converter_no_>(false);
+					block::ADC.adc_enable<converter_no_>(false);
+
+					//スタートアップ処理
+					if(pSetting == 0){
+						block::ADC.adc_clock_div<converter_no_>(Default.ClockDiv);
+						block::ADC.sampling_time<converter_no_>(Default.SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(Default.ResolutionMode);
+						Apply = 0;
+					} else{
+						block::ADC.adc_clock_div<converter_no_>(pSetting->ClockDiv);
+						block::ADC.sampling_time<converter_no_>(pSetting->SamplingTime);
+						block::ADC.resolution_bits<converter_no_>(pSetting->ResolutionMode);
+						Apply = pSetting;
+					}
+
+					//ADC 準備を待つ
+					block::ADC.adc_enable<converter_no_>(true);
+					while(!block::ADC.adc_ready<converter_no_>());
+
+					block::ADC.adc_work_enable<converter_no_>(true);
+
+					return false;
+				}
+				static void stop(){
+					block::stop();
+
+					IsUsed = false;
+				}
+				static void read_data(){
+					block::ADC.individual_convert(true);
+					__asm("nop");
+				}
+			};
 		};
 	public:
+		template<typename converter_no_>
+		static void set_default(const adc::adc_block_setting& BlockSetting, const adc::adc_setting& ADCSetting){
+			block::converter<converter_no_>::set_default(BlockSetting, ADCSetting);
+		}
+		template<typename converter_no_>
+		static void set_default(const adc::adc_setting& ADCSetting){
+			block::converter<converter_no_>::set_default(ADCSetting);
+		}
+	public:
 		template<typename pin_register_>
-		class analog_pin {
+		class analog_pin{
 			typedef pin_register_ pin_register;
 			typedef typename pin_register::analog_no analog_no;
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
-			typedef converter<converter_no> my_converter;
+			typedef typename block::converter<converter_no> my_converter;
 			typedef analog_pin<pin_register_> my_pin;
 		private:
 			bool IsLock;
 			pin_register Pin;
 			an_register AN;
-			sfr::adc::vref_mode VrefMode;
-			uint8 ClockDiv;
+			const adc::adc_block_setting* pBlockSetting;
+			const adc::adc_setting* pADCSetting;
 		private:
 			analog_pin(const my_pin&);
-			const my_pin& operator()(const my_pin&);
+			const my_pin& operator=(const my_pin&);
 		public:
 			analog_pin()
-				:IsLock(false){
-			}
-			~analog_pin() { unlock(); }
-			bool lock() {
-				if (is_lock())return false;
+				:IsLock(false){}
+			~analog_pin(){ unlock(); }
+			bool lock(){
+				if(is_lock())return false;
 
-				if (my_type::lock(VrefMode, ClockDiv))return true;
-
-				if(my_converter::lock(ConverterClockDiv, SamplingTime, ResolutionMode))return true;
+				if(my_converter::lock())return true;
 
 				Pin.tris(true);
 				Pin.analog(true);
@@ -408,17 +492,17 @@ namespace xc32{
 				IsLock = true;
 				return false;
 			}
-			bool is_lock()const {
+			bool is_lock()const{
 				return IsLock;
 			}
-			void unlock() {
-				if (!is_lock())return;
+			void unlock(){
+				if(!is_lock())return;
 
 				Pin.tris(false);
 				Pin.analog(false);
 				Pin.opendrain(false);
 
-				my_type::unlock();
+				my_converter::unlock();
 
 				IsLock = false;
 			}
@@ -426,8 +510,7 @@ namespace xc32{
 			uint16 operator()(void){
 				xc32_assert(is_lock(), exception(0xE1));
 
-				if(my_type::start())return 0xFFFF;
-
+				if(my_converter::start(pBlockSetting, pADCSetting))return 0xFFFF;
 
 				//代替ピンの設定の有無を設定
 				my_converter::use_alternative_pin(AN.is_alternative());
@@ -437,22 +520,22 @@ namespace xc32{
 				__asm("nop");
 
 				//トリガを引く
-				my_type::read_data();
+				my_converter::read_data();
 
 				//スキャン待ち
-				while (!AN.data_ready());
+				while(!AN.data_ready());
 
 				//データを加算
 				uint16 Val = AN.data();
 
-				my_type::stop();
+				my_converter::stop();
 
 				return Val;
 			}
 			uint16 operator()(uint16 ObserveNum_){
 				xc32_assert(is_lock(), exception(0xE2));
 
-				if (my_type::start())return 0xFFFF;
+				if(my_converter::start())return 0xFFFF;
 
 				//代替ピンの設定の有無を設定
 				my_converter::use_alternative_pin(AN.is_alternative());
@@ -462,47 +545,46 @@ namespace xc32{
 				__asm("nop");
 
 				uint32 Val = 0;
-				for (uint16 ObserveCnt = 0; ObserveCnt<ObserveNum_; ++ObserveCnt) {
+				for(uint16 ObserveCnt = 0; ObserveCnt<ObserveNum_; ++ObserveCnt){
 					//トリガを引く
-					my_type::ADC.read_data();
+					my_converter::read_data();
 
 					//スキャン待ち
-					while (!AN.data_ready());
+					while(!AN.data_ready());
 
 					//データを加算
 					Val += AN.data();
 				}
 
-				my_type::stop();
+				my_converter::stop();
 
 				return Val;
 			}
 		};
 	};
 	template<typename adc_block_register_, typename identifier_>
-	adc_block_register_ shared_adc<adc_block_register_, identifier_>::ADC;
+	adc_block_register_ shared_adc<adc_block_register_, identifier_>::block::ADC;
 	template<typename adc_block_register_, typename identifier_>
-	unique_lock<adc_block_register_> shared_adc<adc_block_register_, identifier_>::ADCLock(ADC, true);
+	unique_lock<adc_block_register_> shared_adc<adc_block_register_, identifier_>::block::ADCLock(ADC, true);
 	template<typename adc_block_register_, typename identifier_>
-	bool shared_adc<adc_block_register_, identifier_>::IsUsed = false;
+	unsigned int shared_adc<adc_block_register_, identifier_>::block::LockCnt = 0;
 	template<typename adc_block_register_, typename identifier_>
-	unsigned int shared_adc<adc_block_register_, identifier_>::LockCnt = 0;
+	adc::adc_block_setting shared_adc<adc_block_register_, identifier_>::block::Default;
 	template<typename adc_block_register_, typename identifier_>
-	sfr::adc::vref_mode shared_adc<adc_block_register_, identifier_>::ApplyVrefMode;
-	template<typename adc_block_register_, typename identifier_>
-	uint8 shared_adc<adc_block_register_, identifier_>::ApplyClockDiv;
-	template<typename adc_block_register_, typename identifier_>
-	template<typename converter_no_>
-	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::LockCnt = 0;
+	const adc::adc_block_setting* shared_adc<adc_block_register_, identifier_>::block::Apply;
+
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
-	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::ClockDiv = 1;
+	unsigned int shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::LockCnt = 0;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
-	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::SamplingTime = 0;
+	bool shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::IsUsed = false;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
-	sfr::adc::resolution_mode shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::ResolutionMode = sfr::adc::resolution_12bits;
+	adc::adc_setting shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Default;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	const adc::adc_setting* shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
 
 	//非同期型のADC
 	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
