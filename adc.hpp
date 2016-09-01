@@ -13,28 +13,28 @@ namespace xc32{
 	namespace adc {
 		using namespace sfr::adc;
 	}
-	//同期型ADC
-	//	一つのadc_registerを一つのsynchronous_adcが排他的に利用する
-	//	analog_pinは複数宣言できるが内部でsynchronous_adcを参照している
+	//独占型ADC
+	//	一つのadc_block_registerを一つのsynchronous_adcが排他的に利用する
+	//	synchronous_adc、converterは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要
 	//	analog_pinからの読み出しは重複しうるため、利用者が明示的に避ける必要がある
-	template<typename adc_register_>
-	class synchronous_adc{
-		typedef adc_register_ adc_register;
-		typedef synchronous_adc<adc_register> my_type;
+	template<typename adc_block_register_>
+	class exclusive_adc{
+		typedef adc_block_register_ adc_block_register;
+		typedef exclusive_adc<adc_block_register> my_type;
 	private:
-		adc_register ADC;
-		unique_lock<adc_register> ADCLock;
+		adc_block_register ADC;
+		unique_lock<adc_block_register> ADCLock;
 
 		sfr::adc::vref_mode VrefMode;
 		uint8 ClockDiv;
 	public:
-		synchronous_adc()
+		exclusive_adc()
 			: ADCLock(ADC, true)
 			, VrefMode(sfr::adc::vref_mode::vref_Vref_Gnd)
 			, ClockDiv(0){
 		}
 	private:
-		synchronous_adc(const my_type&);
+		exclusive_adc(const my_type&);
 		const my_type& operator=(const my_type&);
 	public:
 		void config(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_) {
@@ -61,6 +61,7 @@ namespace xc32{
 			//ADC始動！
 			ADC.enable(1);
 			__asm("nop");
+
 			//self calibration待ち
 			while (!ADC.module_ready());
 
@@ -86,27 +87,86 @@ namespace xc32{
 			__asm("nop");
 		}
 	public:
+		template<typename converter_no_>
+		struct converter{
+		private:
+			my_type& Ref;
+			bool Lock;
+
+			unsigned char ClockDiv;
+			unsigned char SamplingTime;
+			sfr::adc::resolution_mode ResolutionMode;
+		public:
+			converter(my_type& Ref_) :Ref(Ref_), LockCnt(0), ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
+			void config(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
+				ClockDiv = ClockDiv_;
+				SamplingTime = SamplingTime_;
+				ResolutionMode = ResolutionMode_;
+			}
+			bool lock(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
+				config(ClockDiv_, SamplingTime_, ResolutionMode_);
+				return lock();
+			}
+			bool lock(){
+				if(Lock)return false;
+				Lock = true;
+
+				//メインデバイスがロックされていなければ、初期化作業は失敗
+				if(!Ref.ADC.is_lock())return true;
+
+				//スタートアップ処理
+				Ref.ADC.adc_clock_div<converter_no_>(ClockDiv);
+				Ref.ADC.sampling_time<converter_no_>(SamplingTime);
+				Ref.ADC.resolution_bits<converter_no_>(ResolutionMode);
+
+				//ADC 準備を待つ
+				Ref.ADC.adc_enable<converter_no_>(true);
+				while(!Ref.ADC.adc_ready<converter_no_>());
+
+				Ref.ADC.adc_work_enable<converter_no_>(true);
+
+			}
+			void unlock(){
+				if(!Lock)return;
+				Lock = false;
+
+
+				//メインデバイスがロックされていなければ、アンロック作業は失敗
+				if(!Ref.ADC.is_lock())return;
+
+				Ref.ADC.adc_work_enable<converter_no_>(false);
+				Ref.ADC.adc_enable<converter_no_>(false);
+			}
+			bool is_lock()const{ return Lock; }
+			void use_alternative_pin(bool val_){
+				Ref.ADC.use_alternative_pin<converter_no_>(val_);
+			}
+		};
+	public:
 		template<typename pin_register_>
 		class analog_pin{
 		private:
 			typedef pin_register_ pin_register;
 			typedef typename pin_register::analog_no analog_no;
 			typedef sfr::adc::an<analog_no> an_register;
+			typedef typename an_register::converter_no converter_no;
+			typedef converter<converter_no> my_converter;
 			typedef analog_pin<pin_register_> my_pin;
 		private:
 			pin_register Pin;
 			an_register AN;
 			my_type& Ref;
+			my_converter& Converter;
 			bool Lock;
 		private:
 			analog_pin(const my_pin&);
 			const my_pin& operator()(const my_pin&);
 		public:
-			analog_pin(my_type& Ref_):Ref(Ref_){}
+			analog_pin(my_type& Ref_, my_converter& Converter_):Ref(Ref_), Converter(Converter_), Lock(false){}
 			~analog_pin(){ unlock(); }
 			bool lock(){
-
 				if (is_lock())return false;
+
 				Pin.tris(true);
 				Pin.analog(true);
 				Pin.opendrain(false);
@@ -127,6 +187,9 @@ namespace xc32{
 			uint16 operator()(void){
 				xc32_assert(is_lock(), exception(0xE1));
 
+				//代替ピンの設定の有無を設定
+				Converter.use_alternative_pin(AN.is_alternative());
+
 				//チャンネルを設定
 				Ref.ADC.individual_convert_input_select(analog_no::No);
 
@@ -143,6 +206,9 @@ namespace xc32{
 			}
 			uint16 operator()(uint16 ObserveNum_){
 				xc32_assert(is_lock(), exception(0xE2));
+
+				//代替ピンの設定の有無を設定
+				Converter.use_alternative_pin(AN.is_alternative());
 
 				//チャンネルを設定
 				Ref.ADC.individual_convert_input_select(analog_no::No);
@@ -165,27 +231,26 @@ namespace xc32{
 	};
 
 	//共有型のADC
-	//	一つのadc_registerを複数のshared_adcが共有する
-	//	内部でLockCntを持ち、すべてのshared_adcが解除されたときにのみdisableになる
-	//	analog_pinは複数宣言できるが内部でshared_adcの静的メンバを参照している
-	//	analog_pinの読み出し処理は重複していないことの確認がなされる。
-	//	他のanalog_pinがすでに読み出し処理を行っている場合、読みだしに失敗して0xffffが返る
-	template<typename adc_register_, typename identifier_>
+	//	一つのadc_block_registerを複数のshared_adcが共有する
+	//	shared_adcは実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化される。
+	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
+	template<typename adc_block_register_, typename identifier_>
 	class shared_adc{
-		typedef shared_adc<adc_register_, identifier_> my_type;
+		typedef shared_adc<adc_block_register_, identifier_> my_type;
 	private:
-		static adc_register_ ADC;
-		static unique_lock<adc_register_> ADCLock;
+		static adc_block_register_ ADC;
+		static unique_lock<adc_block_register_> ADCLock;
 	private:
 		static unsigned int LockCnt;
 		static bool IsUsed;
 		static sfr::adc::vref_mode ApplyVrefMode;
 		static uint8 ApplyClockDiv;
-	public:
+	private:
 		static bool lock(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_){
 			if (++LockCnt == 1){
 				if (ADCLock.lock())return true;
 
+				//Applyを更新
 				ApplyVrefMode = VrefMode_;
 				ApplyClockDiv = ClockDiv_;
 
@@ -257,35 +322,84 @@ namespace xc32{
 			ADC.individual_convert(true);
 			__asm("nop");
 		}
+	private:
+		template<typename converter_no_>
+		struct converter{
+		private:
+			static unsigned bool LockCnt;
+
+			static unsigned char ClockDiv;
+			static unsigned char SamplingTime;
+			static sfr::adc::resolution_mode ResolutionMode;
+		public:
+			static void config(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
+				ClockDiv = ClockDiv_;
+				SamplingTime = SamplingTime_;
+				ResolutionMode = ResolutionMode_;
+			}
+			static bool lock(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
+				config(ClockDiv_, SamplingTime_, ResolutionMode_);
+				return lock();
+			}
+			static bool lock(){
+				if(++LockCnt == 0){
+					//メインデバイスがロックされていなければ、初期化作業は失敗
+					if(!my_type::ADC.is_lock())return true;
+
+					//スタートアップ処理
+					my_type::ADC.adc_clock_div<converter_no_>(ClockDiv);
+					my_type::ADC.sampling_time<converter_no_>(SamplingTime);
+					my_type::ADC.resolution_bits<converter_no_>(ResolutionMode);
+
+					//ADC 準備を待つ
+					my_type::ADC.adc_enable<converter_no_>(true);
+					while(!my_type::ADC.adc_ready<converter_no_>());
+
+					my_type::ADC.adc_work_enable<converter_no_>(true);
+				}
+				
+				return false;
+			}
+			static void unlock(){
+				if(--Lock == 0){
+					my_type::ADC.adc_work_enable<converter_no_>(false);
+					my_type::ADC.adc_enable<converter_no_>(false);
+				}
+			}
+			static bool is_lock()const{ return LockCnt!=0; }
+			static void use_alternative_pin(bool val_){
+				my_type::ADC.use_alternative_pin<converter_no_>(val_);
+			}
+		};
 	public:
 		template<typename pin_register_>
 		class analog_pin {
 			typedef pin_register_ pin_register;
 			typedef typename pin_register::analog_no analog_no;
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
+			typedef typename an_register::converter_no converter_no;
+			typedef converter<converter_no> my_converter;
+			typedef analog_pin<pin_register_> my_pin;
 		private:
 			bool IsLock;
 			pin_register Pin;
 			an_register AN;
 			sfr::adc::vref_mode VrefMode;
 			uint8 ClockDiv;
+		private:
+			analog_pin(const my_pin&);
+			const my_pin& operator()(const my_pin&);
 		public:
 			analog_pin()
 				:IsLock(false){
 			}
 			~analog_pin() { unlock(); }
-			void config(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_) {
-				VrefMode = VrefMode_;
-				ClockDiv = ClockDiv_;
-			}
-			bool lock(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_) {
-				config(VrefMode_, ClockDiv_);
-				return lock();
-			}
 			bool lock() {
 				if (is_lock())return false;
 
 				if (my_type::lock(VrefMode, ClockDiv))return true;
+
+				if(my_converter::lock(ConverterClockDiv, SamplingTime, ResolutionMode))return true;
 
 				Pin.tris(true);
 				Pin.analog(true);
@@ -315,6 +429,9 @@ namespace xc32{
 				if(my_type::start())return 0xFFFF;
 
 
+				//代替ピンの設定の有無を設定
+				my_converter::use_alternative_pin(AN.is_alternative());
+
 				//個別スキャンするチャンネルを設定
 				ADC.individual_convert_input_select(analog_no::No);
 				__asm("nop");
@@ -336,6 +453,9 @@ namespace xc32{
 				xc32_assert(is_lock(), exception(0xE2));
 
 				if (my_type::start())return 0xFFFF;
+
+				//代替ピンの設定の有無を設定
+				my_converter::use_alternative_pin(AN.is_alternative());
 
 				//個別スキャンするチャンネルを設定
 				ADC.individual_convert_input_select(analog_no::No);
@@ -359,43 +479,42 @@ namespace xc32{
 			}
 		};
 	};
-	template<typename adc_register_, typename identifier_>
-	adc_register_ shared_adc<adc_register_, identifier_>::ADC;
-	template<typename adc_register_, typename identifier_>
-	unique_lock<adc_register_> shared_adc<adc_register_, identifier_>::ADCLock(ADC, true);
-	template<typename adc_register_, typename identifier_>
-	bool shared_adc<adc_register_, identifier_>::IsUsed = false;
-	template<typename adc_register_, typename identifier_>
-	unsigned int shared_adc<adc_register_, identifier_>::LockCnt = 0;
-	template<typename adc_register_, typename identifier_>
-	sfr::adc::vref_mode shared_adc<adc_register_, identifier_>::ApplyVrefMode;
-	template<typename adc_register_, typename identifier_>
-	uint8 shared_adc<adc_register_, identifier_>::ApplyClockDiv;
+	template<typename adc_block_register_, typename identifier_>
+	adc_block_register_ shared_adc<adc_block_register_, identifier_>::ADC;
+	template<typename adc_block_register_, typename identifier_>
+	unique_lock<adc_block_register_> shared_adc<adc_block_register_, identifier_>::ADCLock(ADC, true);
+	template<typename adc_block_register_, typename identifier_>
+	bool shared_adc<adc_block_register_, identifier_>::IsUsed = false;
+	template<typename adc_block_register_, typename identifier_>
+	unsigned int shared_adc<adc_block_register_, identifier_>::LockCnt = 0;
+	template<typename adc_block_register_, typename identifier_>
+	sfr::adc::vref_mode shared_adc<adc_block_register_, identifier_>::ApplyVrefMode;
+	template<typename adc_block_register_, typename identifier_>
+	uint8 shared_adc<adc_block_register_, identifier_>::ApplyClockDiv;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::LockCnt = 0;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::ClockDiv = 1;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	unsigned bool shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::SamplingTime = 0;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	sfr::adc::resolution_mode shared_adc<adc_block_register_, identifier_>::converter<converter_no_>::ResolutionMode = sfr::adc::resolution_12bits;
 
-/*	template<typename adc_register_, typename identifier_>
-	adc_register_ shared_adc<adc_register_, identifier_>::ADC;
-	template<typename adc_register_, unsigned int shared_adc_ch_>
-	unique_lock<adc_register_> shared_adc<adc_register_, shared_adc_ch_>::ADCLock(ADC, true);
-	template<typename adc_register_, unsigned int shared_adc_ch_>
-	bool shared_adc<adc_register_, shared_adc_ch_>::IsUsed = false;
-	template<typename adc_register_, unsigned int shared_adc_ch_>
-	unsigned int shared_adc<adc_register_, shared_adc_ch_>::LockCnt = 0;
-	template<typename adc_register_, unsigned int shared_adc_ch_>
-	sfr::adc::vref_mode shared_adc<adc_register_, shared_adc_ch_>::ApplyVrefMode;
-	template<typename adc_register_, unsigned int shared_adc_ch_>
-	uint8 shared_adc<adc_register_, shared_adc_ch_>::ApplyClockDiv;
-*/
 	//非同期型のADC
-	//	一つのadc_registerを一つのasync_functional_adcが排他的に利用する
+	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
 	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される
 	//	同時に、内部ではqueueにadc用のtaskが積まれ、operator()(void)の実行時に順次処理される
 	//	queueで明示的に処理の重複を阻害している
-	template<typename adc_register_,unsigned int QueueSize_=10>
+	template<typename adc_block_register_,unsigned int QueueSize_=10>
 	class async_functional_adc{
 		friend class test_async_functional_adc;
 	private:
-		typedef adc_register_ adc_register;
-		typedef async_functional_adc<adc_register_> my_type;
+		typedef adc_block_register_ adc_block_register;
+		typedef async_functional_adc<adc_block_register_> my_type;
 	private:
 		struct itf_request_data{
 			adc::vref_mode VrefMode;
@@ -492,8 +611,8 @@ namespace xc32{
 			bool can_get_future()const{return Promise.can_get_future();}
 		};
 	private:
-		adc_register ADC;
-		unique_lock<adc_register> ADCLock;
+		adc_block_register ADC;
+		unique_lock<adc_block_register> ADCLock;
 		adc::vref_mode VrefMode;
 		uint8 ClockDiv;
 	public:
@@ -598,8 +717,8 @@ namespace xc32{
 	public:
 		bool can_request()const{return !RequestQueue.full();}
 	};
-	template<typename adc_register_, unsigned int QueueSize_>
-	array_queue<typename async_functional_adc<adc_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_register_, QueueSize_>::RequestQueue;
+	template<typename adc_block_register_, unsigned int QueueSize_>
+	array_queue<typename async_functional_adc<adc_block_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_block_register_, QueueSize_>::RequestQueue;
 }
 #
 #endif
