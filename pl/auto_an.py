@@ -8,6 +8,7 @@ while No<48:
 	f.write("public:\n")
 	f.write("uint16 data()const volatile { return ADCDATA"+str(No)+"; }\n")
 	f.write("bool data_ready()const { return ADCDSTAT1bits.ARDY"+str(No)+"; }\n")
+	f.write("bool is_alternative()const { return false; }\n")
 	f.write("};\n")
 	f.write("#endif\n\n")
 	No += 1
