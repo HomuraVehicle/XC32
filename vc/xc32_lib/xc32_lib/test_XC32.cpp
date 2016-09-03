@@ -354,7 +354,7 @@ private:
 	xc32::interrupt_timer<timer_register> Module;
 	class cInterruptFunc:public xc32::sfr::interrupt::function {
 	private:
-		red_led Red_LED;
+		green_led Green_LED;
 		unsigned char count;
 		xc32::interrupt_timer<timer_register>& Module;
 	private:
@@ -362,14 +362,14 @@ private:
 			Module.clear_flag();
 			Module.clear_count();
 			++count;
-			if(count%2)Red_LED(1);
-			else Red_LED(0);
+			if(count%2)Green_LED(1);
+			else Green_LED(0);
 		}
 	public:
 		cInterruptFunc(xc32::interrupt_timer<timer_register>& Module_):
 			Module(Module_) {
-			Red_LED.lock();
-			Red_LED(0);
+			Green_LED.lock();
+			Green_LED(0);
 		}
 	};
 	cInterruptFunc interrupt_func;
@@ -382,6 +382,38 @@ public:
 	void start() { Module.start(); }
 	void stop() { Module.stop(); }
 };
+
+long long res[4];
+long long main_batt=0;
+volatile bool can_get_val=false;
+const int n=1000;
+
+extern "C"{
+	void __ISR(_ADC_EOS_VECTOR,IPL7AUTO) ADC_EOS_Interrupt(void){
+		static int interrupt_cnt=0;
+		//clear the interrupt flag
+		IFS6bits.ADCEOSIF=0;
+
+		//get ADC data
+		res[1]+=AD1_DATA;
+		res[2]+=AD2_DATA;
+		res[0]+=AD3_DATA;
+		res[3]+=AD4_DATA;
+		main_batt+=AD_MAIN_BATT_DATA;
+
+		if(++interrupt_cnt<n){
+			can_get_val=false;
+			//trigger
+			ADCCON3bits.GSWTRG=1;
+		}
+		else{
+			interrupt_cnt=0;
+			can_get_val=true;
+			//disable interrupt
+			IEC6bits.ADCEOSIE=0;
+		}
+	}
+}
 
 int main() {
 	hmr::machine::device::kk10 KK10;
@@ -402,6 +434,8 @@ int main() {
 
 	sync_uart1 Sync_uart1;
 	delay_ms1 delay_ms;
+	interrupt_timer interrupt_timer3;
+	//interrupt_timer3.start();
 	//xc32::sfr::adc1 ADC;
 
 	pinDip1 Dip1;
@@ -415,9 +449,9 @@ int main() {
 	Pin5VDCDC.lock();
 	Pin5VDCDC(1);
 
-	green_led Green_LED;
-	Green_LED.lock();
-	Green_LED(1);
+	//green_led Green_LED;
+	//Green_LED.lock();
+	//Green_LED(1);
 
 	pinRF1Power RF1Power;
 	RF1Power.lock();
@@ -511,6 +545,12 @@ int main() {
 	//interrupt settings
 	ADCGIRQEN1=0;
 	ADCGIRQEN2=0;
+	//enable the end of scan event interrupt
+	ADCCON2bits.EOSIEN=1;
+	IEC6bits.ADCEOSIE=1;
+	IPC48bits.ADCEOSIP=7;
+	//clear interrupt flag
+	IFS6bits.ADCEOSIF=0;
 	
 	//scan triger settings (for class1 and class2 analog channels (AN0-AN11), class 3 analog channels are always triggered by scan source trigger)
 	ADCTRG1bits.TRGSRC0=3;
@@ -527,7 +567,7 @@ int main() {
 	ADCCSS1bits.CSS3=1;
 	ADCCSS1bits.CSS4=1;
 	ADCCSS1bits.CSS22=1;
-	ADCCSS1bits.CSS27=1;
+	ADCCSS1bits.CSS27=0;
 
 	//select input channels for class1 converters
 	ADCTRGMODEbits.SH0ALT=0;//AN0
@@ -564,56 +604,52 @@ int main() {
 	ADCCON3bits.DIGEN3=1;
 	ADCCON3bits.DIGEN4=1;
 	ADCCON3bits.DIGEN7=1;
-
-    const int n=1000;
-	long long res[4];
-	long long main_batt=0;
+	res[0]=0,res[1]=0,res[2]=0,res[3]=0;
+	main_batt=0;
+	ADCCON3bits.GSWTRG=1;
 	int cnt=0;
 	while(1){
-		res[0]=0,res[1]=0,res[2]=0,res[3]=0;
-		main_batt=0;
-		long long tmp=0;
         Red_LED(1);
-        for(int i=0;i<n;++i){
-			//ƒgƒŠƒK[‚ðˆø‚­
-            ADCCON3bits.GSWTRG=1;
-			//while(AD0_RDY==0);
-			//res[0]+=AD0_DATA;
-			while(AD1_RDY==0);
-			res[1]+=AD1_DATA;
-			while(AD2_RDY==0);
-			res[2]+=AD2_DATA;
-			while(AD3_RDY==0);
-			res[0]+=AD3_DATA;
-			while(AD4_RDY==0);
-			res[3]+=AD4_DATA;
-			while(AD_MAIN_BATT_RDY==0);
-			main_batt+=AD_MAIN_BATT_DATA;
-        }
-		res[0]/=n,res[1]/=n,res[2]/=n,res[3]/=n;
-		main_batt/=n;
-		
-		Sync_uart1.putc(res[1]>>8);
-		Sync_uart1.putc(res[1]);
-		Sync_uart1.putc(0x00);
-		Sync_uart1.putc(res[2]>>8);
-		Sync_uart1.putc(res[2]);
-		Sync_uart1.putc(0x00);
-		Sync_uart1.putc(res[0]>>8);
-		Sync_uart1.putc(res[0]);
-		Sync_uart1.putc(0x00);
-		Sync_uart1.putc(res[3]>>8);
-		Sync_uart1.putc(res[3]);
-		Sync_uart1.putc(0x00);
-		Sync_uart1.putc(main_batt>>8);
-		Sync_uart1.putc(main_batt);
-		Sync_uart1.putc(0x0d);
-		Sync_uart1.putc(0x0a);
+		//ADCTRGMODEbits.SH3ALT=cnt%2;
+		if(can_get_val){
+			++cnt;
+			res[0]/=n,res[1]/=n,res[2]/=n,res[3]/=n;
+			main_batt/=n;
+			Sync_uart1.putc(cnt);
+			Sync_uart1.putc(res[1]>>8);
+			Sync_uart1.putc(res[1]);
+			Sync_uart1.putc(0x00);
+			Sync_uart1.putc(res[2]>>8);
+			Sync_uart1.putc(res[2]);
+			Sync_uart1.putc(0x00);
+			Sync_uart1.putc(res[0]>>8);
+			Sync_uart1.putc(res[0]);
+			Sync_uart1.putc(0x00);
+			Sync_uart1.putc(res[3]>>8);
+			Sync_uart1.putc(res[3]);
+			Sync_uart1.putc(0x00);
+			Sync_uart1.putc(main_batt>>8);
+			Sync_uart1.putc(main_batt);
+			Sync_uart1.putc(0x0d);
+			Sync_uart1.putc(0x0a);
 
-
-		delay_ms(200);
+			res[0]=0,res[1]=0,res[2]=0,res[3]=0;
+			main_batt=0;
+			if(40>=cnt && cnt>20){
+				ADCCSS1bits.CSS27=1;
+				if(cnt>=40)cnt=0;
+			}
+			else{
+				ADCCSS1bits.CSS27=0;
+			}
+			IEC6bits.ADCEOSIE=1;
+			ADCCON3bits.GSWTRG=1;
+		}
+		Sync_uart1.putc(0x0D);
+		Sync_uart1.putc(0x0A);
+		delay_ms(5);
 		Red_LED(0);
-		delay_ms(200);
+		delay_ms(5);
 	}
 	return 0;
 }
