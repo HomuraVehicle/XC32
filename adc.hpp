@@ -26,7 +26,7 @@ namespace xc32{
 		};
 	}
 
-	//独占型ADC
+	//独占型個別コンバートADC
 	//	synchronous_adc、converterは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要があるタイプ。
 	//	用意されている機能は最小限。analog_pinから利用する際のconverterの競合チェックやlock済みかどうかの確認すら行わない。
 	template<typename adc_block_register_>
@@ -242,7 +242,7 @@ namespace xc32{
 		};
 	};
 
-	//共有型のADC
+	//共有型個別コンバートADC
 	//	shared_adcは実体を用意する必要がない。代わりにanalog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	逆に言えば、shared_adcを解放するためには、すべてのanalog_pinでunlockする必要がある。
 	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
@@ -593,7 +593,7 @@ namespace xc32{
 	template<typename converter_no_>
 	const adc::adc_setting* shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
 
-	//非同期型のADC
+	//非同期型個別コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
 	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される。内部ではqueueにadc用のtaskが積まれる。
@@ -809,7 +809,8 @@ namespace xc32{
 	template<typename adc_block_register_, unsigned int QueueSize_>
 	array_queue<typename async_functional_adc<adc_block_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_block_register_, QueueSize_>::RequestQueue;
 
-
+	//非同期型一括コンバートADC
+	//	
 	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_ = 10>
 	class async_adc{
 		typedef async_adc<adc_block_register_, identifier_, QueueSize_> my_type;
