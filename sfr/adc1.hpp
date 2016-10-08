@@ -17,6 +17,8 @@ namespace xc32 {
 			bool enable()const { return static_cast<bool>(ADCCON1bits.ON); }
 			//ADCモジュールの使用準備ができたか(モジュールの自動calibration待ち)
 			bool module_ready()const volatile { return static_cast<bool>(ADCCON2bits.BGVRRDY); }
+			//一斉スキャン（Common Scan）が終了したか　読みだすと自動的に落ちる
+			bool end_of_common_scan()const volatile{ return static_cast<bool>(ADCCON2bits.EOSRDY); }
 			//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,…
 			void scan_trigger_select(unsigned char val_) { ADCCON1bits.STRGSRC = val_; }
 			unsigned char scan_trigger_select()const { return ADCCON1bits.STRGSRC; }
