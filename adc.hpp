@@ -600,11 +600,24 @@ namespace xc32{
 	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
 	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_=10>
 	class async_functional_adc{
+		/*=== 設計概要 ===
+		async_functional_adcは、個別コンバートを利用してadcのデータ読み出しを担当する
+		async_functional_adc::analog_pinから、operator()を実行すると、
+			RequestQueueにデータリクエスト内容が積まれる
+			リクエストには、結果書き込み用のpromise&も含まれる
+			戻り値として、利用者はfutureを受け取る
+		adcのoperator()実行によって、
+			走っているタスクがなければ、RequestQueueを読み込む
+			リクエスト内容に沿って一括コンバートを駆動する
+			データ読み出しが完了していれば、promise&を介して通知する
+			すべてが完了後、タスクをキューから外す
+		*/
 		friend class test_async_functional_adc;
 	private:
 		typedef adc_block_register_ adc_block_register;
 		typedef async_functional_adc<adc_block_register_, identifier_, QueueSize_> my_type;
 	private:
+		//データリクエスト内容
 		struct data_request{
 			const adc::adc_block_setting* pBlockSetting;
 			const adc::adc_setting* pADCSetting;
@@ -811,23 +824,21 @@ namespace xc32{
 
 	//非同期型一括コンバートADC
 	//	
-	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_ = 10>
-	class async_adc{
-		typedef async_adc<adc_block_register_, identifier_, QueueSize_> my_type;
-	private:
-		struct data_request{
-			const adc::adc_block_setting* pBlockSetting;
-			const adc::adc_setting* pADCSetting;
-			unsigned char Num;
-			promise<uint16>& Ref;
-			data_request(promise<uint16>& Ref_)
-				: Ref(Ref_)
-				, VrefMode(xc32::adc::vref_Vref_Gnd)
-				, ClockDiv(0)
-				, Num(1){}
-			virtual unsigned char getAN() = 0;
-			virtual uint16 read_data() = 0;
-		};
+	template<typename adc_block_register_, typename identifier_>
+	class async_functional_gadc{
+		/*=== 設計概要 ===
+		async_functional_gadcは、一括コンバートを利用してadcのデータ読み出しを担当する
+		async_functional_gadc::analog_pinから、operator()を実行すると、
+			RequestQueueにデータリクエスト内容が積まれる
+			リクエストには、結果書き込み用のpromise&も含まれる
+			戻り値として、利用者はfutureを受け取る
+		adcのoperator()実行によって、
+		走っているタスクがなければ、RequestQueueを読み込む
+		リクエスト内容に沿って一括コンバートを駆動する
+		データ読み出しが完了していれば、promise&を介して通知する
+		すべてが完了後、タスクをキューから外す
+		*/
+		typedef async_functional_gadc<adc_block_register_, identifier_> my_type;
 	private:
 		struct block{
 		private:
@@ -1077,22 +1088,45 @@ namespace xc32{
 			typedef typename an_register::converter_no converter_no;
 			typedef typename block::converter<converter_no> my_converter;
 			typedef analog_pin<pin_register_> my_pin;
+		public:
+			typedef xc::polling_future<uint16> future;
 		private:
-			struct an_data_request :public data_request{
-				an_register AN;
-				an_data_request(promise<uint16>& Ref_) :itf_request_data(Ref_){}
-				virtual unsigned char getAN(){ return analog_no::No; }
-				virtual uint16 read_data(){
-					//スキャン待ち
-					while(!AN.data_ready());
-					//データを加算
-					return AN.data();
+			class adc_promise{
+			private:
+				struct base :public xc::promise_base<uint16>{
+					an_register AN;
+					bool WaitRead;
+				public:
+					base():WaitRead(false){}
+				public://override functions of xc::promise_base
+					virtual bool can_read(){
+						return AN.data_ready();
+					}
+					virtual void read(uint16& Data_){
+						Data_ = AN.data();
+						WaitRead = false;
+					}
+					virtual void cancel(){
+						WaitRead = false;
+					}
+				};
+			public:
+				base Base;
+			public:
+				promise() :Base(){}
+			private://コピー禁止
+				promise(const my_type&){}
+				const my_type& operator=(const my_type&);
+			public:
+				bool can_get_future()const{ return !Base.WaitRead; }
+				future get_future(){
+					Base.WaitRead = true;
+					return future(Base);
 				}
-			}RequestData;
+			};
 		private:
 			bool IsLock;
 			pin_register Pin;
-			an_register AN;
 			const adc::adc_block_setting* pBlockSetting;
 			const adc::adc_setting* pADCSetting;
 
@@ -1131,7 +1165,7 @@ namespace xc32{
 				IsLock = false;
 			}
 		public:
-			future<uint16> operator()(void){
+			future operator()(void){
 				if(!Promise.can_get_future())return future<uint16>();
 
 				RequestData.Num = 1;
@@ -1139,17 +1173,6 @@ namespace xc32{
 
 				return Promise.get_future();
 			}
-			future<uint16> operator()(uint16 ObserveNum_){
-				if(!Promise.can_get_future())return future<uint16>();
-				if(ObserveNum_ == 0)return future<uint16>();
-
-				if(ObserveNum_ > 0xff)ObserveNum_ = 0xff;
-				RequestData.Num = static_cast<unsigned char>(ObserveNum_);
-				if(my_converter::request(RequestData))return future<uint16>();
-
-				return Promise.get_future();
-			}
-
 		};
 	};
 	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
