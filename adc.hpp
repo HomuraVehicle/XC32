@@ -13,21 +13,23 @@ namespace xc32{
 
 	namespace adc{
 		using namespace sfr::adc;
-		struct adc_block_setting{
+		//adc_block用設定クラス
+		struct block_setting{
 			sfr::adc::vref_mode VrefMode;
 			unsigned char ClockDiv;
-			adc_block_setting() :VrefMode(sfr::adc::vref_Vref_Gnd), ClockDiv(0){}
+			block_setting() :VrefMode(sfr::adc::vref_Vref_Gnd), ClockDiv(0){}
 		};
-		struct adc_setting{
+		//adc_converter用設定クラス
+		struct converter_setting{
 			unsigned char ClockDiv;
 			unsigned char SamplingTime;
 			sfr::adc::resolution_mode ResolutionMode;
-			adc_setting() : ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
+			converter_setting() : ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
 		};
 	}
 
-	//独占型個別コンバートADC
-	//	synchronous_adc、converterは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要があるタイプ。
+	//独占型同期ADC
+	//	exclusive_adcは明示的に使用者が実体を用意し、それぞれをlock/unlockする必要があるタイプ。
 	//	用意されている機能は最小限。analog_pinから利用する際のconverterの競合チェックやlock済みかどうかの確認すら行わない。
 	template<typename adc_block_register_>
 	class exclusive_adc{
@@ -36,25 +38,22 @@ namespace xc32{
 	private:
 		adc_block_register ADC;
 		unique_lock<adc_block_register> ADCLock;
-
-		sfr::adc::vref_mode VrefMode;
-		uint8 ClockDiv;
+		adc::block_setting BlockSetting;
 	public:
 		exclusive_adc()
 			: ADCLock(ADC, true)
-			, VrefMode(sfr::adc::vref_mode::vref_Vref_Gnd)
-			, ClockDiv(0){
+			, BlockSetting(){
 		}
 	private:
+		//コピー禁止
 		exclusive_adc(const my_type&);
 		const my_type& operator=(const my_type&);
 	public:
-		void config(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_) {
-			VrefMode = VrefMode_;
-			ClockDiv = ClockDiv_;
+		void config(adc::block_setting BlockSetting_) {
+			BlockSetting = BlockSetting_;
 		}
-		bool lock(sfr::adc::vref_mode VrefMode_, uint8 ClockDiv_) {
-			config(VrefMode_, ClockDiv_);
+		bool lock(adc::block_setting BlockSetting_) {
+			config(BlockSetting_);
 			return lock();
 		}
 		bool lock(){
@@ -62,13 +61,13 @@ namespace xc32{
 			if (ADCLock.lock())return true;
 
 			//参照電圧を設定
-			ADC.reference_voltage(VrefMode);
+			ADC.reference_voltage(BlockSetting.VrefMode);
 			__asm("nop");
 			//クロックをTcyに設定
 			ADC.clock_select(1);
 			__asm("nop");
 			//クロック分周設定(0～127までなので高位のビットを削除)
-			ADC.clock_div((ClockDiv & 0x7F));
+			ADC.clock_div((BlockSetting.ClockDiv & 0x7F));
 			__asm("nop");
 			//ADC始動！
 			ADC.enable(1);
@@ -76,8 +75,6 @@ namespace xc32{
 
 			//self calibration待ち
 			while (!ADC.module_ready());
-
-			ADCLock.lock();
 
 			return false;
 		}
@@ -92,31 +89,27 @@ namespace xc32{
 		bool is_lock()const{
 			return ADCLock;
 		}
-	private:
-		void read_data(){
-			//個別スキャン開始
-			ADC.individual_convert(true);
-			__asm("nop");
-		}
 	public:
+		//コンバーター　Pinごとに繋がっているコンバーターは異なる点に注意
 		template<typename converter_no_>
 		struct converter{
 		private:
 			my_type& Ref;
 			bool Lock;
 
-			unsigned char ClockDiv;
-			unsigned char SamplingTime;
-			sfr::adc::resolution_mode ResolutionMode;
+			adc::converter_setting ConverterSetting;
 		public:
-			converter(my_type& Ref_) :Ref(Ref_), LockCnt(0), ClockDiv(1), SamplingTime(0), ResolutionMode(sfr::adc::resolution_12bits){}
-			void config(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
-				ClockDiv = ClockDiv_;
-				SamplingTime = SamplingTime_;
-				ResolutionMode = ResolutionMode_;
+			converter(my_type& Ref_) :Ref(Ref_), Lock(false){}
+		private:
+			//コピー禁止
+			converter(const my_type&);
+			const my_type& operator=(const my_type&);
+		public:
+			void config(adc::converter_setting ConverterSetting_){
+				ConverterSetting = ConverterSetting_;
 			}
-			bool lock(unsigned char ClockDiv_, unsigned char SamplingTime_, sfr::adc::resolution_mode ResolutionMode_){
-				config(ClockDiv_, SamplingTime_, ResolutionMode_);
+			bool lock(adc::converter_setting ConverterSetting_){
+				config(ConverterSetting_);
 				return lock();
 			}
 			bool lock(){
@@ -127,16 +120,15 @@ namespace xc32{
 				if(!Ref.ADC.is_lock())return true;
 
 				//スタートアップ処理
-				Ref.ADC.adc_clock_div<converter_no_>(ClockDiv);
-				Ref.ADC.sampling_time<converter_no_>(SamplingTime);
-				Ref.ADC.resolution_bits<converter_no_>(ResolutionMode);
+				Ref.ADC.converter_clock_div<converter_no_>(ConverterSetting.ClockDiv);
+				Ref.ADC.converter_sampling_time<converter_no_>(ConverterSetting.SamplingTime);
+				Ref.ADC.converter_resolution_bits<converter_no_>(ConverterSetting.ResolutionMode);
 
 				//ADC 準備を待つ
-				Ref.ADC.adc_enable<converter_no_>(true);
-				while(!Ref.ADC.adc_ready<converter_no_>());
+				Ref.ADC.converter_enable<converter_no_>(true);
+				while(!Ref.ADC.converter_ready<converter_no_>());
 
-				Ref.ADC.adc_work_enable<converter_no_>(true);
-
+				Ref.ADC.converter_work_enable<converter_no_>(true);
 			}
 			void unlock(){
 				if(!Lock)return;
@@ -146,12 +138,12 @@ namespace xc32{
 				//メインデバイスがロックされていなければ、アンロック作業は失敗
 				if(!Ref.ADC.is_lock())return;
 
-				Ref.ADC.adc_work_enable<converter_no_>(false);
-				Ref.ADC.adc_enable<converter_no_>(false);
+				Ref.ADC.converter_work_enable<converter_no_>(false);
+				Ref.ADC.converter_enable<converter_no_>(false);
 			}
 			bool is_lock()const{ return Lock; }
 			void use_alternative_pin(bool val_){
-				Ref.ADC.use_alternative_pin<converter_no_>(val_);
+				Ref.ADC.converter_use_alternative_pin<converter_no_>(val_);
 			}
 		};
 	public:
@@ -161,8 +153,10 @@ namespace xc32{
 			typedef pin_register_ pin_register;
 			typedef typename pin_register::analog_no analog_no;
 			typedef sfr::adc::an<analog_no> an_register;
+		public:
 			typedef typename an_register::converter_no converter_no;
 			typedef converter<converter_no> my_converter;
+		private:
 			typedef analog_pin<pin_register_> my_pin;
 		private:
 			pin_register Pin;
@@ -184,6 +178,8 @@ namespace xc32{
 				Pin.opendrain(false);
 
 				Lock = true;
+
+				return false;
 			}
 			void unlock(){
 				if (!is_lock())return;
@@ -205,8 +201,9 @@ namespace xc32{
 				//チャンネルを設定
 				Ref.ADC.individual_convert_input_select(analog_no::No);
 
-				//トリガを引く
-				Ref.read_data();
+				//個別スキャン開始
+				Ref.ADC.individual_convert_trigger(true);
+				__asm("nop");
 
 				//スキャン待ち
 				while (!AN.data_ready());
@@ -227,8 +224,9 @@ namespace xc32{
 
 				uint32 Val = 0;
 				for (uint16 ObserveCnt = 0; ObserveCnt < ObserveNum_; ++ObserveCnt) {
-					//トリガを引く
-					Ref.ADC.read_data();
+					//個別スキャン開始
+					Ref.ADC.individual_convert_trigger(true);
+					__asm("nop");
 
 					//スキャン待ち
 					while (!AN.data_ready());
@@ -242,7 +240,8 @@ namespace xc32{
 		};
 	};
 
-	//共有型個別コンバートADC
+	/*
+	//共有型同期ADC
 	//	shared_adcは実体を用意する必要がない。代わりにanalog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	逆に言えば、shared_adcを解放するためには、すべてのanalog_pinでunlockする必要がある。
 	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
@@ -592,7 +591,9 @@ namespace xc32{
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
 	const adc::adc_setting* shared_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
+	*/
 
+/*
 	//非同期型個別コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
@@ -600,18 +601,17 @@ namespace xc32{
 	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
 	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_=10>
 	class async_functional_adc{
-		/*=== 設計概要 ===
-		async_functional_adcは、個別コンバートを利用してadcのデータ読み出しを担当する
-		async_functional_adc::analog_pinから、operator()を実行すると、
-			RequestQueueにデータリクエスト内容が積まれる
-			リクエストには、結果書き込み用のpromise&も含まれる
-			戻り値として、利用者はfutureを受け取る
-		adcのoperator()実行によって、
-			走っているタスクがなければ、RequestQueueを読み込む
-			リクエスト内容に沿って一括コンバートを駆動する
-			データ読み出しが完了していれば、promise&を介して通知する
-			すべてが完了後、タスクをキューから外す
-		*/
+		//=== 設計概要 ===
+		//async_functional_adcは、個別コンバートを利用してadcのデータ読み出しを担当する
+		//async_functional_adc::analog_pinから、operator()を実行すると、
+		//	RequestQueueにデータリクエスト内容が積まれる
+		//	リクエストには、結果書き込み用のpromise&も含まれる
+		//	戻り値として、利用者はfutureを受け取る
+		//adcのoperator()実行によって、
+		//	走っているタスクがなければ、RequestQueueを読み込む
+		//	リクエスト内容に沿って一括コンバートを駆動する
+		//	データ読み出しが完了していれば、promise&を介して通知する
+		//	すべてが完了後、タスクをキューから外す
 		friend class test_async_functional_adc;
 	private:
 		typedef adc_block_register_ adc_block_register;
@@ -822,22 +822,22 @@ namespace xc32{
 	template<typename adc_block_register_, unsigned int QueueSize_>
 	array_queue<typename async_functional_adc<adc_block_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_block_register_, QueueSize_>::RequestQueue;
 
+	/*
 	//非同期型一括コンバートADC
 	//	
 	template<typename adc_block_register_, typename identifier_>
 	class async_functional_gadc{
-		/*=== 設計概要 ===
-		async_functional_gadcは、一括コンバートを利用してadcのデータ読み出しを担当する
-		async_functional_gadc::analog_pinから、operator()を実行すると、
-			RequestQueueにデータリクエスト内容が積まれる
-			リクエストには、結果書き込み用のpromise&も含まれる
-			戻り値として、利用者はfutureを受け取る
-		adcのoperator()実行によって、
-		走っているタスクがなければ、RequestQueueを読み込む
-		リクエスト内容に沿って一括コンバートを駆動する
-		データ読み出しが完了していれば、promise&を介して通知する
-		すべてが完了後、タスクをキューから外す
-		*/
+		//=== 設計概要 ===
+		//async_functional_gadcは、一括コンバートを利用してadcのデータ読み出しを担当する
+		//async_functional_gadc::analog_pinから、operator()を実行すると、
+		//	RequestQueueにデータリクエスト内容が積まれる
+		//	リクエストには、結果書き込み用のpromise&も含まれる
+		//	戻り値として、利用者はfutureを受け取る
+		//adcのoperator()実行によって、
+		//走っているタスクがなければ、RequestQueueを読み込む
+		//リクエスト内容に沿って一括コンバートを駆動する
+		//データ読み出しが完了していれば、promise&を介して通知する
+		//すべてが完了後、タスクをキューから外す
 		typedef async_functional_gadc<adc_block_register_, identifier_> my_type;
 	private:
 		struct block{
@@ -1198,7 +1198,7 @@ namespace xc32{
 	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_>
 	template<typename converter_no_>
 	const adc::adc_setting* async_adc<adc_block_register_, identifier_>::block::converter<converter_no_>::Apply;
-
+	*/
 }
 #
 #endif

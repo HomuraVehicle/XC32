@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\hmIto\Documents\Projects;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\hmIto\Documents\Projects\XC32\vc\xc32_lib\xc32_lib;C:\Users\hmIto\Documents\Projects\XC32;C:\Users\hmIto\Documents\Projects;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -201,6 +201,7 @@
     <ClCompile Include="..\..\..\sfr\uart4.cpp" />
     <ClCompile Include="..\..\..\sfr\uart5.cpp" />
     <ClCompile Include="..\..\..\sfr\uart6.cpp" />
+    <ClCompile Include="lab.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
