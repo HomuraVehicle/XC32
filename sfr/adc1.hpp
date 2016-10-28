@@ -34,8 +34,8 @@ namespace xc32 {
 			void individual_convert_trigger(bool val_) { ADCCON3bits.RQCNVRT = static_cast<unsigned char>(val_); }
 			bool individual_convert_trigger()const { return static_cast<bool>(ADCCON3bits.RQCNVRT); }
 			//単独ADC入力選択ビット
-			void individual_convert_input_select(unsigned char val_) { ADCCON3bits.ADINSEL = val_; }
-			unsigned char individual_convert_input_select()const { return ADCCON3bits.ADINSEL; }
+			void individual_convert_select(unsigned char val_) { ADCCON3bits.ADINSEL = val_; }
+			unsigned char individual_convert_select()const { return ADCCON3bits.ADINSEL; }
 			//Vref選択ビット.0:VrefH=AVdd VrefL=AVss,1:VrefH=Vref+ VrefL=AVss,2:VrefH=AVdd VrefL=Vref-,3:VrefH=Vref+ VrefL=Vref-
 			void reference_voltage(unsigned char val_) { ADCCON3bits.VREFSEL = val_; }
 			unsigned char reference_voltage()const { return ADCCON3bits.VREFSEL; }
@@ -96,11 +96,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<XXX>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<XXX>>(unsigned char val_){
 			ADCXXXTIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<XXX>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<XXX>>(){
 			return ADCXXXTIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -149,9 +149,9 @@ namespace xc32 {
 		unsigned char adc_block::converter_sampling_time<constexpr_no<XXX>>(){ return ADCCON2bits.SAMC; }
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<XXX>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
+		void adc_block::converter_resolution_bits<constexpr_no<XXX>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<XXX>>(){ return ADCCON1bits.SELRES; }
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<XXX>>(){ return ADCCON1bits.SELRES; }
 		//excluded ADC専用　割り当ての別のpinwを使うか
 		template<>
 		void adc_block::converter_use_alternative_pin<constexpr_no<XXX>>(bool val_){}
@@ -193,11 +193,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<0>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<0>>(unsigned char val_){
 			ADC0TIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<0>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<0>>(){
 			return ADC0TIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -207,7 +207,7 @@ namespace xc32 {
 		}
 		template<>
 		bool adc_block::converter_use_alternative_pin<constexpr_no<0>>(){
-			return ADCTRGMODEbits.SH0ALT;
+			return ADCTRGMODEbits.SH0ALT!=0;
 		}
 		//ADCごとのclockスタート
 		template<>
@@ -225,11 +225,11 @@ namespace xc32 {
 		}
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){
+		void adc_block::converter_work_enable<constexpr_no<0>>(bool val_){
 			ADCCON3bits.DIGEN0 = val_;
 		}
 		template<>
-		bool adc_block::converter_work_enable(){
+		bool adc_block::converter_work_enable<constexpr_no<0>>(){
 			return ADCCON3bits.DIGEN0;
 		}
 	#endif
@@ -255,11 +255,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<1>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<1>>(unsigned char val_){
 			ADC1TIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<1>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<1>>(){
 			return ADC1TIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -269,7 +269,7 @@ namespace xc32 {
 		}
 		template<>
 		bool adc_block::converter_use_alternative_pin<constexpr_no<1>>(){
-			return ADCTRGMODEbits.SH1ALT;
+			return ADCTRGMODEbits.SH1ALT!=0;
 		}
 		//ADCごとのclockスタート
 		template<>
@@ -287,11 +287,11 @@ namespace xc32 {
 		}
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){
+		void adc_block::converter_work_enable<constexpr_no<1>>(bool val_){
 			ADCCON3bits.DIGEN1 = val_;
 		}
 		template<>
-		bool adc_block::converter_work_enable(){
+		bool adc_block::converter_work_enable<constexpr_no<1>>(){
 			return ADCCON3bits.DIGEN1;
 		}
 	#endif
@@ -317,11 +317,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<2>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<2>>(unsigned char val_){
 			ADC2TIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<2>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<2>>(){
 			return ADC2TIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -331,7 +331,7 @@ namespace xc32 {
 		}
 		template<>
 		bool adc_block::converter_use_alternative_pin<constexpr_no<2>>(){
-			return ADCTRGMODEbits.SH2ALT;
+			return ADCTRGMODEbits.SH2ALT!=0;
 		}
 		//ADCごとのclockスタート
 		template<>
@@ -349,11 +349,11 @@ namespace xc32 {
 		}
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){
+		void adc_block::converter_work_enable<constexpr_no<2>>(bool val_){
 			ADCCON3bits.DIGEN2 = val_;
 		}
 		template<>
-		bool adc_block::converter_work_enable(){
+		bool adc_block::converter_work_enable<constexpr_no<2>>(){
 			return ADCCON3bits.DIGEN2;
 		}
 	#endif
@@ -379,11 +379,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<3>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<3>>(unsigned char val_){
 			ADC3TIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<3>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<3>>(){
 			return ADC3TIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -393,7 +393,7 @@ namespace xc32 {
 		}
 		template<>
 		bool adc_block::converter_use_alternative_pin<constexpr_no<3>>(){
-			return ADCTRGMODEbits.SH3ALT;
+			return ADCTRGMODEbits.SH3ALT!=0;
 		}
 		//ADCごとのclockスタート
 		template<>
@@ -411,11 +411,11 @@ namespace xc32 {
 		}
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){
+		void adc_block::converter_work_enable<constexpr_no<3>>(bool val_){
 			ADCCON3bits.DIGEN3 = val_;
 		}
 		template<>
-		bool adc_block::converter_work_enable(){
+		bool adc_block::converter_work_enable<constexpr_no<3>>(){
 			return ADCCON3bits.DIGEN3;
 		}
 	#endif
@@ -441,11 +441,11 @@ namespace xc32 {
 		}
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<4>>(unsigned char val_){
+		void adc_block::converter_resolution_bits<constexpr_no<4>>(unsigned char val_){
 			ADC4TIMEbits.SELRES = val_;
 		}
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<4>>(){
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<4>>(){
 			return ADC4TIMEbits.SELRES;
 		}
 		//excluded ADC専用　割り当ての別のpinwを使うか
@@ -455,7 +455,7 @@ namespace xc32 {
 		}
 		template<>
 		bool adc_block::converter_use_alternative_pin<constexpr_no<4>>(){
-			return ADCTRGMODEbits.SH4ALT;
+			return ADCTRGMODEbits.SH4ALT!=0;
 		}
 		//ADCごとのclockスタート
 		template<>
@@ -473,15 +473,14 @@ namespace xc32 {
 		}
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){
+		void adc_block::converter_work_enable<constexpr_no<4>>(bool val_){
 			ADCCON3bits.DIGEN4 = val_;
 		}
 		template<>
-		bool adc_block::converter_work_enable(){
+		bool adc_block::converter_work_enable<constexpr_no<4>>(){
 			return ADCCON3bits.DIGEN4;
 		}
 	#endif
-	}
 
 	#ifdef ADC0_GENERALIZED
 		//ADCごとの固有のクロック分周比(1-120) この値の2倍の周期になる
@@ -496,9 +495,9 @@ namespace xc32 {
 		unsigned char adc_block::converter_sampling_time<constexpr_no<0>>(){ return ADCCON2bits.SAMC; }
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<0>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
+		void adc_block::converter_resolution_bits<constexpr_no<0>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<0>>(){ return ADCCON1bits.SELRES; }
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<0>>(){ return ADCCON1bits.SELRES; }
 		//excluded ADC専用　割り当ての別のpinwを使うか
 		template<>
 		void adc_block::converter_use_alternative_pin<constexpr_no<0>>(bool val_){}
@@ -532,9 +531,9 @@ namespace xc32 {
 		unsigned char adc_block::converter_sampling_time<constexpr_no<7>>(){ return ADCCON2bits.SAMC; }
 		//ADCのbit精度　resolution_modeから選択
 		template<>
-		void adc_block::resolution_bits<constexpr_no<7>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
+		void adc_block::converter_resolution_bits<constexpr_no<7>>(unsigned char val_){ ADCCON1bits.SELRES = val_; }
 		template<>
-		unsigned char adc_block::resolution_bits<constexpr_no<7>>(){ return ADCCON1bits.SELRES; }
+		unsigned char adc_block::converter_resolution_bits<constexpr_no<7>>(){ return ADCCON1bits.SELRES; }
 		//excluded ADC専用　割り当ての別のpinwを使うか
 		template<>
 		void adc_block::converter_use_alternative_pin<constexpr_no<7>>(bool val_){}
@@ -550,12 +549,11 @@ namespace xc32 {
 		bool adc_block::converter_work_ready<constexpr_no<7>>(){ return ADCANCONbits.WKRDY7; }
 		//ADCごとのごとのタスクスタート work_readyになったらwork_enableすると、利用準備が整う
 		template<>
-		void adc_block::converter_work_enable(bool val_){ ADCCON3bits.DIGEN7 = val_; }
+		void adc_block::converter_work_enable<constexpr_no<7>>(bool val_){ ADCCON3bits.DIGEN7 = val_; }
 		template<>
-		bool adc_block::converter_work_enable(){ return ADCCON3bits.DIGEN7; }
+		bool adc_block::converter_work_enable<constexpr_no<7>>(){ return ADCCON3bits.DIGEN7; }
 	#endif
-
-
+	}
 }
 #
 #endif

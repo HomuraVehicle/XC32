@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\clock.cpp" />
+    <ClCompile Include="..\..\..\homuraLib_v2\machine\device\p32mz2048efg100_forVC.c" />
     <ClCompile Include="..\..\..\interrupt.cpp" />
     <ClCompile Include="..\..\..\sfr\i2c1.cpp" />
     <ClCompile Include="..\..\..\sfr\i2c2.cpp" />
