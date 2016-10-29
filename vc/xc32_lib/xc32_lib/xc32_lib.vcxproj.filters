@@ -293,5 +293,8 @@
     <ClCompile Include="..\..\..\homuraLib_v2\machine\device\p32mz2048efg100_forVC.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="test_XC32.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

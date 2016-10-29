@@ -73,6 +73,13 @@ namespace xc32 {
 			void converter_work_enable(bool val_);
 			template<typename converter_no_>
 			bool converter_work_enable();
+
+			//Reset all confige about ADC
+			void reset_all_config(){
+				ADCCON1 &= 0x00008000;			//ONˆÈŠO‚ð0‚ÅƒtƒBƒ‹
+				ADCCON2 = 0;
+				ADCCON3 = 0;
+			}
 		};
 
 	#ifdef ADCXXX_SPESIALIZED

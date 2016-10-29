@@ -72,7 +72,8 @@ namespace xc32{
 		bool lock(){
 			if (is_lock())return false;
 			if (ADCLock.lock())return true;
-
+			ADC.reset_all_config();
+			
 			//QÆ“dˆ³‚ğİ’è
 			ADC.reference_voltage(BlockSetting.VrefMode);
 			__asm("nop");
@@ -139,7 +140,6 @@ namespace xc32{
 				Ref.ADC.template converter_clock_div<converter_no_>(ConverterSetting.ClockDiv);
 				Ref.ADC.template converter_sampling_time<converter_no_>(ConverterSetting.SamplingTime);
 				Ref.ADC.template converter_resolution_bits<converter_no_>(ConverterSetting.ResolutionMode);
-
 				//ADC €”õ‚ğ‘Ò‚Â
 				Ref.ADC.template converter_enable<converter_no_>(true);
 				while(!Ref.ADC.template converter_work_ready<converter_no_>());

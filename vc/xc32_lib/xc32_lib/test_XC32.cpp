@@ -26,6 +26,8 @@
 #include<sfr/port/portF.hpp>
 #include<sfr/port/portG.hpp>
 #include<homuraLib_v2/machine/device/kk10.hpp>
+#include<adc.hpp>
+#include<sfr/analog.hpp>
 
 typedef xc32::output_pin<xc32::sfr::portC::pin12,true> red_led;
 typedef xc32::output_pin<xc32::sfr::portC::pin15,true> green_led;
@@ -383,37 +385,7 @@ public:
 	void stop() { Module.stop(); }
 };
 
-long long res[4];
-long long main_batt=0;
-volatile bool can_get_val=false;
-const int n=1000;
-
-extern "C"{
-	void __ISR(_ADC_EOS_VECTOR,IPL7AUTO) ADC_EOS_Interrupt(void){
-		static int interrupt_cnt=0;
-		//clear the interrupt flag
-		IFS6bits.ADCEOSIF=0;
-
-		//get ADC data
-		res[1]+=AD1_DATA;
-		res[2]+=AD2_DATA;
-		res[0]+=AD3_DATA;
-		res[3]+=AD4_DATA;
-		main_batt+=AD_MAIN_BATT_DATA;
-
-		if(++interrupt_cnt<n){
-			can_get_val=false;
-			//trigger
-			ADCCON3bits.GSWTRG=1;
-		}
-		else{
-			interrupt_cnt=0;
-			can_get_val=true;
-			//disable interrupt
-			IEC6bits.ADCEOSIE=0;
-		}
-	}
-}
+using MyADC=xc32::exclusive_adc<xc32::sfr::adc_block>;
 
 int main() {
 	hmr::machine::device::kk10 KK10;
@@ -425,12 +397,6 @@ int main() {
 	TRISE=0xFE53;
 	TRISF=0xCED4;
 	TRISG=0x4CBD;
-
-//	ADC0CFG=DEVADC0;
-//	ADC1CFG=DEVADC1;
-//	ADC2CFG=DEVADC2;
-//	ADC3CFG=DEVADC3;
-//	ADC4CFG=DEVADC4;
 
 	sync_uart1 Sync_uart1;
 	delay_ms1 delay_ms;
@@ -469,7 +435,40 @@ int main() {
 	PowerAD0.lock();
 	PowerAD0(1);
 
-	xc32::input_pin<pinAD2> PinAD2;
+	red_led Red_LED;
+	Red_LED.lock();
+	Red_LED(0);
+	delay_ms(200);
+	Red_LED(1);
+	delay_ms(200);
+	Red_LED(0);
+	delay_ms(200);
+	Red_LED(1);
+	delay_ms(200);
+	Red_LED(0);
+	
+	MyADC ADC;
+	MyADC::converter<xc32::sfr::adc::an<xc::constexpr_no<1>>::converter_no> converter1(ADC);
+	MyADC::converter<xc32::sfr::adc::an<xc::constexpr_no<3>>::converter_no> converter3(ADC);
+	MyADC::analog_pin<xc32::sfr::portB::pin1> AN1(ADC,converter1);
+	MyADC::analog_pin<xc32::sfr::portB::pin3> AN0(ADC,converter3);
+
+	xc32::adc::block_setting BlockSetting;
+	BlockSetting.ClockDiv=2;
+	BlockSetting.VrefMode=xc32::adc::vref_mode::vref_Vref_Gnd;
+
+	xc32::adc::converter_setting ConverterSetting;
+	ConverterSetting.ClockDiv=1;
+	ConverterSetting.ResolutionMode=xc32::sfr::adc::resolution_mode::resolution_12bits;
+	ConverterSetting.SamplingTime=5;
+
+	ADC.lock(BlockSetting);
+//	converter1.lock(ConverterSetting);
+//	AN1.lock();
+	converter3.lock(ConverterSetting);
+	AN0.lock();
+
+/*	xc32::input_pin<pinAD2> PinAD2;
 	PinAD2.lock();
 
 	xc32::input_pin<pinAD1> PinAD1;
@@ -482,177 +481,40 @@ int main() {
 	PinAD3.lock();
 
 	xc32::input_pin<pinAD4> PinAD4;
-	PinAD4.lock();
+	PinAD4.lock();*/
 
-	red_led Red_LED;
-	Red_LED.lock();
-	Red_LED(0);
-	delay_ms(200);
-	Red_LED(1);
-	delay_ms(200);
-	Red_LED(0);
-	delay_ms(200);
-	Red_LED(1);
-	delay_ms(200);
-	Red_LED(0);
-
-	//clear registers
-	ADCCON1=0;
-	ADCCON2=0;
-	ADCCON3=0;
-	ADCANCON=0;
-	//clear ADC input mode
-	ADCIMCON1=0;
-	ADCIMCON2=0;
-	ADCIMCON3=0;
-
-	//clock select(Peripheral bus clock)
-	ADCCON3bits.ADCSEL=0;
-	//clock div select
-	ADCCON3bits.CONCLKDIV=2;
-	//reference voltage select
-	ADCCON3bits.VREFSEL=1;
-	
-	//settings for each AD converters(ADCDIC: clock div, SAMC: sampling time, SELRES: resolution)
-	//ADC0 settings
-	ADC0TIMEbits.ADCDIV=1;
-	ADC0TIMEbits.SAMC=5;
-	ADC0TIMEbits.SELRES=3;
-	//ADC1 settings
-	ADC1TIMEbits.ADCDIV=1;
-	ADC1TIMEbits.SAMC=5;
-	ADC1TIMEbits.SELRES=3;
-	//ADC2 settings
-	ADC2TIMEbits.ADCDIV=1;
-	ADC2TIMEbits.SAMC=5;
-	ADC2TIMEbits.SELRES=3;
-	//ADC3 settings
-	ADC3TIMEbits.ADCDIV=1;
-	ADC3TIMEbits.SAMC=5;
-	ADC3TIMEbits.SELRES=3;
-	//ADC4 settings
-	ADC4TIMEbits.ADCDIV=1;
-	ADC4TIMEbits.SAMC=5;
-	ADC4TIMEbits.SELRES=3;
-	//ADC7 settings
-	ADCCON2bits.ADCDIV=1;
-	ADCCON2bits.SAMC=5;
-	ADCCON1bits.SELRES=3;
-
-	//Triger source select(set as global software trigger)
-	ADCCON1bits.STRGSRC=1;
-	
-	//interrupt settings
-	ADCGIRQEN1=0;
-	ADCGIRQEN2=0;
-	//enable the end of scan event interrupt
-	ADCCON2bits.EOSIEN=1;
-	IEC6bits.ADCEOSIE=1;
-	IPC48bits.ADCEOSIP=7;
-	//clear interrupt flag
-	IFS6bits.ADCEOSIF=0;
-	
-	//scan triger settings (for class1 and class2 analog channels (AN0-AN11), class 3 analog channels are always triggered by scan source trigger)
-	ADCTRG1bits.TRGSRC0=3;
-	ADCTRG1bits.TRGSRC1=3;
-	ADCTRG1bits.TRGSRC2=3;
-	ADCTRG1bits.TRGSRC3=3;
-	ADCTRG2bits.TRGSRC4=3;
-	
-	//clear scan source
-	ADCCSS1=0;
-	ADCCSS2=0;
-	//set scan source(for all class analog channels including class3)
-	ADCCSS1bits.CSS1=1;
-	ADCCSS1bits.CSS3=1;
-	ADCCSS1bits.CSS4=1;
-	ADCCSS1bits.CSS22=1;
-	ADCCSS1bits.CSS27=0;
-
-	//select input channels for class1 converters
-	ADCTRGMODEbits.SH0ALT=0;//AN0
-	ADCTRGMODEbits.SH1ALT=0;//AN1
-	ADCTRGMODEbits.SH2ALT=0;//AN2
-	ADCTRGMODEbits.SH3ALT=1;//AN48
-	ADCTRGMODEbits.SH4ALT=1;//AN49
-
-	//ADC ON!
-	ADCCON1bits.ON=1;
-
-	//wait for reference voltage to be stable
-	while(!ADCCON2bits.BGVRRDY);
-	while(ADCCON2bits.REFFLT);
-
-	//enable clocks for AD converters
-	ADCANCONbits.ANEN0=1;
-	ADCANCONbits.ANEN1=1;
-	ADCANCONbits.ANEN2=1;
-	ADCANCONbits.ANEN3=1;
-	ADCANCONbits.ANEN4=1;
-	ADCANCONbits.ANEN7=1;
-	//wait for each AD converter to be ready
-	while(!ADCANCONbits.WKRDY0);
-	while(!ADCANCONbits.WKRDY1);
-	while(!ADCANCONbits.WKRDY2);
-	while(!ADCANCONbits.WKRDY3);
-	while(!ADCANCONbits.WKRDY4);
-	while(!ADCANCONbits.WKRDY7);
-	//enable each AD converter
-	ADCCON3bits.DIGEN0=1;
-	ADCCON3bits.DIGEN1=1;
-	ADCCON3bits.DIGEN2=1;
-	ADCCON3bits.DIGEN3=1;
-	ADCCON3bits.DIGEN4=1;
-	ADCCON3bits.DIGEN7=1;
-	res[0]=0,res[1]=0,res[2]=0,res[3]=0;
-	main_batt=0;
-	ADCCON3bits.GSWTRG=1;
-	int cnt=0;
 	while(1){
-        Red_LED(1);
-		//ADCTRGMODEbits.SH3ALT=cnt%2;
-		if(can_get_val){
-			++cnt;
-			res[0]/=n,res[1]/=n,res[2]/=n,res[3]/=n;
-			main_batt/=n;
-			Sync_uart1.putc(cnt);
-			Sync_uart1.putc(res[1]>>8);
-			Sync_uart1.putc(res[1]);
-			Sync_uart1.putc(0x00);
-			Sync_uart1.putc(res[2]>>8);
-			Sync_uart1.putc(res[2]);
-			Sync_uart1.putc(0x00);
-			Sync_uart1.putc(res[0]>>8);
-			Sync_uart1.putc(res[0]);
-			Sync_uart1.putc(0x00);
-			Sync_uart1.putc(res[3]>>8);
-			Sync_uart1.putc(res[3]);
-			Sync_uart1.putc(0x00);
-			Sync_uart1.putc(main_batt>>8);
-			Sync_uart1.putc(main_batt);
-			Sync_uart1.putc(0x0d);
-			Sync_uart1.putc(0x0a);
+		long long ans=0;
 
-			res[0]=0,res[1]=0,res[2]=0,res[3]=0;
-			main_batt=0;
-			if(40>=cnt && cnt>20){
-				ADCCSS1bits.CSS27=1;
-				if(cnt>=40)cnt=0;
-			}
-			else{
-				ADCCSS1bits.CSS27=0;
-			}
-			IEC6bits.ADCEOSIE=1;
-			ADCCON3bits.GSWTRG=1;
-		}
+		converter3.lock(ConverterSetting);
+		for(int i=0;i<100;++i)
+			ans+=AN0();
+		ans/=100;
+		Sync_uart1.putc(ans>>8);
+		Sync_uart1.putc(ans);
 		Sync_uart1.putc(0x0D);
 		Sync_uart1.putc(0x0A);
-		delay_ms(5);
+		converter3.unlock();
+
+		ans=0;
+		converter1.lock(ConverterSetting);
+		for(int i=0;i<100;++i)
+			ans+=AN1();
+		ans/=100;
+		Sync_uart1.putc(ans>>8);
+		Sync_uart1.putc(ans);
+		Sync_uart1.putc(0x0D);
+		Sync_uart1.putc(0x0A);
+		converter1.unlock();
+
+		Red_LED(1);
+		delay_ms(100);
 		Red_LED(0);
-		delay_ms(5);
+		delay_ms(100);
 	}
 	return 0;
 }
+
 
 /*
 struct print{
