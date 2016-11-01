@@ -6,6 +6,9 @@
 #include"clock.hpp"
 #include"sfr/interrupt.hpp"
 #include"sfr/timer_base.hpp"
+#ifndef __asm__
+#define __asm__(val)
+#endif
 namespace xc32{
 	using namespace xc;
 	namespace timer{

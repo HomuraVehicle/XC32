@@ -4,6 +4,7 @@
 #include<XCBase/future.hpp>
 #include<XCBase/array_queue.hpp>
 #include<XCBase/lock.hpp>
+#include<XCBase/chain.hpp>
 #include"exceptions.hpp"
 #include"sfr/interrupt.hpp"
 #include"sfr/adc_base.hpp"
@@ -259,14 +260,11 @@ namespace xc32{
 		};
 	};
 
-	//共有型同期ADC
-	//	shared_adcは実体を用意する必要がない。代わりにanalog_pinからのlock/unclockで適宜初期化/終端化される。
-	//	逆に言えば、shared_adcを解放するためには、すべてのanalog_pinでunlockする必要がある。
-	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
+	//すべての共有型ADCの基本となる、初期化管理をつかさどるクラス
 	template<typename adc_block_register_, typename identifier_>
-	class shared_adc{
-		typedef shared_adc<adc_block_register_, identifier_> my_type;
-	private:
+	class basic_shared_adc{
+		typedef basic_shared_adc<adc_block_register_, identifier_> my_type;
+	public:
 		struct block{
 			template<typename> friend struct converter;
 		private:
@@ -321,7 +319,7 @@ namespace xc32{
 					ADCLock.unlock();
 				}
 			}
-			bool is_lock(){ return LockCnt>0; }
+			bool is_lock(){ return LockCnt > 0; }
 			bool relock(const adc::block_setting& Setting_, bool ForceReset = false){
 				//一緒ならパス
 				if(Setting == Setting_ && !ForceReset)return true;
@@ -365,10 +363,15 @@ namespace xc32{
 				ADC.individual_convert_trigger(true);
 				__asm("nop");
 			}
+			//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,…
+			void scan_trigger_select(unsigned char val_){ADC.scan_trigger_select(val_);}
+			//グローバルソフトウェアトリガビット
+			void global_convert_trigger(){ ADC.global_convert_trigger(); }
+			//一斉スキャン（Global Scan）が終了したか　読みだすと自動的に落ちる
+			bool is_end_global_convert()const volatile{ return ADC.is_end_global_convert(); }
 		};
 		static block Block;
-		static adc::block_setting BlockSetting;
-	private:
+	public:
 		template<typename converter_no_>
 		struct converter{
 		private:
@@ -383,7 +386,7 @@ namespace xc32{
 				config(Setting_);
 				return lock();
 			}
-			bool lock(){		
+			bool lock(){
 				//adc_blockをロック　失敗したら何もせず終わる
 				if(my_type::Block.lock())return true;
 
@@ -450,8 +453,29 @@ namespace xc32{
 			}
 		};
 		template<typename converter_no_>
-		struct converter_holder{
+		struct cv{
 			static converter<converter_no_> Converter;
+		};
+	};
+	template<typename adc_block_register_, typename identifier_>
+	typename basic_shared_adc<adc_block_register_, identifier_>::block basic_shared_adc<adc_block_register_, identifier_>::Block;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	typename basic_shared_adc<adc_block_register_, identifier_>::template converter<converter_no_> basic_shared_adc<adc_block_register_, identifier_>::cv<converter_no_>::Converter;
+
+	//共有型同期ADC
+	//	shared_adcは実体を用意する必要がない。代わりにanalog_pinからのlock/unclockで適宜初期化/終端化される。
+	//	逆に言えば、shared_adcを解放するためには、すべてのanalog_pinでunlockする必要がある。
+	//	analog_pinの読み出し処理は重複していないことの確認がなされる。重複時は読みだし失敗となり、0xffffが返る
+	template<typename adc_block_register_, typename identifier_>
+	class shared_adc{
+		typedef shared_adc<adc_block_register_, identifier_> my_type;
+		struct shared_adc_identifier{};
+		typedef basic_shared_adc<adc_block_register_, shared_adc_identifier> my_adc;
+	private:
+		static adc::block_setting BlockSetting;
+		template<typename converter_no_>
+		struct cv{
 			static adc::converter_setting ConverterSetting;
 		};
 	public:
@@ -460,7 +484,7 @@ namespace xc32{
 		}
 		template<typename converter_no_>
 		static void set_default(const adc::converter_setting& ConverterSetting_){
-			converter_holder<converter_no_>::ConverterSetting = ConverterSetting_;
+			cv<converter_no_>::ConverterSetting = ConverterSetting_;
 		}
 	public:
 		template<typename pin_register_>
@@ -469,7 +493,8 @@ namespace xc32{
 			typedef typename pin_register::analog_no analog_no;
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
-			typedef converter_holder<converter_no> my_converter;
+			typedef typename my_adc::template cv<converter_no> my_converter;
+			typedef typename my_type::cv<converter_no> my_converter_setting;
 			typedef analog_pin<pin_register_> my_pin;
 		private:
 			bool IsLock;
@@ -495,10 +520,10 @@ namespace xc32{
 			bool lock(){
 				if(is_lock())return false;
 
-				if(my_type::Block.lock())return true;
+				if(my_adc::Block.lock())return true;
 
 				if(my_converter::Converter.lock()){
-					my_type::Block.unlock();
+					my_adc::Block.unlock();
 					return true;
 				}
 
@@ -520,7 +545,7 @@ namespace xc32{
 				Pin.opendrain(false);
 
 				my_converter::Converter.unlock();
-				my_type::Block.unlock();;
+				my_adc::Block.unlock();;
 
 				IsLock = false;
 			}
@@ -535,13 +560,13 @@ namespace xc32{
 
 				if(pBlockSetting == 0){
 					//relockがtrueを返した＝リセットする必要がない
-					ForceReset = !my_type::Block.relock(my_type::BlockSetting);
+					ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 				} else{
-					ForceReset = !my_type::Block.relock(*pBlockSetting);
+					ForceReset = !my_adc::Block.relock(*pBlockSetting);
 				}
 
 				if(pConverterSetting == 0){
-					my_converter::Converter.relock(my_converter::ConverterSetting, ForceReset);
+					my_converter::Converter.relock(my_converter_setting::ConverterSetting, ForceReset);
 				} else{
 					my_converter::Converter.relock(*pConverterSetting, ForceReset);
 				}
@@ -550,11 +575,11 @@ namespace xc32{
 				my_converter::Conveter.use_alternative_pin(AN.is_alternative());
 
 				//個別スキャンするチャンネルを設定
-				my_type::Block.individual_convert_select(analog_no::No);
+				my_adc::Block.individual_convert_select(analog_no::No);
 				__asm("nop");
 
 				//トリガを引く
-				my_type::Block.individual_convert_trigger();
+				my_adc::Block.individual_convert_trigger();
 
 				//スキャン待ち
 				while(!AN.data_ready());
@@ -577,13 +602,13 @@ namespace xc32{
 
 				if(pBlockSetting == 0){
 					//relockがtrueを返した＝リセットする必要がない
-					ForceReset = !my_type::Block.relock(my_type::BlockSetting);
+					ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 				} else{
-					ForceReset = !my_type::Block.relock(*pBlockSetting);
+					ForceReset = !my_adc::Block.relock(*pBlockSetting);
 				}
 
 				if(pConverterSetting == 0){
-					my_converter::Converter.relock(my_converter::ConverterSetting, ForceReset);
+					my_converter::Converter.relock(my_converter_setting::ConverterSetting, ForceReset);
 				} else{
 					my_converter::Converter.relock(*pConverterSetting, ForceReset);
 				}
@@ -592,12 +617,12 @@ namespace xc32{
 				my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
 				//個別スキャンするチャンネルを設定
-				my_type::Block.individual_convert_select(analog_no::No);
+				my_adc::Block.individual_convert_select(analog_no::No);
 
 				uint32 Val = 0;
 				for(uint16 ObserveCnt = 0; ObserveCnt<ObserveNum_; ++ObserveCnt){
 					//トリガを引く
-					my_type::Block.individual_convert_trigger();
+					my_adc::Block.individual_convert_trigger();
 
 					//スキャン待ち
 					while(!AN.data_ready());
@@ -614,24 +639,20 @@ namespace xc32{
 		};
 	};
 	template<typename adc_block_register_, typename identifier_>
-	typename shared_adc<adc_block_register_, identifier_>::block shared_adc<adc_block_register_, identifier_>::Block;
-	template<typename adc_block_register_, typename identifier_>
 	adc::block_setting shared_adc<adc_block_register_, identifier_>::BlockSetting;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	adc::converter_setting shared_adc<adc_block_register_, identifier_>::cv<converter_no_>::ConverterSetting;
 
-	template<typename adc_block_register_, typename identifier_>
-	template<typename converter_no_>
-	typename shared_adc<adc_block_register_, identifier_>::template converter<converter_no_> shared_adc<adc_block_register_, identifier_>::converter_holder<converter_no_>::Converter;
-	template<typename adc_block_register_, typename identifier_>
-	template<typename converter_no_>
-	adc::converter_setting shared_adc<adc_block_register_, identifier_>::converter_holder<converter_no_>::ConverterSetting;
 
 /*
+
 	//非同期型個別コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
 	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される。内部ではqueueにadc用のtaskが積まれる。
 	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
-	template<typename adc_block_register_, typename identifier_, unsigned int QueueSize_=10>
+	template<typename adc_block_register_, typename identifier_>
 	class async_functional_adc{
 		//=== 設計概要 ===
 		//async_functional_adcは、個別コンバートを利用してadcのデータ読み出しを担当する
@@ -647,14 +668,15 @@ namespace xc32{
 		friend class test_async_functional_adc;
 	private:
 		typedef adc_block_register_ adc_block_register;
-		typedef async_functional_adc<adc_block_register_, identifier_, QueueSize_> my_type;
+		typedef async_functional_adc<adc_block_register_, identifier_> my_type;
 	private:
 		//データリクエスト内容
-		struct data_request{
+		struct request{
 			const adc::adc_block_setting* pBlockSetting;
 			const adc::adc_setting* pADCSetting;
 			unsigned char Num;
 			promise<uint16>& Ref;
+		public:
 			data_request(promise<uint16>& Ref_)
 				: Ref(Ref_)
 				, VrefMode(xc32::adc::vref_Vref_Gnd)
@@ -664,7 +686,7 @@ namespace xc32{
 			virtual unsigned char getAN() = 0;
 			virtual uint16 read_data() = 0;
 		};
-		static array_queue<data_request*, QueueSize_> RequestQueue;
+		typedef typename xc::chain<request*>::element request_element;
 	public:
 		template<typename pin_register_>
 		struct analog_pin {
@@ -853,7 +875,7 @@ namespace xc32{
 	};
 	template<typename adc_block_register_, unsigned int QueueSize_>
 	array_queue<typename async_functional_adc<adc_block_register_, QueueSize_>::itf_request_data*, QueueSize_> async_functional_adc<adc_block_register_, QueueSize_>::RequestQueue;
-
+	*/
 	/*
 	//非同期型一括コンバートADC
 	//	
