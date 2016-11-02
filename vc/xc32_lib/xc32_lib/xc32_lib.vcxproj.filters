@@ -296,5 +296,8 @@
     <ClCompile Include="test_XC32.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\sfr\adc1.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

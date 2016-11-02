@@ -11,32 +11,18 @@
 
 
 #if defined(XC32_PIC32MX)
-#	ifndef XC32_SFR_ADC1_EXPLICITINTERRUPT
-#		ifndef XC32_DEBUGMODE
-#			define x_xc32_sfr_adc1_interrupt(void) __ISR(XC32_ADC_VEC, IPL7AUTO) ADCInterrupt(void)//*/func(void)
-#		else
-extern "C"{void x_xc32_sfr_adc1_interrupt(void); }
-#		endif
-#	else
-#		ifndef XC32_DEBUGMODE
-#			define xc32_sfr_adc1_interrupt(void) __ISR(XC32_ADC_VEC, IPL7AUTO) ADCInterrupt(void)//*/func(void)
-#		else
-extern "C"{void xc32_sfr_adc1_interrupt(void); }
-#		endif
-#	endif
 #elif defined(XC32_PIC32MZ)
 #	ifndef XC32_SFR_ADC1_EXPLICITINTERRUPT
 #		ifndef XC32_DEBUGMODE
-#			define global_scan_end_interrupt_ptr(void) __ISR(XC32_ADC_TX_VEC, XC32_ADC_TX_IPL_FOR_ISR) ADCTXInterrupt(void)//*/func(void)
+#			define x_xc32_sfr_adc1_global_convert_end_interrupt(void) __ISR(XC32_ADC_TX_VEC, XC32_ADC_TX_IPL_FOR_ISR) ADCTXInterrupt(void)//*/func(void)
 #		else
-extern "C"{void x_xc32_sfr_adc1_tx_interrupt(void); void x_xc32_sfr_adc1_rx_interrupt(void); }
+extern "C"{void x_xc32_sfr_adc1_global_convert_end_interrupt(void);}
 #		endif
 #	else
 #		ifndef XC32_DEBUGMODE
-#			define global_scan_end_interrupt_ptr(void) __ISR(XC32_ADC_TX_VEC, XC32_ADC_TX_IPL_FOR_ISR) ADCTXInterrupt(void)//*/func(void)
-#			define xc32_sfr_adc1_rx_interrupt(void) __ISR(XC32_ADC_RX_VEC, XC32_ADC_RX_IPL_FOR_ISR) ADCRXInterrupt(void)//*/func(void)
+#			define xc32_sfr_adc1_global_convert_end_interrupt(void) __ISR(XC32_ADC_TX_VEC, XC32_ADC_TX_IPL_FOR_ISR) ADCTXInterrupt(void)//*/func(void)
 #		else
-extern "C"{void xc32_sfr_adc1_tx_interrupt(void); void xc32_sfr_adc1_rx_interrupt(void); }
+extern "C"{void xc32_sfr_adc1_global_convert_end_interrupt(void);}
 #		endif
 #	endif
 #else
@@ -117,12 +103,12 @@ namespace xc32 {
 				ADCCON3 = 0;
 			}
 		private:
-			static interrupt::function* global_scan_end_interrupt_ptr;
+			static interrupt::function* global_convert_end_interrupt_ptr;
 		public:
-			const interrupt::function* global_scan_end_interrupt_function()const{ return global_scan_end_interrupt_ptr; }
-			void global_scan_end_interrupt_function(interrupt::function* ptr_){ global_scan_end_interrupt_ptr = ptr_; }
+			const interrupt::function* global_convert_end_interrupt_function()const{ return global_convert_end_interrupt_ptr; }
+			void global_convert_end_interrupt_function(interrupt::function* ptr_){ global_convert_end_interrupt_ptr = ptr_; }
 		public:
-			static const unsigned char tx_ipl;
+			static const unsigned char global_convert_end_ipl;
 		};
 
 	#ifdef ADCXXX_SPESIALIZED
