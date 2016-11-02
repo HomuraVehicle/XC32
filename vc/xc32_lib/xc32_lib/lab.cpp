@@ -49,6 +49,29 @@ int main(){
 	}
 
 
+	{
+		//なんでもいいので、shared_adcを識別するためのタグを定義
+		struct adc_id{};
+		using my_adc = xc32::async_functional_adc<xc32::sfr::adc_block, adc_id>;
+
+		//ADCBlock、Converterは静的クラスメンバとして定義されているので、やるべきことはAnalogPinを作るだけ
+		my_adc::analog_pin<xc32::sfr::portB::pin4> APin;
+
+		//ロック　この時自動的に、ADCBlockとConverterのlockが行われる。よって、最初だけちょっとロックに時間がかかる。
+		APin.lock();
+
+		//読み出し。
+		xc::future<xc::uint16> Data = APin(5);
+
+		//タスク関数
+		my_adc::work();
+		//あるいはこっち
+		//my_adc ADC;
+		//ADC();
+
+		//アンロック ロック時と同じく、ADCBlockとConverterも（誰も利用者がいなくなれば）unlockされる。
+		APin.unlock();
+	}
 
 
 

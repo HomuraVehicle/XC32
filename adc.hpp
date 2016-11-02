@@ -354,6 +354,7 @@ namespace xc32{
 
 				return false;
 			}
+			unsigned int use_count()const{ return LockCnt; }
 		public:
 			void individual_convert_select(unsigned char no){
 				ADC.individual_convert_select(no);
@@ -438,6 +439,7 @@ namespace xc32{
 
 				return false;
 			}
+			unsigned int use_count()const{ return LockCnt; }
 		public:
 			bool start(){
 				if(IsUsed)return true;
@@ -646,8 +648,8 @@ namespace xc32{
 
 	//非同期型個別コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
-	//	一つのadc_block_registerを一つのasync_functional_adcが排他的に利用する
-	//	analog_pinから読みだしても値はその場で読みだされる、futureが戻り値として返される。内部ではqueueにadc用のtaskが積まれる。
+	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
+	//	内部ではqueueにadc用のtaskが積まれ、順次読み出しが行われる。
 	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
 	template<typename adc_block_register_, typename identifier_>
 	class async_functional_adc{
@@ -693,19 +695,113 @@ namespace xc32{
 			virtual uint16 try_read_data() = 0;	//失敗したら、戻り値は0xffff
 		};
 		typedef typename xc::chain<request*>::element request_ptr_element;
-		static xc::chain<request*> ReqPtrQueue;
-		static request* HandlingReqPtr;
-		static uint32 DataSum;
-		static uint16 DataCnt;
+	private:
+		struct converter_task_interface{
+			virtual void task() = 0;
+		};
+		typedef typename xc::chain<converter_task_interface*>::element converter_task_element;
+		static xc::chain<converter_task_interface*> TaskChain;
+	private:
+		static adc::block_setting BlockSetting;
+		template<typename converter_no_>
+		struct converter_task:public converter_task_interface{
+		private:
+			xc::chain<request*> ReqPtrQueue;
+			request* HandlingReqPtr;
+			uint32 DataSum;
+			uint16 DataCnt;
+		public:
+			//タスク関数
+			void task(){
+				//リクエスト中のデータがある場合
+				if(HandlingReqPtr){
+					uint16 Data = HandlingReqPtr->try_read_data();
+
+					//データ読み取りに失敗していなければ
+					if(Data != 0xffff){
+						DataSum += Data;
+						++DataCnt;
+
+						if(DataCnt >= HandlingReqPtr->Num){
+							//Converterを停止
+							HandlingReqPtr->stop();
+							//結果を書き込み
+							HandlingReqPtr->Ref.set_value(static_cast<uint16>(DataSum / DataCnt));
+							//リクエストデータ終了
+							HandlingReqPtr = 0;
+						} else{
+							//個別スキャンするチャンネルを設定
+							my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
+							__asm("nop");
+							//トリガを引いて、最初のリクエスト
+							my_adc::Block.individual_convert_trigger();
+						}
+					}
+				}
+
+				//リクエスト中のデータがない場合
+				while(HandlingReqPtr == 0 && !ReqPtrQueue.empty()){
+					//先頭から抜いてくる
+					HandlingReqPtr = ReqPtrQueue.front();
+					ReqPtrQueue.pop_front();
+
+					//ヌルポをはじく（原理的にはないはず）
+					if(HandlingReqPtr == 0)continue;
+
+					//startに失敗することは、原理的にあり得ないので無視
+					HandlingReqPtr->start();
+
+					DataSum = 0;
+					DataCnt = 0;
+
+					//個別スキャンするチャンネルを設定
+					my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
+					__asm("nop");
+
+					//トリガを引いて、最初のリクエスト
+					my_adc::Block.individual_convert_trigger();
+				}
+			}
+			//登録されたすべてのリクエストを破棄
+			void clear(){
+				for(xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
+					if(*Itr != 0){
+						(*Itr)->write(0xffff);
+					}
+				}
+				ReqPtrQueue.clear();
+				if(HandlingReqPtr){
+					HandlingReqPtr->Ref.write(0xffff);
+				}
+				HandlingReqPtr = 0;
+			}
+			//push
+			void push(request_ptr_element& Elem){ ReqPtrQueue.push_back(Elem); }
+		};
+		template<typename converter_no_>
+		struct converter_holder{
+			static converter_task<converter_no_> ConverterTask;
+			static converter_task_element TaskElement;
+			static adc::converter_setting ConverterSetting;
+		};
+	public:
+		static void set_default(const adc::block_setting& BlockSetting_){
+			BlockSetting = BlockSetting_;
+		}
+		template<typename converter_no_>
+		static void set_default(const adc::converter_setting& ConverterSetting_){
+			converter_holder<converter_no_>::ConverterSetting = ConverterSetting_;
+		}
 	public:
 		template<typename pin_register_>
-		struct analog_pin {
+		struct analog_pin{
 		private:
 			typedef pin_register_ pin_register;
 			typedef typename pin_register_::analog_no analog_no;
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
 			typedef typename my_adc::template cv<converter_no> my_converter;
+			typedef typename converter_holder<converter_no> my_converter_holder;
 		private:
 			struct an_request :public request{
 				an_register AN;
@@ -725,28 +821,28 @@ namespace xc32{
 					}
 
 					if(pConverterSetting == 0){
-						my_converter::Converter.relock(my_converter_setting::ConverterSetting, ForceReset);
+						my_converter::Converter.relock(my_converter_holder::ConverterSetting, ForceReset);
 					} else{
 						my_converter::Converter.relock(*pConverterSetting, ForceReset);
 					}
 
 					//代替ピンの設定の有無を設定
-					my_converter::Conveter.use_alternative_pin(AN.is_alternative());
+					my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
 					return false;
 				}
 				virtual void stop(){
 					//コンバーター使用権放棄
-					my_converter::Conveter.stop();
+					my_converter::Converter.stop();
 				}
-				virtual uint16 read_data(){
+				virtual uint16 try_read_data(){
 					//スキャン待ち
 					if(!AN.data_ready())return 0xffff;
 					return AN.data();
 				}
 			};
 			an_request Request;
-			request_ptr_element Element;	//Requestへのポインタを掴んでいる
+			request_ptr_element ReqElement;	//Requestへのポインタを掴んでいる
 		private:
 			pin_register Pin;
 			bool IsLock;
@@ -755,14 +851,14 @@ namespace xc32{
 			analog_pin()
 				: IsLock(false)
 				, Request(Promise){
-				*Element = &Request;
+				*ReqElement = &Request;
 			}
-			~analog_pin(){ if (is_lock())unlock(); }
-			void config(const adc::block_setting* pBlockSetting_, const adc::converter_setting* pConverterSetting_) {
+			~analog_pin(){ if(is_lock())unlock(); }
+			void config(const adc::block_setting* pBlockSetting_, const adc::converter_setting* pConverterSetting_){
 				Request.pBlockSetting = pBlockSetting_;
 				Request.pConverterSetting = pConverterSetting_;
 			}
-			bool lock(const adc::block_setting* pBlockSetting_, const adc::converter_setting* pConverterSetting_) {
+			bool lock(const adc::block_setting* pBlockSetting_, const adc::converter_setting* pConverterSetting_){
 				config(pBlockSetting_, pConverterSetting_);
 				return lock();
 			}
@@ -774,6 +870,11 @@ namespace xc32{
 				if(my_converter::Converter.lock()){
 					my_adc::Block.unlock();
 					return true;
+				}
+
+				if(my_converter_holder::TaskElement){
+					*my_converter_holder::TaskElement = &my_converter_holder::ConverterTask;
+					TaskChain.push_back(my_converter_holder::TaskElement);
 				}
 
 				Pin.tris(true);
@@ -796,107 +897,58 @@ namespace xc32{
 				my_converter::Converter.unlock();
 				my_adc::Block.unlock();;
 
+				if(my_converter::Converter.use_count() == 0 && !my_converter_holder::TaskElement){
+					TaskChain.erase(TaskChain.find(my_converter_holder::TaskElement));
+				}
+
 				IsLock = false;
 			}
 		public:
 			//データ読み出し
 			//	リクエストがそもそも不可能な場合は空のfutureが返る
 			//	何らかの原因で失敗した場合は、0xffffがfutureに書き込まれる
-			future<uint16> operator()(void){return operator()(1);}
+			future<uint16> operator()(void){ return operator()(1); }
 			future<uint16> operator()(uint16 ObserveNum_){
-				if (owns_request())return future<uint16>();
-				if (ObserveNum_ == 0)return future<uint16>();
+				if(owns_request())return future<uint16>();
+				if(ObserveNum_ == 0)return future<uint16>();
 
-				//Requestを書き換えて、そのポインタをつかんでるElementをQueueにぶち込む
+				//Requestを書き換えて、そのポインタをつかんでるReqElementをQueueにぶち込む
 				Request.Num = ObserveNum_;
-				ReqPtrQueue.push_back(Element);
+				converter_holder<converter_no>::ConverterTask.push(ReqElement);
 
 				return Promise.get_future();
 			}
 		public:
 			//現在リクエスト中か？
-			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(Element); }
+			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(ReqElement); }
 		};
 	public:
-		//関数オブジェクトとして使う場合の、タスク関数
 		void operator()(void){work();}
-	public:
-		//静的メンバ関数として用意された、タスク関数
 		static void work(){
-			if(!is_lock())return;
-
-			//リクエスト中のデータがある場合
-			if(HandlingReqPtr){
-				uint16 Data = HandlingReqPtr->try_read_data();
-
-				//データ読み取りに失敗していなければ
-				if(Data != 0xffff){
-					DataSum += Data;
-					++DataCnt;
-
-					if(DataCnt >= HandlingReqPtr->Num){
-						//Converterを停止
-						HandlingReqPtr->stop();
-						//結果を書き込み
-						HandlingReqPtr->Ref.write(static_cast<uint16>(DataSum / DataCnt));
-						//リクエストデータ終了
-						HandlingReqPtr = 0;
-					} else{
-						//個別スキャンするチャンネルを設定
-						my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
-						__asm("nop");
-						//トリガを引いて、最初のリクエスト
-						my_adc::Block.individual_convert_trigger();
-					}
-				}
-			}
-
-			//リクエスト中のデータがない場合
-			while(HandlingReqPtr == 0 && !RequestQueue.empty()){
-				//先頭から抜いてくる
-				HandlingReqPtr = ReqPtrQueue.front();
-				ReqPtrQueue.pop_front();
-
-				//ヌルポをはじく（原理的にはないはず）
-				if(HandlingReqPtr == 0)continue;
-
-				//startに失敗することは、原理的にあり得ないので無視
-				HandlingReqPtr->start();
-
-				DataSum = 0;
-				DataCnt = 0;
-
-				//個別スキャンするチャンネルを設定
-				my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
-				__asm("nop");
-
-				//トリガを引いて、最初のリクエスト
-				my_adc::Block.individual_convert_trigger();
+			xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
+			xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
+			for(; Itr != End; ++Itr){
+				(*Itr)->task();
 			}
 		}
-		//登録されたすべてのリクエストを破棄
+		template<typename converter_no_>
 		static void clear(){
-			for(xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
-				if(*Itr != 0){
-					(*Itr)->write(0xffff);
-				}
-			}
-			ReqPtrQueue.clear();
-			if(HandlingReqPtr){
-				HandlingReqPtr->Ref.write(0xffff);
-			}
-			HandlingReqPtr = 0;
+			converter_holder<converter_no_>::Converter.clear();
 		}
 	};
 	template<typename adc_block_register_, typename identifier_>
-	xc::chain < typename async_functional_adc <adc_block_register_,identifier_>::request* > async_functional_adc < typename adc_block_register_, identifier_>::ReqPtrQueue;
+	adc::block_setting async_functional_adc<adc_block_register_, identifier_>::BlockSetting;
 	template<typename adc_block_register_, typename identifier_>
-	typename async_functional_adc <adc_block_register_, identifier_>::request* async_functional_adc <adc_block_register_, identifier_>::HandlingReqPtr = 0;
+	xc::chain<typename async_functional_adc <adc_block_register_, identifier_>::converter_task_interface*> typename async_functional_adc <adc_block_register_, identifier_>::TaskChain;
 	template<typename adc_block_register_, typename identifier_>
-	uint32 async_functional_adc <adc_block_register_, identifier_>::DataSum = 0;
+	template<typename converter_no_>
+	typename async_functional_adc <adc_block_register_,identifier_>::converter_task<converter_no_> async_functional_adc<adc_block_register_, identifier_>::converter_holder<converter_no_>::ConverterTask;
 	template<typename adc_block_register_, typename identifier_>
-	uint16 async_functional_adc <adc_block_register_, identifier_>::DataCnt = 0;
-
+	template<typename converter_no_>
+	typename async_functional_adc <adc_block_register_, identifier_>::converter_task_element async_functional_adc<adc_block_register_, identifier_>::converter_holder<converter_no_>::TaskElement;
+	template<typename adc_block_register_, typename identifier_>
+	template<typename converter_no_>
+	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::converter_holder<converter_no_>::ConverterSetting;
 	/*
 	//非同期型一括コンバートADC
 	//	
