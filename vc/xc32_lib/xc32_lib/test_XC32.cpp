@@ -349,7 +349,7 @@ public:
 	void operator()(unsigned int period_,xc32::timer::normal_prescaler::div div_) { Module(period_,div_); }
 };
 
-class interrupt_timer {
+class test_interrupt_timer {
 private:
 	typedef xc32::sfr::timer3 timer_register;
 	timer_register Register;
@@ -376,7 +376,7 @@ private:
 	};
 	cInterruptFunc interrupt_func;
 public:
-	interrupt_timer():interrupt_func(Module) {
+	test_interrupt_timer():interrupt_func(Module) {
 		Module.initialize(Register);
 		Module.config(500,interrupt_func);
 		Module.lock();
@@ -400,7 +400,7 @@ int main() {
 
 	sync_uart1 Sync_uart1;
 	delay_ms1 delay_ms;
-	interrupt_timer interrupt_timer3;
+	test_interrupt_timer interrupt_timer3;
 	//interrupt_timer3.start();
 	//xc32::sfr::adc1 ADC;
 
