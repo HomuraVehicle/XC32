@@ -73,6 +73,8 @@ namespace xc32{
 		bool lock(){
 			if (is_lock())return false;
 			if (ADCLock.lock())return true;
+
+			//一度すべて設定をクリアする
 			ADC.reset_all_config();
 			
 			//参照電圧を設定
@@ -272,13 +274,17 @@ namespace xc32{
 			unique_lock<adc_block_register_> ADCLock;
 		private:
 			unsigned int LockCnt;
+			bool IsGlobalConvert;
 			adc::block_setting Setting;
 		public:
-			void config(const adc::block_setting& Setting_){
+			block():LockCnt(0), IsGlobalConvert(false), Setting(){}
+		public:
+			void config(const adc::block_setting& Setting_, bool IsGlobalConvert_=false){
 				Setting = Setting_;
+				IsGlobalConvert = IsGlobalConvert_;
 			}
-			bool lock(const adc::block_setting& Setting_){
-				config(Setting_);
+			bool lock(const adc::block_setting& Setting_, bool IsGlobalConvert_ = false){
+				config(Setting_, IsGlobalConvert_);
 				return lock();
 			}
 			bool lock(){
@@ -289,6 +295,9 @@ namespace xc32{
 						return true;
 					}
 
+					//一度すべて設定をクリアする
+					ADC.reset_all_config();
+
 					//参照電圧を設定
 					ADC.reference_voltage(Setting.VrefMode);
 					__asm("nop");
@@ -298,6 +307,11 @@ namespace xc32{
 					//クロック分周設定(0～127までなので高位のビットを削除)
 					ADC.clock_div((Setting.ClockDiv & 0x7F));
 					__asm("nop");
+
+					//Global Convert Mode用設定
+					if(IsGlobalConvert)ADC.scan_trigger_select(1);
+					__asm("nop");
+
 					//ADC始動！
 					ADC.enable(1);
 					__asm("nop");
@@ -339,6 +353,11 @@ namespace xc32{
 				//クロック分周設定(0～127までなので高位のビットを削除)
 				ADC.clock_div((Setting.ClockDiv & 0x7F));
 				__asm("nop");
+
+				//Global Convert Mode用設定
+				if(IsGlobalConvert)ADC.scan_trigger_select(1);
+				__asm("nop");
+
 				//ADC始動！
 				ADC.enable(1);
 				__asm("nop");
@@ -370,6 +389,10 @@ namespace xc32{
 			void global_convert_trigger(){ ADC.global_convert_trigger(); }
 			//一斉スキャン（Global Scan）が終了したか　読みだすと自動的に落ちる
 			bool is_end_global_convert()const volatile{ return ADC.is_end_global_convert(); }
+			//一斉スキャンに登録したチャンネルをリセット
+			void reset_request_global_convert(){
+				ADC.reset_request_global_convert();
+			}
 		};
 		static block Block;
 	public:
@@ -377,14 +400,18 @@ namespace xc32{
 		struct converter{
 		private:
 			bool IsUsed;
+			bool IsGlobalConvert;
 			unsigned int LockCnt;
 			adc::converter_setting Setting;
 		public:
-			void config(const adc::converter_setting& Setting_){
+			converter():IsUsed(false), IsGlobalConvert(false), LockCnt(0), Setting(){}
+		public:
+			void config(const adc::converter_setting& Setting_, bool IsGlobalConvert_ = false){
 				Setting = Setting_;
+				IsGlobalConvert = IsGlobalConvert_;
 			}
-			bool lock(const adc::converter_setting& Setting_){
-				config(Setting_);
+			bool lock(const adc::converter_setting& Setting_, bool IsGlobalConvert_ = false){
+				config(Setting_, IsGlobalConvert_);
 				return lock();
 			}
 			bool lock(){
@@ -396,6 +423,9 @@ namespace xc32{
 					my_type::Block.ADC.template converter_clock_div<converter_no_>(Setting.ClockDiv);
 					my_type::Block.ADC.template converter_sampling_time<converter_no_>(Setting.SamplingTime);
 					my_type::Block.ADC.template converter_resolution_bits<converter_no_>(Setting.ResolutionMode);
+
+					//Global Convert Mode用設定
+					if(IsGlobalConvert)my_type::Block.ADC.template converter_scan_trigger_select<converter_no_>(3);
 
 					//ADC 準備を待つ
 					my_type::Block.ADC.template converter_enable<converter_no_>(true);
@@ -431,6 +461,9 @@ namespace xc32{
 				my_type::Block.ADC.template converter_clock_div<converter_no_>(Setting.ClockDiv);
 				my_type::Block.ADC.template converter_sampling_time<converter_no_>(Setting.SamplingTime);
 				my_type::Block.ADC.template converter_resolution_bits<converter_no_>(Setting.ResolutionMode);
+
+				//Global Convert Mode用設定
+				if(IsGlobalConvert)my_type::Block.ADC.template converter_scan_trigger_select<converter_no_>(3);
 
 				//ADC 準備を待つ
 				my_type::Block.ADC.template converter_enable<converter_no_>(true);
@@ -950,7 +983,6 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
 
-	/*
 	//非同期型一括コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
@@ -988,7 +1020,7 @@ namespace xc32{
 				: Ref(Ref_)
 				, AN(AN_)
 				, Num(1)
-				, Cnt(0)
+				, Remain(0)
 				, Data(0){
 			}
 		public:
@@ -997,24 +1029,53 @@ namespace xc32{
 			virtual void stop() = 0;
 			//AN Pin系
 			virtual void request_data() = 0;
-			virtual uint16 read_data() = 0;	//失敗したら、戻り値は0xffff
+			virtual uint16 try_read_data() = 0;	//失敗したら、戻り値は0xffff
 		};
 		typedef xc::sorted_chain<request*> request_ptr_chain;
 		typedef typename request_ptr_chain::element request_ptr_element;
 		request_ptr_chain ReqPtrQueue;
 	public:
+		//割り込み関数
 		static void interrupt_function(){
-			for(request_ptr_chain::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
-				(*Itr)->Data += (*Itr)->read_data();
-				--((*Itr)->Remain);
+			//まず、Requestデータ読み出し処理
+			request_ptr_chain::iterator Itr = ReqPtrQueue.begin();
+			while(Itr != ReqPtrQueue.end()){
+				uint16 Datum = (*Itr)->try_read_data();
+				if(Datum != 0xffff){
+					(*Itr)->Data += Datum;
+					--((*Itr)->Remain);
 
-				//終了処理
-				if((*Itr)->Remain == 0){
-					(*Itr)->set_value(static_cast<uint16>((*Itr)->Data / (*Itr)->Num));
-					ReqPtrQueue.pop();
-					Itr = ReqPtrQueue.begin();
+					//終了処理
+					if((*Itr)->Remain == 0){
+						(*Itr)->set_value(static_cast<uint16>((*Itr)->Data / (*Itr)->Num));
+						ReqPtrQueue.pop();
+						Itr = ReqPtrQueue.begin();
+						continue;
+					}
 				}
+
+				++Itr;
 			}
+
+			//次に、まだ必要なデータの読み出しを確認
+
+			//一斉スキャンに登録したチャンネルをリセット
+			my_adc::Block.reset_request_global_convert();
+
+			//もしすでに必要な読み出しがなければ、一度中断する
+			if(ReqPtrQueue.empty()){
+				return;
+			}
+
+			Itr = ReqPtrQueue.begin();
+			while(Itr != ReqPtrQueue.end()){
+				(*Itr)->request_data();
+				++Itr;
+			}
+
+			//トリガーを引く
+			my_adc::Block.global_convert_trigger();
+		}
 	public:
 		template<typename pin_register_>
 		struct analog_pin{
@@ -1024,7 +1085,7 @@ namespace xc32{
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
 			typedef typename my_adc::template cv<converter_no> my_converter;
-			typedef typename task_holder<converter_no> my_task_holder;
+////			typedef typename task_holder<converter_no> my_task_holder;
 		private:
 			struct an_request :public request{
 				an_register AN;
@@ -1259,7 +1320,8 @@ namespace xc32{
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
 	adc::converter_setting async_interrupt_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
+	//*/
 }
-*/
+
 #
 #endif
