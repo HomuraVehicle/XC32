@@ -237,6 +237,7 @@ namespace xc32{
 			}
 			uint16 operator()(uint16 ObserveNum_){
 				xc32_assert(is_lock(), exception(0xE2));
+				//xc32_assert(ObserveNum_ >= 0);
 
 				//代替ピンの設定の有無を設定
 				Converter.use_alternative_pin(AN.is_alternative());
@@ -257,7 +258,7 @@ namespace xc32{
 					Val += AN.data();
 				}
 
-				return Val;
+				return Val/ObserveNum_;
 			}
 		};
 	};
@@ -267,6 +268,9 @@ namespace xc32{
 	class basic_shared_adc{
 		typedef basic_shared_adc<adc_block_register_, identifier_> my_type;
 	public:
+		template<typename converter_no_>
+		struct converter;
+
 		struct block{
 			template<typename> friend struct converter;
 		private:
@@ -529,7 +533,7 @@ namespace xc32{
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
 			typedef typename my_adc::template cv<converter_no> my_converter;
-			typedef typename my_type::cv<converter_no> my_converter_setting;
+			typedef typename my_type::template cv<converter_no> my_converter_setting;
 			typedef analog_pin<pin_register_> my_pin;
 		private:
 			bool IsLock;
@@ -797,7 +801,7 @@ namespace xc32{
 			}
 			//登録されたすべてのリクエストを破棄
 			void clear(){
-				for(xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
+				for(typename xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
 					if(*Itr != 0){
 						(*Itr)->write(0xffff);
 					}
@@ -834,7 +838,7 @@ namespace xc32{
 			typedef sfr::adc::an<typename pin_register_::analog_no> an_register;
 			typedef typename an_register::converter_no converter_no;
 			typedef typename my_adc::template cv<converter_no> my_converter;
-			typedef typename task_holder<converter_no> my_task_holder;
+			typedef task_holder<converter_no> my_task_holder;
 		private:
 			struct an_request :public request{
 				an_register AN;
@@ -846,17 +850,17 @@ namespace xc32{
 					if(my_converter::Converter.start())return true;
 
 					bool ForceReset = false;
-					if(pBlockSetting == 0){
+					if(this->pBlockSetting == 0){
 						//relockがtrueを返した＝リセットする必要がない
 						ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 					} else{
-						ForceReset = !my_adc::Block.relock(*pBlockSetting);
+						ForceReset = !my_adc::Block.relock(*(this->pBlockSetting));
 					}
 
-					if(pConverterSetting == 0){
+					if(this->pConverterSetting == 0){
 						my_converter::Converter.relock(my_task_holder::ConverterSetting, ForceReset);
 					} else{
-						my_converter::Converter.relock(*pConverterSetting, ForceReset);
+						my_converter::Converter.relock(*(this->pConverterSetting), ForceReset);
 					}
 
 					//代替ピンの設定の有無を設定
@@ -958,8 +962,8 @@ namespace xc32{
 	public:
 		void operator()(void){work();}
 		static void work(){
-			xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
-			xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
+			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
+			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
 			for(; Itr != End; ++Itr){
 				(*Itr)->task();
 			}
@@ -972,10 +976,10 @@ namespace xc32{
 	template<typename adc_block_register_, typename identifier_>
 	adc::block_setting async_functional_adc<adc_block_register_, identifier_>::BlockSetting;
 	template<typename adc_block_register_, typename identifier_>
-	xc::chain<typename async_functional_adc <adc_block_register_, identifier_>::converter_task_interface*> typename async_functional_adc <adc_block_register_, identifier_>::TaskChain;
+	xc::chain<typename async_functional_adc <adc_block_register_, identifier_>::converter_task_interface*> async_functional_adc<adc_block_register_, identifier_>::TaskChain;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
-	typename async_functional_adc <adc_block_register_,identifier_>::converter_task<converter_no_> async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterTask;
+	typename async_functional_adc<adc_block_register_,identifier_>::template converter_task<converter_no_> async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterTask;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
 	typename async_functional_adc <adc_block_register_, identifier_>::converter_task_element async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterTaskElement;
@@ -983,7 +987,7 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
 
-	//非同期型一括コンバートADC
+/*	//非同期型一括コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
 	//	内部ではqueueにadc用のtaskが積まれ、順次読み出しが行われる。
