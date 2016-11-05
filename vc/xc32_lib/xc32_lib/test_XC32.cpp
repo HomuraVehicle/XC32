@@ -390,6 +390,9 @@ using MyADC=xc32::exclusive_adc<xc32::sfr::adc_block>;
 struct shared_adc_identifer{};
 using MySharedADC=xc32::shared_adc<xc32::sfr::adc_block,shared_adc_identifer>;
 
+struct functional_adc_identifer{};
+using MyFuncADC=xc32::async_functional_adc<xc32::sfr::adc_block,functional_adc_identifer>;
+
 int main() {
 	hmr::machine::device::kk10 KK10;
 
@@ -450,8 +453,10 @@ int main() {
 	delay_ms(200);
 	Red_LED(0);
 
-	MySharedADC::analog_pin<xc32::sfr::portB::pin1> sAN1;
-	MySharedADC::analog_pin<xc32::sfr::portB::pin3> sAN0;
+	MyFuncADC FunctionalADC;
+	MyFuncADC::analog_pin<xc32::sfr::portB::pin1> fAN1;
+	MyFuncADC::analog_pin<xc32::sfr::portB::pin3> fAN0_1;
+	MyFuncADC::analog_pin<xc32::sfr::portB::pin3> fAN0;
 
 	xc32::adc::block_setting BlockSetting;
 	BlockSetting.ClockDiv=2;
@@ -461,12 +466,10 @@ int main() {
 	ConverterSetting.ClockDiv=1;
 	ConverterSetting.ResolutionMode=xc32::sfr::adc::resolution_mode::resolution_12bits;
 	ConverterSetting.SamplingTime=5;
-
-	//sAN1.config(&BlockSetting,&ConverterSetting);
-	//sAN0.config(&BlockSetting,&ConverterSetting);
-	sAN1.lock(&BlockSetting,&ConverterSetting);
-	sAN0.lock(&BlockSetting,&ConverterSetting);
 	
+	fAN1.lock(&BlockSetting,&ConverterSetting);
+	fAN0.lock(&BlockSetting,&ConverterSetting);
+	fAN0_1.lock(&BlockSetting,&ConverterSetting);
 
 /*	xc32::input_pin<pinAD2> PinAD2;
 	PinAD2.lock();
@@ -483,26 +486,52 @@ int main() {
 	xc32::input_pin<pinAD4> PinAD4;
 	PinAD4.lock();*/
 
+	auto ans1=fAN1();
+	auto ans0=fAN0();
+	auto ans0_1=fAN0_1();
+
 	while(1){
-		long long ans=0;
+		if(ans1.can_get()){
+			int ans=ans1.get();
+			Sync_uart1.putc(0x01);
+			Sync_uart1.putc(ans>>8);
+			Sync_uart1.putc(ans);
+			Sync_uart1.putc(0x0D);
+			Sync_uart1.putc(0x0A);
 
-		ans=sAN0(100);
-		Sync_uart1.putc(ans>>8);
-		Sync_uart1.putc(ans);
-		Sync_uart1.putc(0x0D);
-		Sync_uart1.putc(0x0A);
+			ans1=fAN1(100);
+			delay_ms(200);
+		}
+		if(ans0.can_get()){
+			int ans=ans0.get();
+			Sync_uart1.putc(0x00);
+			Sync_uart1.putc(ans>>8);
+			Sync_uart1.putc(ans);
+			Sync_uart1.putc(0x0D);
+			Sync_uart1.putc(0x0A);
 
-		ans=0;
-		ans=sAN1(100);
-		Sync_uart1.putc(ans>>8);
-		Sync_uart1.putc(ans);
-		Sync_uart1.putc(0x0D);
-		Sync_uart1.putc(0x0A);
+			ans0=fAN0(100);
+			delay_ms(200);
+		}
+		if(ans0_1.can_get()){
+			int ans=ans0_1.get();
+			Sync_uart1.putc(0x10);
+			Sync_uart1.putc(ans>>8);
+			Sync_uart1.putc(ans);
+			Sync_uart1.putc(0x0D);
+			Sync_uart1.putc(0x0A);
 
-		Red_LED(1);
-		delay_ms(100);
-		Red_LED(0);
-		delay_ms(100);
+			ans0_1=fAN0_1(10);
+			delay_ms(200);
+		}
+		
+
+		FunctionalADC();
+		
+		//Red_LED(1);
+		//delay_ms(100);
+		//Red_LED(0);
+		//delay_ms(100);
 	}
 	return 0;
 }
