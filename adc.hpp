@@ -688,6 +688,7 @@ namespace xc32{
 	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
 	//	内部ではqueueにadc用のtaskが積まれ、順次読み出しが行われる。
 	//	機能させるためには、定期的にconverterごとのwork関数を呼び出す必要がある。
+	//	読み出し処理を一括に管理させるため、読み出し重複が必ず起こらないのがメリット。
 	template<typename adc_block_register_, typename identifier_>
 	class async_functional_adc{
 		//=== 設計概要 ===
@@ -734,7 +735,9 @@ namespace xc32{
 		typedef typename xc::chain<request*>::element request_ptr_element;
 	private:
 		struct converter_task_interface{
-			virtual void task() = 0;
+			//task継続中はtrueを返す
+			virtual bool task() = 0;
+			virtual void clear() = 0;
 		};
 		typedef typename xc::chain<converter_task_interface*>::element converter_task_element;
 		static xc::chain<converter_task_interface*> TaskChain;
@@ -748,8 +751,8 @@ namespace xc32{
 			uint32 DataSum;
 			uint16 DataCnt;
 		public:
-			//タスク関数
-			void task(){
+			//task継続中はtrueを返す
+			bool task(){
 				//リクエスト中のデータがある場合
 				if(HandlingReqPtr){
 					uint16 Data = HandlingReqPtr->try_read_data();
@@ -776,8 +779,12 @@ namespace xc32{
 					}
 				}
 
+
 				//リクエスト中のデータがない場合
-				while(HandlingReqPtr == 0 && !ReqPtrQueue.empty()){
+				while(HandlingReqPtr == 0){
+					//タスクキューが空なら、終了
+					if(ReqPtrQueue.empty())return false;
+
 					//先頭から抜いてくる
 					HandlingReqPtr = ReqPtrQueue.front();
 					ReqPtrQueue.pop_front();
@@ -798,6 +805,9 @@ namespace xc32{
 					//トリガを引いて、最初のリクエスト
 					my_adc::Block.individual_convert_trigger();
 				}
+
+				//タスク中
+				return true;
 			}
 			//登録されたすべてのリクエストを破棄
 			void clear(){
@@ -964,13 +974,21 @@ namespace xc32{
 		static void work(){
 			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
 			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
-			for(; Itr != End; ++Itr){
-				(*Itr)->task();
-			}
+
+			bool StillWork;
+			do{
+				StillWork = false;
+				for(; Itr != End; ++Itr){
+					StillWork |= (*Itr)->task();
+				}
+			} while(StillWork);
 		}
-		template<typename converter_no_>
 		static void clear(){
-			task_holder<converter_no_>::Converter.clear();
+			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
+			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
+			for(; Itr != End; ++Itr){
+				StillWork |= (*Itr)->clear();
+			}
 		}
 	};
 	template<typename adc_block_register_, typename identifier_>
