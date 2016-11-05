@@ -987,7 +987,7 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
 
-/*	//非同期型一括コンバートADC
+	//非同期型一括コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
 	//	内部ではqueueにadc用のtaskが積まれ、順次読み出しが行われる。
