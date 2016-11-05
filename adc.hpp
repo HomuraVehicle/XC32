@@ -281,7 +281,7 @@ namespace xc32{
 			bool IsGlobalConvert;
 			adc::block_setting Setting;
 		public:
-			block():LockCnt(0), IsGlobalConvert(false), Setting(){}
+			block():ADCLock(ADC), LockCnt(0), IsGlobalConvert(false), Setting(){}
 		public:
 			void config(const adc::block_setting& Setting_, bool IsGlobalConvert_=false){
 				Setting = Setting_;
@@ -611,7 +611,7 @@ namespace xc32{
 				}
 
 				//代替ピンの設定の有無を設定
-				my_converter::Conveter.use_alternative_pin(AN.is_alternative());
+				my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
 				//個別スキャンするチャンネルを設定
 				my_adc::Block.individual_convert_select(analog_no::No);
@@ -627,7 +627,7 @@ namespace xc32{
 				uint16 Val = AN.data();
 
 				//コンバーター使用権放棄
-				my_converter::Conveter.stop();
+				my_converter::Converter.stop();
 
 				return Val;
 			}
@@ -673,7 +673,7 @@ namespace xc32{
 				//コンバーター使用権放棄
 				my_converter::Converter.stop();
 
-				return Val;
+				return Val/ObserveNum_;
 			}
 		};
 	};

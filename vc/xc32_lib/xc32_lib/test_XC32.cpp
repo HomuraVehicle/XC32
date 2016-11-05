@@ -387,6 +387,9 @@ public:
 
 using MyADC=xc32::exclusive_adc<xc32::sfr::adc_block>;
 
+struct shared_adc_identifer{};
+using MySharedADC=xc32::shared_adc<xc32::sfr::adc_block,shared_adc_identifer>;
+
 int main() {
 	hmr::machine::device::kk10 KK10;
 
@@ -446,12 +449,9 @@ int main() {
 	Red_LED(1);
 	delay_ms(200);
 	Red_LED(0);
-	
-	MyADC ADC;
-	MyADC::converter<xc32::sfr::adc::an<xc::constexpr_no<1>>::converter_no> converter1(ADC);
-	MyADC::converter<xc32::sfr::adc::an<xc::constexpr_no<3>>::converter_no> converter3(ADC);
-	MyADC::analog_pin<xc32::sfr::portB::pin1> AN1(ADC,converter1);
-	MyADC::analog_pin<xc32::sfr::portB::pin3> AN0(ADC,converter3);
+
+	MySharedADC::analog_pin<xc32::sfr::portB::pin1> sAN1;
+	MySharedADC::analog_pin<xc32::sfr::portB::pin3> sAN0;
 
 	xc32::adc::block_setting BlockSetting;
 	BlockSetting.ClockDiv=2;
@@ -462,11 +462,11 @@ int main() {
 	ConverterSetting.ResolutionMode=xc32::sfr::adc::resolution_mode::resolution_12bits;
 	ConverterSetting.SamplingTime=5;
 
-	ADC.lock(BlockSetting);
-//	converter1.lock(ConverterSetting);
-//	AN1.lock();
-	converter3.lock(ConverterSetting);
-	AN0.lock();
+	//sAN1.config(&BlockSetting,&ConverterSetting);
+	//sAN0.config(&BlockSetting,&ConverterSetting);
+	sAN1.lock(&BlockSetting,&ConverterSetting);
+	sAN0.lock(&BlockSetting,&ConverterSetting);
+	
 
 /*	xc32::input_pin<pinAD2> PinAD2;
 	PinAD2.lock();
@@ -486,26 +486,18 @@ int main() {
 	while(1){
 		long long ans=0;
 
-		converter3.lock(ConverterSetting);
-		for(int i=0;i<100;++i)
-			ans+=AN0();
-		ans/=100;
+		ans=sAN0(100);
 		Sync_uart1.putc(ans>>8);
 		Sync_uart1.putc(ans);
 		Sync_uart1.putc(0x0D);
 		Sync_uart1.putc(0x0A);
-		converter3.unlock();
 
 		ans=0;
-		converter1.lock(ConverterSetting);
-		for(int i=0;i<100;++i)
-			ans+=AN1();
-		ans/=100;
+		ans=sAN1(100);
 		Sync_uart1.putc(ans>>8);
 		Sync_uart1.putc(ans);
 		Sync_uart1.putc(0x0D);
 		Sync_uart1.putc(0x0A);
-		converter1.unlock();
 
 		Red_LED(1);
 		delay_ms(100);
