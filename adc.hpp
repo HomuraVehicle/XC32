@@ -1167,6 +1167,8 @@ namespace xc32{
 					return true;
 				}
 
+				my_adc::Block.global_convert_end_interrupt_function(interrupt_function);
+
 				Pin.tris(true);
 				Pin.analog(true);
 				Pin.opendrain(false);
