@@ -2,6 +2,7 @@
 #define XC32_SFR_ADC1_CPP_INC 100
 #
 #include"adc1.hpp"
+#include"interrupt.hpp"
 
 #if defined(XC32_PIC32MX)
 #	ifndef XC32_SFR_ADC1_EXPLICITINTERRUPT
@@ -27,7 +28,7 @@ extern "C"{
 namespace xc32{
 	namespace sfr{
 		interrupt::function* adc_block::global_convert_end_interrupt_ptr;
-		const unsigned char adc_block::global_convert_end_ipl = XC32_ADC1_TX_IPL;
+		const unsigned char adc_block::global_convert_end_ipl = XC32_ADC1_IPL;
 	}
 }
 

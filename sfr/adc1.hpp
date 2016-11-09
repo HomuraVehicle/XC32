@@ -47,11 +47,19 @@ namespace xc32 {
 			//一斉スキャン（Global Scan）が終了したか　読みだすと自動的に落ちる
 			bool is_end_global_convert()const volatile{ return static_cast<bool>(ADCCON2bits.EOSRDY); }
 			//一斉スキャン終了割り込み有効
-			void global_convert_end_interrupt_enable(bool);
-			bool  global_convert_end_interrupt_enable(void)const volatile;
+			void global_convert_end_interrupt_enable(bool val){
+				ADCCON2bits.EOSIEN = val;
+				IEC6bits.ADCEOSIE = val;
+			}
+			bool  global_convert_end_interrupt_enable(void)const volatile{
+				return ADCCON2bits.EOSIEN;
+			}
 			//一斉スキャン終了割り込みフラグ
 			void global_convert_end_interrupt_flag(bool val){IFS6bits.ADCEOSIF = val;}
 			bool  global_convert_end_interrupt_flag(void)const volatile{return IFS6bits.ADCEOSIF;}
+			//一斉スキャン終了割り込み priority level
+			void global_convert_end_interrupt_priority_level(unsigned char val_){ IPC48bits.ADCEOSIP = val_; }
+			unsigned char global_convert_end_interrupt_priority_level(){ return IPC48bits.ADCEOSIP; }
 			//ADCマスタークロック源(T_Q)ビット，1:Tcy,2:REFCLK3,3:FRCオシレータ出力,0:予約済み
 			void clock_select(unsigned char val_) { ADCCON3bits.ADCSEL = val_; }
 			unsigned char clock_select()const { return ADCCON3bits.ADCSEL; }
@@ -118,6 +126,9 @@ namespace xc32 {
 				//割り込みの設定をクリア
 				ADCGIRQEN1 = 0;
 				ADCGIRQEN2 = 0;
+
+				global_convert_end_interrupt_enable(false);
+				global_convert_end_interrupt_function(0);
 			}
 		private:
 			static interrupt::function* global_convert_end_interrupt_ptr;
@@ -287,7 +298,7 @@ namespace xc32 {
 		}
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC0 = val_;
 		}
 	#endif
@@ -354,7 +365,7 @@ namespace xc32 {
 		}
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<1>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<1>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC1 = val_;
 		}
 	#endif
@@ -421,7 +432,7 @@ namespace xc32 {
 		}
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<2>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<2>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC2 = val_;
 		}
 
@@ -489,7 +500,7 @@ namespace xc32 {
 		}
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<3>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<3>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC3 = val_;
 		}
 	#endif
@@ -556,7 +567,7 @@ namespace xc32 {
 		}
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<4>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<4>>(unsigned char val_){
 			ADCTRG2bits.TRGSRC4 = val_;
 		}
 	#endif
@@ -597,7 +608,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<0>>(){ return ADCCON3bits.DIGEN0; }
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC0 = val_;
 		}
 	#endif
@@ -638,7 +649,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<7>>(){ return ADCCON3bits.DIGEN7; }
 		//スキャントリガ源選択ビット,0:トリガなし,1:グローバルソフトウェアトリガ,...,3:STRGを参照
 		template<>
-		void adc_block::converter_scan_trigger_select<constexpr_no<7>>(unsigned char val_){
+		inline void adc_block::converter_scan_trigger_select<constexpr_no<7>>(unsigned char val_){
 			ADCTRG2bits.TRGSRC7 = val_;
 		}
 	#endif
