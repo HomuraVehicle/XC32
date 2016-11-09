@@ -1024,21 +1024,10 @@ namespace xc32{
 	//非同期型一括コンバートADC
 	//	async_adcはshared_adc同様、実体を用意する必要がない。analog_pinからのlock/unclockで適宜初期化/終端化される。
 	//	analog_pinから読みだしても値はその場で読みだされずに、futureが戻り値として返される。
-	//	内部ではqueueにadc用のtaskが積まれ、順次読み出しが行われる。
+	//	内部ではqueueにadc用のtaskが積まれ、割り込み関数内で順次読み出しが行われる。
 	//	割り込みを使って機能するため、利用者はanalog_pinを触る以外に何もしなくてよい。
 	template<typename adc_block_register_, typename identifier_>
 	class async_interrupt_adc{
-		//=== 設計概要 ===
-		//async_interrupt_adcは、一括コンバートを利用してadcのデータ読み出しを担当する
-		//async_interrupt_adc::analog_pinから、operator()を実行すると、
-		//	RequestChainにデータリクエスト内容が追加される
-		//	リクエストには、結果書き込み用のpromise&も含まれる
-		//	戻り値として、利用者はfutureを受け取る
-		//adcの一括コンバート完了割り込みが実行されると
-		//	RequestChain内での読み出し完了を一斉に通知
-		//	リクエスト内容に沿って一括コンバートを駆動する
-		//	データ読み出しが完了していれば、promise&を介して通知する
-		//	完了後、タスクをキューから外す
 	private:
 		typedef adc_block_register_ adc_block_register;
 		typedef async_interrupt_adc<adc_block_register_, identifier_> my_type;
@@ -1060,14 +1049,14 @@ namespace xc32{
 		};
 		typedef xc::sorted_chain<read_task*, read_task_compare> task_ptr_chain;
 		typedef typename task_ptr_chain::element task_ptr_element;
-		static task_ptr_chain ReqPtrQueue;
+		static task_ptr_chain TaskPtrQueue;
 	private:
 		static void request(){
 			//一斉スキャンに登録したチャンネルをリセット
 			my_adc::Block.reset_request_global_convert();
 
 			//request
-			for(typename task_ptr_chain::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
+			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
 				(*Itr)->request_data();				
 			}
 
@@ -1077,28 +1066,28 @@ namespace xc32{
 	private:
 		//analog_pinからのread_taskを登録
 		static void regist(task_ptr_element& Task){
-			if(ReqPtrQueue.empty()){
-				ReqPtrQueue.push(Task);
+			if(TaskPtrQueue.empty()){
+				TaskPtrQueue.push(Task);
 				request();
 			} else{
-				ReqPtrQueue.push(Task);
+				TaskPtrQueue.push(Task);
 			}
 		}
 		//割り込み関数
 		static void interrupt_function(){
 			//まず、Requestデータ読み出し処理	
-			for(typename task_ptr_chain::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
+			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
 				(*Itr)->read_data();
 			}
 
 			//先頭から順に、全データ読み出し済みのやつらを始末していく
 			//	sorted_chainはremainが小さい順にソート済み
-			while(ReqPtrQueue.next()->remain_request() == 0){
-				ReqPtrQueue.pop();
+			while(TaskPtrQueue.next()->remain_request() == 0){
+				TaskPtrQueue.pop();
 			}
 
 			//次に、まだ必要なデータの読み出しを確認
-			if(!ReqPtrQueue.empty()){
+			if(!TaskPtrQueue.empty()){
 				request();
 			}
 		}
@@ -1246,7 +1235,7 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_interrupt_adc<adc_block_register_, identifier_>::cv<converter_no_>::ConverterSetting;
 	template<typename adc_block_register_, typename identifier_>
-	typename async_interrupt_adc<adc_block_register_, identifier_>::task_ptr_chain  async_interrupt_adc<adc_block_register_, identifier_>::ReqPtrQueue;
+	typename async_interrupt_adc<adc_block_register_, identifier_>::task_ptr_chain  async_interrupt_adc<adc_block_register_, identifier_>::TaskPtrQueue;
 }
 
 #
