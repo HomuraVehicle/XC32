@@ -1161,13 +1161,14 @@ namespace xc32{
 				if(is_lock())return false;
 
 				if(my_adc::Block.lock(my_type::BlockSetting))return true;
+				if(my_adc::Block.use_count() == 1){
+					my_adc::Block.global_convert_end_interrupt_function(interrupt_function);
+				}
 
 				if(my_converter::Converter.lock(my_type::cv<converter_no>::ConverterSetting)){
 					my_adc::Block.unlock();
 					return true;
 				}
-
-				my_adc::Block.global_convert_end_interrupt_function(interrupt_function);
 
 				Pin.tris(true);
 				Pin.analog(true);
