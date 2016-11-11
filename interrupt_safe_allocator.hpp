@@ -6,107 +6,134 @@
 #include<cstdlib>
 #include"interrupt.hpp"
 namespace xc32{
-	template <class T>
-	class interrupt_safe_allocator {
+	// TEMPLATE CLASS interrupt_safe_allocator
+	//xc32コンパイラーの独自仕様に対応したクラス
+	template<class _Ty>
+	class interrupt_safe_allocator: public std::_Allocator_base<_Ty>{
 	public:
-		// 型定義
-		typedef size_t size_type;
-		typedef ptrdiff_t difference_type;
-		typedef T* pointer;
-		typedef const T* const_pointer;
-		typedef T& reference;
-		typedef const T& const_reference;
-		typedef T value_type;
-		typedef interrupt_safe_allocator<T> my_type;
-		// アロケータをU型にバインドする
-		template <class U>
-		struct rebind {
-			typedef interrupt_safe_allocator<U> other;
+		typedef std::_Allocator_base<_Ty> _Mybase;
+		typedef typename _Mybase::value_type value_type;
+
+		typedef value_type _FARQ *pointer;
+		typedef value_type _FARQ& reference;
+		typedef const value_type _FARQ *const_pointer;
+		typedef const value_type _FARQ& const_reference;
+
+		typedef std::_SIZT size_type;
+		typedef std::_PDFT difference_type;
+
+		template<class _Other>
+		struct rebind
+		{	// convert this type to interrupt_safe_allocator<_Other>
+			typedef interrupt_safe_allocator<_Other> other;
 		};
 
-		// コンストラクタ
-		interrupt_safe_allocator() throw() {}
-		interrupt_safe_allocator(const interrupt_safe_allocator<T>&) throw() {}
-		template <class U> interrupt_safe_allocator(const interrupt_safe_allocator<U>&) throw() {}
-		// デストラクタ
-		~interrupt_safe_allocator() throw() {}
+		pointer address(reference _Val) const
+		{	// return address of mutable _Val
+			return ((pointer)&(char&)_Val);
+		}
 
-		// メモリを割り当てる
-		pointer allocate(size_type num, const_pointer hint = 0) {
+		const_pointer address(const_reference _Val) const
+		{	// return address of nonmutable _Val
+			return ((const_pointer)&(char&)_Val);
+		}
+
+		interrupt_safe_allocator() _THROW0()
+		{	// construct default allocator (do nothing)
+		}
+
+		interrupt_safe_allocator(const interrupt_safe_allocator<_Ty>&) _THROW0()
+		{	// construct by copying (do nothing)
+		}
+
+		template<class _Other>
+		interrupt_safe_allocator(const interrupt_safe_allocator<_Other>&) _THROW0()
+		{	// construct from a related allocator (do nothing)
+		}
+
+		template<class _Other>
+		interrupt_safe_allocator<_Ty>& operator=(const interrupt_safe_allocator<_Other>&)
+		{	// assign from a related allocator (do nothing)
+			return (*this);
+		}
+
+		void deallocate(pointer _Ptr, size_type)
+		{	// deallocate object at _Ptr, ignore size
 			xc32::interrupt::lock_guard Lock(xc32::interrupt::Mutex);
-			return (pointer)std::malloc(num*sizeof(T));
+			::operator delete(_Ptr);
 		}
-		// メモリを解放する
-		void deallocate(pointer p, size_type num) {
+
+		pointer allocate(size_type _Count)
+		{	// allocate array of _Count elements
 			xc32::interrupt::lock_guard Lock(xc32::interrupt::Mutex);
-			std::free(p);
+			return (std::_Allocate(_Count, (pointer)0));
 		}
 
-		// 割当て済みの領域を初期化する
-		void construct(pointer p, const T& value) { new((void*)p) T(value); }
-		// 初期化済みの領域を削除する
-		void destroy(pointer p) { p->~T(); }
-
-		// アドレスを返す
-		pointer address(reference value) const { return &value; }
-		const_pointer address(const_reference value) const { return &value; }
-
-		// 割当てることができる最大の要素数を返す
-		size_type max_size() const throw() {
-			return std::numeric_limits<size_t>::max() / sizeof(T);
+		pointer allocate(size_type _Count, const void _FARQ *)
+		{	// allocate array of _Count elements, ignore hint
+			return (allocate(_Count));
 		}
-		friend bool operator==(const my_type& My1_, const my_type& My2_) {
-			return true;
+
+		void construct(pointer _Ptr, const _Ty& _Val)
+		{	// construct object at _Ptr with value _Val
+			std::_Construct(_Ptr, _Val);
 		}
-		friend bool operator!=(const my_type& My1_, const my_type& My2_) {
-			return false;
+
+		void destroy(pointer _Ptr)
+		{	// destroy object at _Ptr
+			std::_Destroy(_Ptr);
+		}
+
+		std::_SIZT max_size() const _THROW0()
+		{	// estimate maximum array size
+		std::_SIZT _Count = (std::_SIZT)(-1) / sizeof (_Ty);
+		return (0 < _Count ? _Count : 1);
 		}
 	};
-	template <>
-	class interrupt_safe_allocator<void> {
-	public:
-		// 型定義
-		typedef size_t size_type;
-		typedef ptrdiff_t difference_type;
-		typedef void* pointer;
-		typedef const void* const_pointer;
-		typedef void value_type;
-		typedef interrupt_safe_allocator<void> my_type;
 
-		// アロケータをU型にバインドする
-		template <class U>
-		struct rebind {
-			typedef interrupt_safe_allocator<U> other;
+		// CLASS interrupt_safe_allocator<void>
+	template<> class interrupt_safe_allocator<void>{
+	public:
+		typedef void _Ty;
+		typedef _Ty _FARQ *pointer;
+		typedef const _Ty _FARQ *const_pointer;
+		typedef _Ty value_type;
+
+		template<class _Other>
+		struct rebind
+		{	// convert this type to an interrupt_safe_allocator<_Other>
+		typedef interrupt_safe_allocator<_Other> other;
 		};
 
-		// コンストラクタ
-		interrupt_safe_allocator() throw() {}
-		interrupt_safe_allocator(const interrupt_safe_allocator<void>&) throw() {}
-		template <class U> interrupt_safe_allocator(const interrupt_safe_allocator<U>&) throw() {}
-		// デストラクタ
-		~interrupt_safe_allocator() throw() {}
+		interrupt_safe_allocator() _THROW0()
+		{	// construct default allocator (do nothing)
+		}
 
-		// メモリを割り当てる
-		pointer allocate(size_type num, interrupt_safe_allocator<void>::const_pointer hint = 0) {
-			xc32::interrupt::lock_guard Lock(xc32::interrupt::Mutex);
-			return (pointer)std::malloc(num);
+		interrupt_safe_allocator(const interrupt_safe_allocator<_Ty>&) _THROW0()
+		{	// construct by copying (do nothing)
 		}
-		// メモリを解放する
-		void deallocate(pointer p, size_type num) {
-			xc32::interrupt::lock_guard Lock(xc32::interrupt::Mutex);
-			std::free(p);
+
+		template<class _Other>
+		interrupt_safe_allocator(const interrupt_safe_allocator<_Other>&) _THROW0()
+		{	// construct from related allocator (do nothing)
 		}
-		// 割当てることができる最大の要素数を返す
-		size_type max_size() const throw() {
-			return INT_MAX;
-		}
-		friend bool operator==(const my_type& My1_, const my_type& My2_) {
-			return true;
-		}
-		friend bool operator!=(const my_type& My1_, const my_type& My2_) {
-			return false;
+
+		template<class _Other>
+		interrupt_safe_allocator<_Ty>& operator=(const interrupt_safe_allocator<_Other>&)
+		{	// assign from a related allocator (do nothing)
+			return (*this);
 		}
 	};
+
+	template<class _Ty,class _Other>
+	inline bool operator==(const interrupt_safe_allocator<_Ty>&, const interrupt_safe_allocator<_Other>&) _THROW0(){	// test for allocator equality
+		return (true);
+	}
+
+	template<class _Ty,class _Other>
+	inline bool operator!=(const interrupt_safe_allocator<_Ty>& _Left,const interrupt_safe_allocator<_Other>& _Right) _THROW0(){	// test for allocator inequality
+		return (!(_Left == _Right));
+	}
 }
 #
 #endif
