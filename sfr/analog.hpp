@@ -10,200 +10,581 @@ namespace xc32 {
 		namespace adc {
 			template<typename constexpr_no_>
 			struct an {};
+		#ifdef BLCK_ANALOG_0
+			template<>
+			struct an<constexpr_no<0>>{
+				typedef constexpr_no<BLCK_ANALOG_0> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA0; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY0; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS0 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
 
+		#ifdef BLCK_ANALOG_1
 			template<>
-			struct an<constexpr_no<0>> {
+			struct an<constexpr_no<1>>{
+				typedef constexpr_no<BLCK_ANALOG_1> converter_no;
 			public:
-				uint16 data()const volatile { return ADCDATA0; }
-				bool data_ready()const { return (ADCDSTAT1 & 1) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<1>> {
-			public:
-				uint16 data()const volatile { return ADCDATA1; }
-				bool data_ready()const { return (ADCDSTAT1 & 2) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<2>> {
-			public:
-				uint16 data()const volatile { return ADCDATA2; }
-				bool data_ready()const { return (ADCDSTAT1 & 4) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<3>> {
-			public:
-				uint16 data()const volatile { return ADCDATA3; }
-				bool data_ready()const { return (ADCDSTAT1 & 8) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<4>> {
-			public:
-				uint16 data()const volatile { return ADCDATA4; }
-				bool data_ready()const { return (ADCDSTAT1 & 16) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<5>> {
-			public:
-				uint16 data()const volatile { return ADCDATA5; }
-				bool data_ready()const { return (ADCDSTAT1 & 32) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<6>> {
-			public:
-				uint16 data()const volatile { return ADCDATA6; }
-				bool data_ready()const { return (ADCDSTAT1 & 64) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<7>> {
-			public:
-				uint16 data()const volatile { return ADCDATA7; }
-				bool data_ready()const { return (ADCDSTAT1 & 128) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<8>> {
-			public:
-				uint16 data()const volatile { return ADCDATA8; }
-				bool data_ready()const { return (ADCDSTAT1 & 256) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<9>> {
-			public:
-				uint16 data()const volatile { return ADCDATA9; }
-				bool data_ready()const { return (ADCDSTAT1 & 512) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<10>> {
-			public:
-				uint16 data()const volatile { return ADCDATA10; }
-				bool data_ready()const { return (ADCDSTAT1 & 1024) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<11>> {
-			public:
-				uint16 data()const volatile { return ADCDATA11; }
-				bool data_ready()const { return (ADCDSTAT1 & 2048u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<12>> {
-			public:
-				uint16 data()const volatile { return ADCDATA12; }
-				bool data_ready()const { return (ADCDSTAT1 & 4096u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<13>> {
-			public:
-				uint16 data()const volatile { return ADCDATA13; }
-				bool data_ready()const { return (ADCDSTAT1 & 8192u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<14>> {
-			public:
-				uint16 data()const volatile { return ADCDATA14; }
-				bool data_ready()const { return (ADCDSTAT1 & 16384u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<15>> {
-			public:
-				uint16 data()const volatile { return ADCDATA15; }
-				bool data_ready()const { return (ADCDSTAT1 & 32768u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<16>> {
-			public:
-				uint16 data()const volatile { return ADCDATA16; }
-				bool data_ready()const { return (ADCDSTAT1 & 65536u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<17>> {
-			public:
-				uint16 data()const volatile { return ADCDATA17; }
-				bool data_ready()const { return (ADCDSTAT1 & 131072u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<18>> {
-			public:
-				uint16 data()const volatile { return ADCDATA18; }
-				bool data_ready()const { return (ADCDSTAT1 & 262144u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<19>> {
-			public:
-				uint16 data()const volatile { return ADCDATA19; }
-				bool data_ready()const { return (ADCDSTAT1 & 524288u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<20>> {
-			public:
-				uint16 data()const volatile { return ADCDATA20; }
-				bool data_ready()const { return (ADCDSTAT1 & 1048576u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<21>> {
-			public:
-				uint16 data()const volatile { return ADCDATA21; }
-				bool data_ready()const { return (ADCDSTAT1 & 2097152u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<22>> {
-			public:
-				uint16 data()const volatile { return ADCDATA22; }
-				bool data_ready()const { return (ADCDSTAT1 & 4194304u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<23>> {
-			public:
-				uint16 data()const volatile { return ADCDATA23; }
-				bool data_ready()const { return (ADCDSTAT1 & 8388608u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<24>> {
-			public:
-				uint16 data()const volatile { return ADCDATA24; }
-				bool data_ready()const { return (ADCDSTAT1 & 16777216u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<25>> {
-			public:
-				uint16 data()const volatile { return ADCDATA25; }
-				bool data_ready()const { return (ADCDSTAT1 & 33554432u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<26>> {
-			public:
-				uint16 data()const volatile { return ADCDATA26; }
-				bool data_ready()const { return (ADCDSTAT1 & 67108864u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<27>> {
-			public:
-				uint16 data()const volatile { return ADCDATA27; }
-				bool data_ready()const { return (ADCDSTAT1 & 134217728u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<28>> {
-			public:
-				uint16 data()const volatile { return ADCDATA28; }
-				bool data_ready()const { return (ADCDSTAT1 & 268435456u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<29>> {
-			public:
-				uint16 data()const volatile { return ADCDATA29; }
-				bool data_ready()const { return (ADCDSTAT1 & 536870912u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<30>> {
-			public:
-				uint16 data()const volatile { return ADCDATA30; }
-				bool data_ready()const { return (ADCDSTAT1 & 1073741824u) != 0; }
-			};
-			template<>
-			struct an<constexpr_no<31>> {
-			public:
-				uint16 data()const volatile { return ADCDATA31; }
-				bool data_ready()const { return (ADCDSTAT1 & 2147483648u) != 0; }
-			};
+				uint16 data()const volatile{ return ADCDATA1; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY1; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS1 = val; }
+				bool is_alternative()const{ return false; }
+		};
+		#endif
 
+		#ifdef BLCK_ANALOG_2
+			template<>
+			struct an<constexpr_no<2>>{
+				typedef constexpr_no<BLCK_ANALOG_2> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA2; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY2; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS2 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_3
+			template<>
+			struct an<constexpr_no<3>>{
+				typedef constexpr_no<BLCK_ANALOG_3> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA3; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY3; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS3 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_4
+			template<>
+			struct an<constexpr_no<4>>{
+				typedef constexpr_no<BLCK_ANALOG_4> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA4; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY4; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS4 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_5
+			template<>
+			struct an<constexpr_no<5>>{
+				typedef constexpr_no<BLCK_ANALOG_5> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA5; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY5; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS5 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_6
+			template<>
+			struct an<constexpr_no<6>>{
+				typedef constexpr_no<BLCK_ANALOG_6> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA6; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY6; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS6 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_7
+			template<>
+			struct an<constexpr_no<7>>{
+				typedef constexpr_no<BLCK_ANALOG_7> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA7; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY7; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS7 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_8
+			template<>
+			struct an<constexpr_no<8>>{
+				typedef constexpr_no<BLCK_ANALOG_8> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA8; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY8; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS8 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_9
+			template<>
+			struct an<constexpr_no<9>>{
+				typedef constexpr_no<BLCK_ANALOG_9> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA9; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY9; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS9 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_10
+			template<>
+			struct an<constexpr_no<10>>{
+				typedef constexpr_no<BLCK_ANALOG_10> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA10; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY10; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS10 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_11
+			template<>
+			struct an<constexpr_no<11>>{
+				typedef constexpr_no<BLCK_ANALOG_11> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA11; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY11; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS11 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_12
+			template<>
+			struct an<constexpr_no<12>>{
+				typedef constexpr_no<BLCK_ANALOG_12> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA12; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY12; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS12 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_13
+			template<>
+			struct an<constexpr_no<13>>{
+				typedef constexpr_no<BLCK_ANALOG_13> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA13; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY13; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS13 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_14
+			template<>
+			struct an<constexpr_no<14>>{
+				typedef constexpr_no<BLCK_ANALOG_14> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA14; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY14; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS14 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_15
+			template<>
+			struct an<constexpr_no<15>>{
+				typedef constexpr_no<BLCK_ANALOG_15> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA15; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY15; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS15 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_16
+			template<>
+			struct an<constexpr_no<16>>{
+				typedef constexpr_no<BLCK_ANALOG_16> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA16; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY16; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS16 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_17
+			template<>
+			struct an<constexpr_no<17>>{
+				typedef constexpr_no<BLCK_ANALOG_17> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA17; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY17; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS17 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_18
+			template<>
+			struct an<constexpr_no<18>>{
+				typedef constexpr_no<BLCK_ANALOG_18> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA18; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY18; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS18 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_19
+			template<>
+			struct an<constexpr_no<19>>{
+				typedef constexpr_no<BLCK_ANALOG_19> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA19; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY19; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS19 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_20
+			template<>
+			struct an<constexpr_no<20>>{
+				typedef constexpr_no<BLCK_ANALOG_20> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA20; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY20; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS20 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_21
+			template<>
+			struct an<constexpr_no<21>>{
+				typedef constexpr_no<BLCK_ANALOG_21> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA21; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY21; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS21 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_22
+			template<>
+			struct an<constexpr_no<22>>{
+				typedef constexpr_no<BLCK_ANALOG_22> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA22; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY22; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS22 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_23
+			template<>
+			struct an<constexpr_no<23>>{
+				typedef constexpr_no<BLCK_ANALOG_23> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA23; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY23; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS23 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_24
+			template<>
+			struct an<constexpr_no<24>>{
+				typedef constexpr_no<BLCK_ANALOG_24> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA24; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY24; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS24 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_25
+			template<>
+			struct an<constexpr_no<25>>{
+				typedef constexpr_no<BLCK_ANALOG_25> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA25; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY25; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS25 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_26
+			template<>
+			struct an<constexpr_no<26>>{
+				typedef constexpr_no<BLCK_ANALOG_26> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA26; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY26; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS26 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_27
+			template<>
+			struct an<constexpr_no<27>>{
+				typedef constexpr_no<BLCK_ANALOG_27> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA27; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY27; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS27 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_28
+			template<>
+			struct an<constexpr_no<28>>{
+				typedef constexpr_no<BLCK_ANALOG_28> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA28; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY28; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS28 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_29
+			template<>
+			struct an<constexpr_no<29>>{
+				typedef constexpr_no<BLCK_ANALOG_29> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA29; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY29; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS29 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_30
+			template<>
+			struct an<constexpr_no<30>>{
+				typedef constexpr_no<BLCK_ANALOG_30> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA30; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY30; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS30 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_31
+			template<>
+			struct an<constexpr_no<31>>{
+				typedef constexpr_no<BLCK_ANALOG_31> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA31; }
+				bool data_ready()const{ return ADCDSTAT1bits.ARDY31; }
+				void request_global_convert(bool val){ ADCCSS1bits.CSS31 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_32
+			template<>
+			struct an<constexpr_no<32>>{
+				typedef constexpr_no<BLCK_ANALOG_32> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA32; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY32; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS32 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_33
+			template<>
+			struct an<constexpr_no<33>>{
+				typedef constexpr_no<BLCK_ANALOG_33> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA33; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY33; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS33 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_34
+			template<>
+			struct an<constexpr_no<34>>{
+				typedef constexpr_no<BLCK_ANALOG_34> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA34; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY34; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS34 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_35
+			template<>
+			struct an<constexpr_no<35>>{
+				typedef constexpr_no<BLCK_ANALOG_35> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA35; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY35; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS35 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_36
+			template<>
+			struct an<constexpr_no<36>>{
+				typedef constexpr_no<BLCK_ANALOG_36> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA36; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY36; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS36 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_37
+			template<>
+			struct an<constexpr_no<37>>{
+				typedef constexpr_no<BLCK_ANALOG_37> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA37; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY37; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS37 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_38
+			template<>
+			struct an<constexpr_no<38>>{
+				typedef constexpr_no<BLCK_ANALOG_38> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA38; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY38; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS38 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_39
+			template<>
+			struct an<constexpr_no<39>>{
+				typedef constexpr_no<BLCK_ANALOG_39> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA39; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY39; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS39 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_40
+			template<>
+			struct an<constexpr_no<40>>{
+				typedef constexpr_no<BLCK_ANALOG_40> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA40; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY40; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS40 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_41
+			template<>
+			struct an<constexpr_no<41>>{
+				typedef constexpr_no<BLCK_ANALOG_41> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA41; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY41; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS41 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_42
+			template<>
+			struct an<constexpr_no<42>>{
+				typedef constexpr_no<BLCK_ANALOG_42> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA42; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY42; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS42 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_43
+			template<>
+			struct an<constexpr_no<43>>{
+				typedef constexpr_no<BLCK_ANALOG_43> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA43; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY43; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS43 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_44
+			template<>
+			struct an<constexpr_no<44>>{
+				typedef constexpr_no<BLCK_ANALOG_44> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA44; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY44; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS44 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_45
+			template<>
+			struct an<constexpr_no<45>>{
+				typedef constexpr_no<BLCK_ANALOG_45> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA45; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY45; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS45 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_46
+			template<>
+			struct an<constexpr_no<46>>{
+				typedef constexpr_no<BLCK_ANALOG_46> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA46; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY46; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS46 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
+
+		#ifdef BLCK_ANALOG_47
+			template<>
+			struct an<constexpr_no<47>>{
+				typedef constexpr_no<BLCK_ANALOG_47> converter_no;
+			public:
+				uint16 data()const volatile{ return ADCDATA47; }
+				bool data_ready()const{ return ADCDSTAT2bits.ARDY47; }
+				void request_global_convert(bool val){ ADCCSS2bits.CSS47 = val; }
+				bool is_alternative()const{ return false; }
+			};
+		#endif
 		}
 	}
 }
