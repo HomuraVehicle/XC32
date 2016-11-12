@@ -393,6 +393,9 @@ using MySharedADC=xc32::shared_adc<xc32::sfr::adc_block,shared_adc_identifer>;
 struct functional_adc_identifer{};
 using MyFuncADC=xc32::async_functional_adc<xc32::sfr::adc_block,functional_adc_identifer>;
 
+struct interrupt_adc_identifer{};
+using MyInterruptADC=xc32::async_interrupt_adc<xc32::sfr::adc_block,interrupt_adc_identifer>;
+
 int main() {
 	hmr::machine::device::kk10 KK10;
 
@@ -441,6 +444,10 @@ int main() {
 	PowerAD0.lock();
 	PowerAD0(1);
 
+	green_led GreenLED;
+	GreenLED.lock();
+	LATCbits.LATC15=1;
+
 	red_led Red_LED;
 	Red_LED.lock();
 	Red_LED(0);
@@ -453,10 +460,9 @@ int main() {
 	delay_ms(200);
 	Red_LED(0);
 
-	MyFuncADC FunctionalADC;
-	MyFuncADC::analog_pin<xc32::sfr::portB::pin1> fAN1;
-	MyFuncADC::analog_pin<xc32::sfr::portB::pin3> fAN0_1;
-	MyFuncADC::analog_pin<xc32::sfr::portB::pin3> fAN0;
+	MyInterruptADC::analog_pin<xc32::sfr::portB::pin1> iAN1;
+	MyInterruptADC::analog_pin<xc32::sfr::portB::pin3> iAN0;
+	MyInterruptADC::analog_pin<xc32::sfr::portB::pin3> iAN0_1;
 
 	xc32::adc::block_setting BlockSetting;
 	BlockSetting.ClockDiv=2;
@@ -466,75 +472,53 @@ int main() {
 	ConverterSetting.ClockDiv=1;
 	ConverterSetting.ResolutionMode=xc32::sfr::adc::resolution_mode::resolution_12bits;
 	ConverterSetting.SamplingTime=5;
-	
-	fAN1.lock(&BlockSetting,&ConverterSetting);
-	fAN0.lock(&BlockSetting,&ConverterSetting);
-	fAN0_1.lock(&BlockSetting,&ConverterSetting);
 
-/*	xc32::input_pin<pinAD2> PinAD2;
-	PinAD2.lock();
+	MyInterruptADC::set_block_setting(BlockSetting);
+	MyInterruptADC::set_converter_setting<xc32::sfr::adc::an<xc32::sfr::portB::pin1::analog_no>::converter_no>(ConverterSetting);
+	MyInterruptADC::set_converter_setting<xc32::sfr::adc::an<xc32::sfr::portB::pin3::analog_no>::converter_no>(ConverterSetting);
 
-	xc32::input_pin<pinAD1> PinAD1;
-	PinAD1.lock();
+	while(iAN1.lock());
+	while(iAN0.lock());
+	while(iAN0_1.lock());
 
-	xc32::input_pin<pinAD0> PinAD0;
-	PinAD0.lock();
-
-	xc32::input_pin<pinAD3> PinAD3;
-	PinAD3.lock();
-
-	xc32::input_pin<pinAD4> PinAD4;
-	PinAD4.lock();*/
-
-	auto ans1=fAN1();
-	auto ans0=fAN0();
-	auto ans0_1=fAN0_1();
-
+	auto ans1=iAN1();
+	auto ans0=iAN0();
+	auto ans0_1=iAN0_1();
+	int cnt=0;
 	while(1){
-		if(ans1.can_get()){
-			int ans=ans1.get();
-			Sync_uart1.putc(0x01);
+		Red_LED(1);
+		delay_ms(50);
+/*		if(ans0_1.can_get()){
+			int ans=ans0_1.get();
+			ans0_1=iAN0_1();
 			Sync_uart1.putc(ans>>8);
 			Sync_uart1.putc(ans);
-			Sync_uart1.putc(0x0D);
-			Sync_uart1.putc(0x0A);
-
-			ans1=fAN1(100);
-			delay_ms(200);
+			Sync_uart1.putc(0xFF);
+			Sync_uart1.putc(0x0d);
+			Sync_uart1.putc(0x0a);
+		}*/
+		Red_LED(0);
+		delay_ms(50);
+		if(ans1.can_get()){
+			int ans=ans1.get();
+			ans1=iAN1(100);
+			Sync_uart1.putc(ans>>8);
+			Sync_uart1.putc(ans);
+			Sync_uart1.putc(0x0d);
+			Sync_uart1.putc(0x0a);
 		}
 		if(ans0.can_get()){
 			int ans=ans0.get();
-			Sync_uart1.putc(0x00);
+			ans0=iAN0(70);
 			Sync_uart1.putc(ans>>8);
 			Sync_uart1.putc(ans);
-			Sync_uart1.putc(0x0D);
-			Sync_uart1.putc(0x0A);
-
-			ans0=fAN0(100);
-			delay_ms(200);
+			Sync_uart1.putc(0x0d);
+			Sync_uart1.putc(0x0a);
 		}
-		if(ans0_1.can_get()){
-			int ans=ans0_1.get();
-			Sync_uart1.putc(0x10);
-			Sync_uart1.putc(ans>>8);
-			Sync_uart1.putc(ans);
-			Sync_uart1.putc(0x0D);
-			Sync_uart1.putc(0x0A);
-
-			ans0_1=fAN0_1(10);
-			delay_ms(200);
-		}
-		
-
-		FunctionalADC();
-		
-		//Red_LED(1);
-		//delay_ms(100);
-		//Red_LED(0);
-		//delay_ms(100);
 	}
 	return 0;
 }
+
 
 
 /*
