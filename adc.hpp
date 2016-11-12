@@ -413,6 +413,28 @@ namespace xc32{
 			void reset_request_global_convert(){
 				ADC.reset_request_global_convert();
 			}
+			//一斉スキャン終了時割り込み許可
+			void global_convert_end_interrupt_enable(bool val){ ADC.global_convert_end_interrupt_enable(val); }
+		private:
+			using interrupt_function_ptr = void(*)(void);
+			class interrupt_function:public sfr::interrupt::function{
+			private:
+				interrupt_function_ptr func;
+			public:
+				void operator()()override{
+					if(func != nullptr)func();
+				}
+			public:
+				void set_interrupt_function(interrupt_function_ptr Fptr){ func = Fptr; }
+				interrupt_function():func(nullptr){}
+			};
+			interrupt_function InterruptFunction;
+		public:
+			//割り込み関数の設定
+			void set_global_convert_end_interrupt_function(interrupt_function_ptr Fptr_){
+				InterruptFunction.set_interrupt_function(Fptr_);
+				ADC.global_convert_end_interrupt_function(&InterruptFunction);
+			}
 		};
 		static block Block;
 	public:
@@ -438,7 +460,7 @@ namespace xc32{
 				//adc_blockをロック　失敗したら何もせず終わる
 				if(my_type::Block.lock())return true;
 
-				if(++LockCnt == 0){
+				if(LockCnt++ == 0){
 					//スタートアップ処理
 					my_type::Block.ADC.template converter_clock_div<converter_no_>(Setting.ClockDiv);
 					my_type::Block.ADC.template converter_sampling_time<converter_no_>(Setting.SamplingTime);
@@ -1003,7 +1025,7 @@ namespace xc32{
 			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
 			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
 			for(; Itr != End; ++Itr){
-				StillWork |= (*Itr)->clear();
+			//	StillWork |= (*Itr)->clear();
 			}
 		}
 	};
@@ -1059,7 +1081,9 @@ namespace xc32{
 			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
 				(*Itr)->request_data();				
 			}
-
+			
+			//割り込み許可
+			my_adc::Block.global_convert_end_interrupt_enable(true);
 			//トリガーを引く
 			my_adc::Block.global_convert_trigger();
 		}
@@ -1080,12 +1104,12 @@ namespace xc32{
 				(*Itr)->read_data();
 			}
 
-			//先頭から順に、全データ読み出し済みのやつらを始末していく
 			//	sorted_chainはremainが小さい順にソート済み
-			while(TaskPtrQueue.next()->remain_request() == 0){
+			while(TaskPtrQueue.next() != *TaskPtrQueue.end() && TaskPtrQueue.next()->remain_request() == 0){
 				TaskPtrQueue.pop();
 			}
 
+			//先頭から順に、全データ読み出し済みのやつらを始末していく
 			//次に、まだ必要なデータの読み出しを確認
 			if(!TaskPtrQueue.empty()){
 				request();
@@ -1131,7 +1155,7 @@ namespace xc32{
 					if(Remain == 0)return;
 
 					//スキャン待ち
-					while(!AN.data_ready());
+					//while(!AN.data_ready());
 					Data += AN.data();
 					--Remain;
 
@@ -1160,12 +1184,11 @@ namespace xc32{
 			bool lock(){
 				if(is_lock())return false;
 
-				if(my_adc::Block.lock(my_type::BlockSetting))return true;
+				if(my_adc::Block.lock(my_type::BlockSetting, true))return true;
 				if(my_adc::Block.use_count() == 1){
-					my_adc::Block.global_convert_end_interrupt_function(interrupt_function);
+					my_adc::Block.set_global_convert_end_interrupt_function(interrupt_function);
 				}
-
-				if(my_converter::Converter.lock(my_type::cv<converter_no>::ConverterSetting)){
+				if(my_converter::Converter.lock(my_type::cv<converter_no>::ConverterSetting, true)){
 					my_adc::Block.unlock();
 					return true;
 				}
