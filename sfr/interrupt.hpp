@@ -383,6 +383,16 @@ namespace xc32 {
 #else
 #	define XC32_TIMER9_IPL_FOR_ISR XC32_CONFIG_TIMER9_IPL_FOR_ISR
 #endif
-
+//ADC1
+#ifndef XC32_CONFIG_ADC1_IPL
+#	define XC32_ADC1_IPL 7
+#else
+#	define XC32_ADC1_IPL XC32_CONFIG_ADC1_IPL
+#endif
+#ifndef XC32_CONFIG_ADC1_IPL_FOR_ISR
+#	define XC32_ADC1_IPL_FOR_ISR IPL7AUTO
+#else
+#	define XC32_ADC1_IPL_FOR_ISR XC32_CONFIG_ADC1_IPL_FOR_ISR
+#endif
 #
 #endif

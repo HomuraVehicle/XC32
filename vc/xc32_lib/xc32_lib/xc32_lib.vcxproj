@@ -177,6 +177,7 @@
     <ClCompile Include="..\..\..\clock.cpp" />
     <ClCompile Include="..\..\..\homuraLib_v2\machine\device\p32mz2048efg100_forVC.c" />
     <ClCompile Include="..\..\..\interrupt.cpp" />
+    <ClCompile Include="..\..\..\sfr\adc1.cpp" />
     <ClCompile Include="..\..\..\sfr\i2c1.cpp" />
     <ClCompile Include="..\..\..\sfr\i2c2.cpp" />
     <ClCompile Include="..\..\..\sfr\i2c3.cpp" />
@@ -203,6 +204,7 @@
     <ClCompile Include="..\..\..\sfr\uart5.cpp" />
     <ClCompile Include="..\..\..\sfr\uart6.cpp" />
     <ClCompile Include="lab.cpp" />
+    <ClCompile Include="test_XC32.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

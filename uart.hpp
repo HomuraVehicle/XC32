@@ -10,6 +10,9 @@ v1_01/140727 hmIto
 #include"exceptions.hpp"
 #include"sfr/uart_base.hpp"
 #include"sfr/interrupt.hpp"
+#ifndef __asm__
+#define __asm__(val)
+#endif
 namespace xc32{
 	namespace uart {
 		struct exception :public xc32::exception{};		
