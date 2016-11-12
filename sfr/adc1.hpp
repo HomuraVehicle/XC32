@@ -13,6 +13,11 @@
 #if defined(XC32_PIC32MX)
 #elif defined(XC32_PIC32MZ)
 #	ifndef XC32_SFR_ADC1_EXPLICITINTERRUPT
+#		ifndef XC32_DEBUGMODE
+#			define x_xc32_sfr_adc1_global_convert_end_interrupt(void) __ISR(_ADC_EOS_VECTOR,IPL7AUTO) ADC_EOS_Interrupt(void)
+#		else
+extern "C"{void x_xc32_sfr_adc1_global_convert_end_interrupt(void);}
+#		endif
 #	else
 #		ifndef XC32_DEBUGMODE
 #			define xc32_sfr_adc1_global_convert_end_interrupt(void) __ISR(_ADC_EOS_VECTOR,IPL7AUTO) ADC_EOS_Interrupt(void)
