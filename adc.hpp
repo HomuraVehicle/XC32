@@ -1025,7 +1025,7 @@ namespace xc32{
 			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
 			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
 			for(; Itr != End; ++Itr){
-			//	StillWork |= (*Itr)->clear();
+				(*Itr)->clear();
 			}
 		}
 	};
