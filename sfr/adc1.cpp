@@ -15,6 +15,8 @@ extern "C"{
 extern "C"{
 	void x_xc32_sfr_adc1_global_convert_end_interrupt(void){
 		static xc32::sfr::adc_block ADC1;
+		//IEC6bits.ADCEOSIE=0;
+		ADC1.global_convert_end_interrupt_enable(false);
 
 		//privateメンバの関数ポインタを実行するために、強引にconstを外している
 		if(ADC1.global_convert_end_interrupt_function()){
