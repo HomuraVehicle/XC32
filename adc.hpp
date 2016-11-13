@@ -14,7 +14,7 @@ namespace xc32{
 
 	namespace adc{
 		using namespace sfr::adc;
-		//adc_block—pİ’èƒNƒ‰ƒX
+		//adc_blockç”¨è¨­å®šã‚¯ãƒ©ã‚¹
 		struct block_setting{
 			sfr::adc::vref_mode VrefMode;
 			unsigned char ClockDiv;
@@ -26,7 +26,7 @@ namespace xc32{
 				return !(s1 == s2);
 			}
 		};
-		//adc_converter—pİ’èƒNƒ‰ƒX
+		//adc_converterç”¨è¨­å®šã‚¯ãƒ©ã‚¹
 		struct converter_setting{
 			unsigned char ClockDiv;
 			unsigned char SamplingTime;
@@ -41,10 +41,10 @@ namespace xc32{
 		};
 	}
 
-	//“¯ŠúŒ^“ÆèADC
-	//	exclusive_adc‚Í–¾¦“I‚Ég—pÒ‚ªÀ‘Ì‚ğ—pˆÓ‚µA‚»‚ê‚¼‚ê‚ğlock/unlock‚·‚é•K—v‚ª‚ ‚éƒ^ƒCƒvB
-	//	—˜—p‚É‚ÍA‚Ü‚¸exclusive_adc‚ÌÀ‘Ì‚ğ—pˆÓ‚µAŸ‚Éconverter‚ğ—pˆÓ‚µA‚»‚Ì‚¤‚¦‚Åanalog_pin‚©‚ç“Ç‚İo‚µˆ—‚ğs‚¤B
-	//	—pˆÓ‚³‚ê‚Ä‚¢‚é‹@”\‚ÍÅ¬ŒÀBanalog_pin‚©‚ç—˜—p‚·‚éÛ‚Ìconverter‚Ì‹£‡ƒ`ƒFƒbƒN‚âlockÏ‚İ‚©‚Ç‚¤‚©‚ÌŠm”F‚·‚çs‚í‚È‚¢B
+	//åŒæœŸå‹ç‹¬å ADC
+	//	exclusive_adcã¯æ˜ç¤ºçš„ã«ä½¿ç”¨è€…ãŒå®Ÿä½“ã‚’ç”¨æ„ã—ã€ãã‚Œãã‚Œã‚’lock/unlockã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã‚¿ã‚¤ãƒ—ã€‚
+	//	åˆ©ç”¨æ™‚ã«ã¯ã€ã¾ãšexclusive_adcã®å®Ÿä½“ã‚’ç”¨æ„ã—ã€æ¬¡ã«converterã‚’ç”¨æ„ã—ã€ãã®ã†ãˆã§analog_pinã‹ã‚‰èª­ã¿å‡ºã—å‡¦ç†ã‚’è¡Œã†ã€‚
+	//	ç”¨æ„ã•ã‚Œã¦ã„ã‚‹æ©Ÿèƒ½ã¯æœ€å°é™ã€‚analog_pinã‹ã‚‰åˆ©ç”¨ã™ã‚‹éš›ã®converterã®ç«¶åˆãƒã‚§ãƒƒã‚¯ã‚„lockæ¸ˆã¿ã‹ã©ã†ã‹ã®ç¢ºèªã™ã‚‰è¡Œã‚ãªã„ã€‚
 	template<typename adc_block_register_>
 	class exclusive_adc{
 		typedef adc_block_register_ adc_block_register;
@@ -59,7 +59,7 @@ namespace xc32{
 			, BlockSetting(){
 		}
 	private:
-		//ƒRƒs[‹Ö~
+		//ã‚³ãƒ”ãƒ¼ç¦æ­¢
 		exclusive_adc(const my_type&);
 		const my_type& operator=(const my_type&);
 	public:
@@ -74,23 +74,23 @@ namespace xc32{
 			if (is_lock())return false;
 			if (ADCLock.lock())return true;
 
-			//ˆê“x‚·‚×‚Äİ’è‚ğƒNƒŠƒA‚·‚é
+			//ä¸€åº¦ã™ã¹ã¦è¨­å®šã‚’ã‚¯ãƒªã‚¢ã™ã‚‹
 			ADC.reset_all_config();
 			
-			//QÆ“dˆ³‚ğİ’è
+			//å‚ç…§é›»åœ§ã‚’è¨­å®š
 			ADC.reference_voltage(BlockSetting.VrefMode);
 			__asm("nop");
-			//ƒNƒƒbƒN‚ğTcy‚Éİ’è
+			//ã‚¯ãƒ­ãƒƒã‚¯ã‚’Tcyã«è¨­å®š
 			ADC.clock_select(1);
 			__asm("nop");
-			//ƒNƒƒbƒN•ªüİ’è(0`127‚Ü‚Å‚È‚Ì‚Å‚ˆÊ‚Ìƒrƒbƒg‚ğíœ)
+			//ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨è¨­å®š(0ï½127ã¾ã§ãªã®ã§é«˜ä½ã®ãƒ“ãƒƒãƒˆã‚’å‰Šé™¤)
 			ADC.clock_div((BlockSetting.ClockDiv & 0x7F));
 			__asm("nop");
-			//ADCn“®I
+			//ADCå§‹å‹•ï¼
 			ADC.enable(1);
 			__asm("nop");
 
-			//self calibration‘Ò‚¿
+			//self calibrationå¾…ã¡
 			while (!ADC.module_ready());
 
 			return false;
@@ -98,10 +98,10 @@ namespace xc32{
 		void unlock(){
 			if (!is_lock())return;
 
-			//ADC‚ğ—‚Æ‚·I
+			//ADCã‚’è½ã¨ã™ï¼
 			ADC.enable(0);
 
-			//İ’è”jŠü
+			//è¨­å®šç ´æ£„
 			ADC.reset_all_config();
 
 			ADCLock.unlock();
@@ -110,7 +110,7 @@ namespace xc32{
 			return ADCLock;
 		}
 	public:
-		//ƒRƒ“ƒo[ƒ^[@Pin‚²‚Æ‚ÉŒq‚ª‚Á‚Ä‚¢‚éƒRƒ“ƒo[ƒ^[‚ÍˆÙ‚È‚é“_‚É’ˆÓ
+		//ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã€€Pinã”ã¨ã«ç¹‹ãŒã£ã¦ã„ã‚‹ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã¯ç•°ãªã‚‹ç‚¹ã«æ³¨æ„
 		template<typename converter_no_>
 		struct converter{
 		private:
@@ -121,7 +121,7 @@ namespace xc32{
 		public:
 			converter(my_type& Ref_) :Ref(Ref_), Lock(false){}
 		private:
-			//ƒRƒs[‹Ö~
+			//ã‚³ãƒ”ãƒ¼ç¦æ­¢
 			converter(const my_type&);
 			const my_type& operator=(const my_type&);
 		public:
@@ -136,17 +136,17 @@ namespace xc32{
 				if(Lock)return false;
 				Lock = true;
 
-				//ƒƒCƒ“ƒfƒoƒCƒX‚ªƒƒbƒN‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎA‰Šú‰»ì‹Æ‚Í¸”s
+				//ãƒ¡ã‚¤ãƒ³ãƒ‡ãƒã‚¤ã‚¹ãŒãƒ­ãƒƒã‚¯ã•ã‚Œã¦ã„ãªã‘ã‚Œã°ã€åˆæœŸåŒ–ä½œæ¥­ã¯å¤±æ•—
 				if(!Ref.ADC.is_lock()){
 					Lock = false;
 					return true;
 				}
 
-				//ƒXƒ^[ƒgƒAƒbƒvˆ—
+				//ã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—å‡¦ç†
 				Ref.ADC.template converter_clock_div<converter_no_>(ConverterSetting.ClockDiv);
 				Ref.ADC.template converter_sampling_time<converter_no_>(ConverterSetting.SamplingTime);
 				Ref.ADC.template converter_resolution_bits<converter_no_>(ConverterSetting.ResolutionMode);
-				//ADC €”õ‚ğ‘Ò‚Â
+				//ADC æº–å‚™ã‚’å¾…ã¤
 				Ref.ADC.template converter_enable<converter_no_>(true);
 				while(!Ref.ADC.template converter_work_ready<converter_no_>());
 
@@ -159,7 +159,7 @@ namespace xc32{
 				Lock = false;
 
 
-				//ƒƒCƒ“ƒfƒoƒCƒX‚ªƒƒbƒN‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎAƒAƒ“ƒƒbƒNì‹Æ‚Í¸”s
+				//ãƒ¡ã‚¤ãƒ³ãƒ‡ãƒã‚¤ã‚¹ãŒãƒ­ãƒƒã‚¯ã•ã‚Œã¦ã„ãªã‘ã‚Œã°ã€ã‚¢ãƒ³ãƒ­ãƒƒã‚¯ä½œæ¥­ã¯å¤±æ•—
 				if(!Ref.ADC.is_lock())return;
 
 				Ref.ADC.template converter_work_enable<converter_no_>(false);
@@ -220,20 +220,20 @@ namespace xc32{
 			uint16 operator()(void){
 				xc32_assert(is_lock(), exception(0xE1));
 
-				//‘ã‘Öƒsƒ“‚Ìİ’è‚Ì—L–³‚ğİ’è
+				//ä»£æ›¿ãƒ”ãƒ³ã®è¨­å®šã®æœ‰ç„¡ã‚’è¨­å®š
 				Converter.use_alternative_pin(AN.is_alternative());
 
-				//ƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+				//ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 				Ref.ADC.individual_convert_select(analog_no::No);
 
-				//ŒÂ•ÊƒXƒLƒƒƒ“ŠJn
+				//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³é–‹å§‹
 				Ref.ADC.individual_convert_trigger(true);
 				__asm("nop");
 
-				//ƒXƒLƒƒƒ“‘Ò‚¿
+				//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 				while (!AN.data_ready());
 
-				//ƒf[ƒ^‚ğ‰ÁZ
+				//ãƒ‡ãƒ¼ã‚¿ã‚’åŠ ç®—
 				uint16 Val = AN.data();
 
 				return Val;
@@ -242,22 +242,22 @@ namespace xc32{
 				xc32_assert(is_lock(), exception(0xE2));
 				//xc32_assert(ObserveNum_ >= 0);
 
-				//‘ã‘Öƒsƒ“‚Ìİ’è‚Ì—L–³‚ğİ’è
+				//ä»£æ›¿ãƒ”ãƒ³ã®è¨­å®šã®æœ‰ç„¡ã‚’è¨­å®š
 				Converter.use_alternative_pin(AN.is_alternative());
 
-				//ƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+				//ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 				Ref.ADC.individual_convert_select(analog_no::No);
 
 				uint32 Val = 0;
 				for (uint16 ObserveCnt = 0; ObserveCnt < ObserveNum_; ++ObserveCnt) {
-					//ŒÂ•ÊƒXƒLƒƒƒ“ŠJn
+					//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³é–‹å§‹
 					Ref.ADC.individual_convert_trigger(true);
 					__asm("nop");
 
-					//ƒXƒLƒƒƒ“‘Ò‚¿
+					//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 					while (!AN.data_ready());
 
-					//ƒf[ƒ^‚ğ‰ÁZ
+					//ãƒ‡ãƒ¼ã‚¿ã‚’åŠ ç®—
 					Val += AN.data();
 				}
 
@@ -266,7 +266,7 @@ namespace xc32{
 		};
 	};
 
-	//‚·‚×‚Ä‚Ì‹¤—LŒ^ADC‚ÌŠî–{‚Æ‚È‚éA‰Šú‰»ŠÇ—‚ğ‚Â‚©‚³‚Ç‚éƒNƒ‰ƒX
+	//ã™ã¹ã¦ã®å…±æœ‰å‹ADCã®åŸºæœ¬ã¨ãªã‚‹ã€åˆæœŸåŒ–ç®¡ç†ã‚’ã¤ã‹ã•ã©ã‚‹ã‚¯ãƒ©ã‚¹
 	template<typename adc_block_register_, typename identifier_>
 	class basic_shared_adc{
 		typedef basic_shared_adc<adc_block_register_, identifier_> my_type;
@@ -299,25 +299,25 @@ namespace xc32{
 			bool lock(){
 				if(++LockCnt == 1){
 					if(ADCLock.lock()){
-						//Lock‚É¸”s‚µ‚½‚ç–ß‚µ‚Ä‚©‚çI‚í‚é
+						//Lockã«å¤±æ•—ã—ãŸã‚‰æˆ»ã—ã¦ã‹ã‚‰çµ‚ã‚ã‚‹
 						LockCnt = 0;
 						return true;
 					}
 
-					//ˆê“x‚·‚×‚Äİ’è‚ğƒNƒŠƒA‚·‚é
+					//ä¸€åº¦ã™ã¹ã¦è¨­å®šã‚’ã‚¯ãƒªã‚¢ã™ã‚‹
 					ADC.reset_all_config();
 
-					//QÆ“dˆ³‚ğİ’è
+					//å‚ç…§é›»åœ§ã‚’è¨­å®š
 					ADC.reference_voltage(Setting.VrefMode);
 					__asm("nop");
-					//ƒNƒƒbƒN‚ğTcy‚Éİ’è
+					//ã‚¯ãƒ­ãƒƒã‚¯ã‚’Tcyã«è¨­å®š
 					ADC.clock_select(1);
 					__asm("nop");
-					//ƒNƒƒbƒN•ªüİ’è(0`127‚Ü‚Å‚È‚Ì‚Å‚ˆÊ‚Ìƒrƒbƒg‚ğíœ)
+					//ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨è¨­å®š(0ï½127ã¾ã§ãªã®ã§é«˜ä½ã®ãƒ“ãƒƒãƒˆã‚’å‰Šé™¤)
 					ADC.clock_div((Setting.ClockDiv & 0x7F));
 					__asm("nop");
 
-					//Global Convert Mode—pİ’è
+					//Global Convert Modeç”¨è¨­å®š
 					if(IsGlobalConvert){
 						ADC.scan_trigger_select(1);
 						__asm("nop");
@@ -329,11 +329,11 @@ namespace xc32{
 						__asm("nop");
 					}
 
-					//ADCn“®I
+					//ADCå§‹å‹•ï¼
 					ADC.enable(1);
 					__asm("nop");
 
-					//self calibration‘Ò‚¿
+					//self calibrationå¾…ã¡
 					while(!ADC.module_ready());
 				}
 
@@ -343,52 +343,52 @@ namespace xc32{
 				if(LockCnt == 0)return;
 
 				if(--LockCnt == 0){
-					//ADC’â~
+					//ADCåœæ­¢
 					ADC.enable(0);
 
-					//İ’è”jŠü
+					//è¨­å®šç ´æ£„
 					ADC.reset_all_config();
 
-					//ƒƒbƒN‰ğœ
+					//ãƒ­ãƒƒã‚¯è§£é™¤
 					ADCLock.unlock();
 				}
 			}
 			bool is_lock(){ return LockCnt > 0; }
 			bool relock(const adc::block_setting& Setting_, bool ForceReset = false){
-				//ˆê‚È‚çƒpƒX
+				//ä¸€ç·’ãªã‚‰ãƒ‘ã‚¹
 				if(Setting == Setting_ && !ForceReset)return true;
 
-				//ˆê’UƒXƒgƒbƒv
+				//ä¸€æ—¦ã‚¹ãƒˆãƒƒãƒ—
 				ADC.enable(0);
 
-				//İ’èXV
+				//è¨­å®šæ›´æ–°
 				Setting = Setting_;
 
-				//QÆ“dˆ³‚ğİ’è
+				//å‚ç…§é›»åœ§ã‚’è¨­å®š
 				ADC.reference_voltage(Setting.VrefMode);
 				__asm("nop");
-				//ƒNƒƒbƒN‚ğTcy‚Éİ’è
+				//ã‚¯ãƒ­ãƒƒã‚¯ã‚’Tcyã«è¨­å®š
 				ADC.clock_select(1);
 				__asm("nop");
-				//ƒNƒƒbƒN•ªüİ’è(0`127‚Ü‚Å‚È‚Ì‚Å‚ˆÊ‚Ìƒrƒbƒg‚ğíœ)
+				//ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨è¨­å®š(0ï½127ã¾ã§ãªã®ã§é«˜ä½ã®ãƒ“ãƒƒãƒˆã‚’å‰Šé™¤)
 				ADC.clock_div((Setting.ClockDiv & 0x7F));
 				__asm("nop");
 
-				//Global Convert Mode—pİ’è
+				//Global Convert Modeç”¨è¨­å®š
 				if(IsGlobalConvert)ADC.scan_trigger_select(1);
 				__asm("nop");
 
-				//ADCn“®I
+				//ADCå§‹å‹•ï¼
 				ADC.enable(1);
 				__asm("nop");
 
-				//self calibration‘Ò‚¿
+				//self calibrationå¾…ã¡
 				while(!ADC.module_ready());
 
-				//ADCÄn“®
+				//ADCå†å§‹å‹•
 				ADC.enable(1);
 				__asm("nop");
-				//self calibration‘Ò‚¿
+				//self calibrationå¾…ã¡
 				while(!ADC.module_ready());
 
 				return false;
@@ -403,17 +403,17 @@ namespace xc32{
 				ADC.individual_convert_trigger(true);
 				__asm("nop");
 			}
-			//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,c
+			//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,â€¦
 			void scan_trigger_select(unsigned char val_){ADC.scan_trigger_select(val_);}
-			//ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒKƒrƒbƒg
+			//ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬ãƒ“ãƒƒãƒˆ
 			void global_convert_trigger(){ ADC.global_convert_trigger(); }
-			//ˆêÄƒXƒLƒƒƒ“iGlobal Scanj‚ªI—¹‚µ‚½‚©@“Ç‚İ‚¾‚·‚Æ©“®“I‚É—‚¿‚é
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³ï¼ˆGlobal Scanï¼‰ãŒçµ‚äº†ã—ãŸã‹ã€€èª­ã¿ã ã™ã¨è‡ªå‹•çš„ã«è½ã¡ã‚‹
 			bool is_end_global_convert()const volatile{ return ADC.is_end_global_convert(); }
-			//ˆêÄƒXƒLƒƒƒ“‚É“o˜^‚µ‚½ƒ`ƒƒƒ“ƒlƒ‹‚ğƒŠƒZƒbƒg
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³ã«ç™»éŒ²ã—ãŸãƒãƒ£ãƒ³ãƒãƒ«ã‚’ãƒªã‚»ãƒƒãƒˆ
 			void reset_request_global_convert(){
 				ADC.reset_request_global_convert();
 			}
-			//ˆêÄƒXƒLƒƒƒ“I—¹Š„‚è‚İ‹–‰Â
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³çµ‚äº†æ™‚å‰²ã‚Šè¾¼ã¿è¨±å¯
 			void global_convert_end_interrupt_enable(bool val){ ADC.global_convert_end_interrupt_enable(val); }
 		private:
 			using interrupt_function_ptr = void(*)(void);
@@ -430,7 +430,7 @@ namespace xc32{
 			};
 			interrupt_function InterruptFunction;
 		public:
-			//Š„‚è‚İŠÖ”‚Ìİ’è
+			//å‰²ã‚Šè¾¼ã¿é–¢æ•°ã®è¨­å®š
 			void set_global_convert_end_interrupt_function(interrupt_function_ptr Fptr_){
 				InterruptFunction.set_interrupt_function(Fptr_);
 				ADC.global_convert_end_interrupt_function(&InterruptFunction);
@@ -457,19 +457,19 @@ namespace xc32{
 				return lock();
 			}
 			bool lock(){
-				//adc_block‚ğƒƒbƒN@¸”s‚µ‚½‚ç‰½‚à‚¹‚¸I‚í‚é
+				//adc_blockã‚’ãƒ­ãƒƒã‚¯ã€€å¤±æ•—ã—ãŸã‚‰ä½•ã‚‚ã›ãšçµ‚ã‚ã‚‹
 				if(my_type::Block.lock())return true;
 
 				if(LockCnt++ == 0){
-					//ƒXƒ^[ƒgƒAƒbƒvˆ—
+					//ã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—å‡¦ç†
 					my_type::Block.ADC.template converter_clock_div<converter_no_>(Setting.ClockDiv);
 					my_type::Block.ADC.template converter_sampling_time<converter_no_>(Setting.SamplingTime);
 					my_type::Block.ADC.template converter_resolution_bits<converter_no_>(Setting.ResolutionMode);
 
-					//Global Convert Mode—pİ’è
+					//Global Convert Modeç”¨è¨­å®š
 					if(IsGlobalConvert)my_type::Block.ADC.template converter_scan_trigger_select<converter_no_>(3);
 
-					//ADC €”õ‚ğ‘Ò‚Â
+					//ADC æº–å‚™ã‚’å¾…ã¤
 					my_type::Block.ADC.template converter_enable<converter_no_>(true);
 					while(!my_type::Block.ADC.template converter_work_ready<converter_no_>());
 					my_type::Block.ADC.template converter_work_enable<converter_no_>(true);
@@ -484,30 +484,30 @@ namespace xc32{
 					my_type::Block.ADC.template converter_enable<converter_no_>(false);
 				}
 
-				//adc_block‚ğƒAƒ“ƒƒbƒN
+				//adc_blockã‚’ã‚¢ãƒ³ãƒ­ãƒƒã‚¯
 				my_type::Block.unlock();
 			}
 			bool is_lock()const{ return LockCnt != 0; }
 			bool relock(const adc::converter_setting& Setting_, bool ForceReset = false){
-				//ˆê‚È‚çƒpƒX
+				//ä¸€ç·’ãªã‚‰ãƒ‘ã‚¹
 				if(Setting == Setting_ && !ForceReset)return true;
 
-				//İ’èXV
+				//è¨­å®šæ›´æ–°
 				Setting = Setting_;
 
-				//ˆê’UƒXƒgƒbƒv
+				//ä¸€æ—¦ã‚¹ãƒˆãƒƒãƒ—
 				my_type::Block.ADC.template converter_work_enable<converter_no_>(false);
 				my_type::Block.ADC.template converter_enable<converter_no_>(false);
 
-				//ƒXƒ^[ƒgƒAƒbƒvˆ—
+				//ã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—å‡¦ç†
 				my_type::Block.ADC.template converter_clock_div<converter_no_>(Setting.ClockDiv);
 				my_type::Block.ADC.template converter_sampling_time<converter_no_>(Setting.SamplingTime);
 				my_type::Block.ADC.template converter_resolution_bits<converter_no_>(Setting.ResolutionMode);
 
-				//Global Convert Mode—pİ’è
+				//Global Convert Modeç”¨è¨­å®š
 				if(IsGlobalConvert)my_type::Block.ADC.template converter_scan_trigger_select<converter_no_>(3);
 
-				//ADC €”õ‚ğ‘Ò‚Â
+				//ADC æº–å‚™ã‚’å¾…ã¤
 				my_type::Block.ADC.template converter_enable<converter_no_>(true);
 				while(!my_type::Block.ADC.template converter_work_ready<converter_no_>());
 				my_type::Block.ADC.template converter_work_enable<converter_no_>(true);
@@ -540,14 +540,14 @@ namespace xc32{
 	template<typename converter_no_>
 	typename basic_shared_adc<adc_block_register_, identifier_>::template converter<converter_no_> basic_shared_adc<adc_block_register_, identifier_>::cv<converter_no_>::Converter;
 
-	//“¯ŠúŒ^‹¤—LADC
-	//	shared_adc‚ÍÀ‘Ì‚ğ—pˆÓ‚·‚é•K—v‚ª‚È‚¢B‘ã‚í‚è‚Éanalog_pin‚©‚ç‚Ìlock/unclock‚Å“K‹X‰Šú‰»/I’[‰»‚³‚ê‚éB
-	//	‹t‚ÉŒ¾‚¦‚ÎAshared_adc‚ğ‰ğ•ú‚·‚é‚½‚ß‚É‚ÍA‚·‚×‚Ä‚Ìanalog_pin‚Åunlock‚·‚é•K—v‚ª‚ ‚éB
-	//	analog_pin‚Ì“Ç‚İo‚µˆ—‚Íd•¡‚µ‚Ä‚¢‚È‚¢‚±‚Æ‚ÌŠm”F‚ª‚È‚³‚ê‚éBd•¡‚Í“Ç‚İ‚¾‚µ¸”s‚Æ‚È‚èA0xffff‚ª•Ô‚é
+	//åŒæœŸå‹å…±æœ‰ADC
+	//	shared_adcã¯å®Ÿä½“ã‚’ç”¨æ„ã™ã‚‹å¿…è¦ãŒãªã„ã€‚ä»£ã‚ã‚Šã«analog_pinã‹ã‚‰ã®lock/unclockã§é©å®œåˆæœŸåŒ–/çµ‚ç«¯åŒ–ã•ã‚Œã‚‹ã€‚
+	//	é€†ã«è¨€ãˆã°ã€shared_adcã‚’è§£æ”¾ã™ã‚‹ãŸã‚ã«ã¯ã€ã™ã¹ã¦ã®analog_pinã§unlockã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã€‚
+	//	analog_pinã®èª­ã¿å‡ºã—å‡¦ç†ã¯é‡è¤‡ã—ã¦ã„ãªã„ã“ã¨ã®ç¢ºèªãŒãªã•ã‚Œã‚‹ã€‚é‡è¤‡æ™‚ã¯èª­ã¿ã ã—å¤±æ•—ã¨ãªã‚Šã€0xffffãŒè¿”ã‚‹
 	template<typename adc_block_register_, typename identifier_>
 	class shared_adc{
 		typedef shared_adc<adc_block_register_, identifier_> my_type;
-		struct my_identifier{};//“Æ©‚Ìidentifier‚ğì‚é@‚±‚ê‚ÍAidentifier_‚ªg‚¢‚Ü‚í‚³‚ê‚Ä‚¢‚éê‡‚ÉAbasic_shared_adc‚ª‹£‡‚·‚é‚Ì‚ğ–h‚®‚½‚ßB
+		struct my_identifier{};//ç‹¬è‡ªã®identifierã‚’ä½œã‚‹ã€€ã“ã‚Œã¯ã€identifier_ãŒä½¿ã„ã¾ã‚ã•ã‚Œã¦ã„ã‚‹å ´åˆã«ã€basic_shared_adcãŒç«¶åˆã™ã‚‹ã®ã‚’é˜²ããŸã‚ã€‚
 		typedef basic_shared_adc<adc_block_register_, my_identifier> my_adc;
 	private:
 		static adc::block_setting BlockSetting;
@@ -632,11 +632,11 @@ namespace xc32{
 
 				bool ForceReset = false;
 
-				//‚±‚±‚ÅAConverterg—pŒ Šm•Û
+				//ã“ã“ã§ã€Converterä½¿ç”¨æ¨©ç¢ºä¿
 				if(my_converter::Converter.start())return 0xFFFF;
 
 				if(pBlockSetting == 0){
-					//relock‚ªtrue‚ğ•Ô‚µ‚½ƒŠƒZƒbƒg‚·‚é•K—v‚ª‚È‚¢
+					//relockãŒtrueã‚’è¿”ã—ãŸï¼ãƒªã‚»ãƒƒãƒˆã™ã‚‹å¿…è¦ãŒãªã„
 					ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 				} else{
 					ForceReset = !my_adc::Block.relock(*pBlockSetting);
@@ -648,23 +648,23 @@ namespace xc32{
 					my_converter::Converter.relock(*pConverterSetting, ForceReset);
 				}
 
-				//‘ã‘Öƒsƒ“‚Ìİ’è‚Ì—L–³‚ğİ’è
+				//ä»£æ›¿ãƒ”ãƒ³ã®è¨­å®šã®æœ‰ç„¡ã‚’è¨­å®š
 				my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
-				//ŒÂ•ÊƒXƒLƒƒƒ“‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+				//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³ã™ã‚‹ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 				my_adc::Block.individual_convert_select(analog_no::No);
 				__asm("nop");
 
-				//ƒgƒŠƒK‚ğˆø‚­
+				//ãƒˆãƒªã‚¬ã‚’å¼•ã
 				my_adc::Block.individual_convert_trigger();
 
-				//ƒXƒLƒƒƒ“‘Ò‚¿
+				//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 				while(!AN.data_ready());
 
-				//ƒf[ƒ^‚ğ‰ÁZ
+				//ãƒ‡ãƒ¼ã‚¿ã‚’åŠ ç®—
 				uint16 Val = AN.data();
 
-				//ƒRƒ“ƒo[ƒ^[g—pŒ •úŠü
+				//ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ä½¿ç”¨æ¨©æ”¾æ£„
 				my_converter::Converter.stop();
 
 				return Val;
@@ -674,11 +674,11 @@ namespace xc32{
 
 				bool ForceReset = false;
 
-				//‚±‚±‚ÅAConverterg—pŒ Šm•Û
+				//ã“ã“ã§ã€Converterä½¿ç”¨æ¨©ç¢ºä¿
 				if(my_converter::Converter.start())return 0xFFFF;
 
 				if(pBlockSetting == 0){
-					//relock‚ªtrue‚ğ•Ô‚µ‚½ƒŠƒZƒbƒg‚·‚é•K—v‚ª‚È‚¢
+					//relockãŒtrueã‚’è¿”ã—ãŸï¼ãƒªã‚»ãƒƒãƒˆã™ã‚‹å¿…è¦ãŒãªã„
 					ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 				} else{
 					ForceReset = !my_adc::Block.relock(*pBlockSetting);
@@ -690,25 +690,25 @@ namespace xc32{
 					my_converter::Converter.relock(*pConverterSetting, ForceReset);
 				}
 
-				//‘ã‘Öƒsƒ“‚Ìİ’è‚Ì—L–³‚ğİ’è
+				//ä»£æ›¿ãƒ”ãƒ³ã®è¨­å®šã®æœ‰ç„¡ã‚’è¨­å®š
 				my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
-				//ŒÂ•ÊƒXƒLƒƒƒ“‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+				//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³ã™ã‚‹ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 				my_adc::Block.individual_convert_select(analog_no::No);
 
 				uint32 Val = 0;
 				for(uint16 ObserveCnt = 0; ObserveCnt<ObserveNum_; ++ObserveCnt){
-					//ƒgƒŠƒK‚ğˆø‚­
+					//ãƒˆãƒªã‚¬ã‚’å¼•ã
 					my_adc::Block.individual_convert_trigger();
 
-					//ƒXƒLƒƒƒ“‘Ò‚¿
+					//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 					while(!AN.data_ready());
 
-					//ƒf[ƒ^‚ğ‰ÁZ
+					//ãƒ‡ãƒ¼ã‚¿ã‚’åŠ ç®—
 					Val += AN.data();
 				}
 
-				//ƒRƒ“ƒo[ƒ^[g—pŒ •úŠü
+				//ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ä½¿ç”¨æ¨©æ”¾æ£„
 				my_converter::Converter.stop();
 
 				return Val/ObserveNum_;
@@ -721,32 +721,32 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting shared_adc<adc_block_register_, identifier_>::cv<converter_no_>::ConverterSetting;
 
-	//”ñ“¯ŠúŒ^ŒÂ•ÊƒRƒ“ƒo[ƒgADC
-	//	async_adc‚Íshared_adc“¯—lAÀ‘Ì‚ğ—pˆÓ‚·‚é•K—v‚ª‚È‚¢Banalog_pin‚©‚ç‚Ìlock/unclock‚Å“K‹X‰Šú‰»/I’[‰»‚³‚ê‚éB
-	//	analog_pin‚©‚ç“Ç‚İ‚¾‚µ‚Ä‚à’l‚Í‚»‚Ìê‚Å“Ç‚İ‚¾‚³‚ê‚¸‚ÉAfuture‚ª–ß‚è’l‚Æ‚µ‚Ä•Ô‚³‚ê‚éB
-	//	“à•”‚Å‚Íqueue‚Éadc—p‚Ìtask‚ªÏ‚Ü‚êA‡Ÿ“Ç‚İo‚µ‚ªs‚í‚ê‚éB
-	//	‹@”\‚³‚¹‚é‚½‚ß‚É‚ÍA’èŠú“I‚Éconverter‚²‚Æ‚ÌworkŠÖ”‚ğŒÄ‚Ño‚·•K—v‚ª‚ ‚éB
-	//	“Ç‚İo‚µˆ—‚ğˆêŠ‡‚ÉŠÇ—‚³‚¹‚é‚½‚ßA“Ç‚İo‚µd•¡‚ª•K‚¸‹N‚±‚ç‚È‚¢‚Ì‚ªƒƒŠƒbƒgB
+	//éåŒæœŸå‹å€‹åˆ¥ã‚³ãƒ³ãƒãƒ¼ãƒˆADC
+	//	async_adcã¯shared_adcåŒæ§˜ã€å®Ÿä½“ã‚’ç”¨æ„ã™ã‚‹å¿…è¦ãŒãªã„ã€‚analog_pinã‹ã‚‰ã®lock/unclockã§é©å®œåˆæœŸåŒ–/çµ‚ç«¯åŒ–ã•ã‚Œã‚‹ã€‚
+	//	analog_pinã‹ã‚‰èª­ã¿ã ã—ã¦ã‚‚å€¤ã¯ãã®å ´ã§èª­ã¿ã ã•ã‚Œãšã«ã€futureãŒæˆ»ã‚Šå€¤ã¨ã—ã¦è¿”ã•ã‚Œã‚‹ã€‚
+	//	å†…éƒ¨ã§ã¯queueã«adcç”¨ã®taskãŒç©ã¾ã‚Œã€é †æ¬¡èª­ã¿å‡ºã—ãŒè¡Œã‚ã‚Œã‚‹ã€‚
+	//	æ©Ÿèƒ½ã•ã›ã‚‹ãŸã‚ã«ã¯ã€å®šæœŸçš„ã«converterã”ã¨ã®worké–¢æ•°ã‚’å‘¼ã³å‡ºã™å¿…è¦ãŒã‚ã‚‹ã€‚
+	//	èª­ã¿å‡ºã—å‡¦ç†ã‚’ä¸€æ‹¬ã«ç®¡ç†ã•ã›ã‚‹ãŸã‚ã€èª­ã¿å‡ºã—é‡è¤‡ãŒå¿…ãšèµ·ã“ã‚‰ãªã„ã®ãŒãƒ¡ãƒªãƒƒãƒˆã€‚
 	template<typename adc_block_register_, typename identifier_>
 	class async_functional_adc{
-		//=== İŒvŠT—v ===
-		//async_functional_adc‚ÍAŒÂ•ÊƒRƒ“ƒo[ƒg‚ğ—˜—p‚µ‚Äadc‚Ìƒf[ƒ^“Ç‚İo‚µ‚ğ’S“–‚·‚é
-		//async_functional_adc::analog_pin‚©‚çAoperator()‚ğÀs‚·‚é‚ÆA
-		//	RequestQueue‚Éƒf[ƒ^ƒŠƒNƒGƒXƒg“à—e‚ªÏ‚Ü‚ê‚é
-		//	ƒŠƒNƒGƒXƒg‚É‚ÍAŒ‹‰Ê‘‚«‚İ—p‚Ìpromise&‚àŠÜ‚Ü‚ê‚é
-		//	–ß‚è’l‚Æ‚µ‚ÄA—˜—pÒ‚Ífuture‚ğó‚¯æ‚é
-		//adc‚Ìoperator()Às‚É‚æ‚Á‚ÄA
-		//	‘–‚Á‚Ä‚¢‚éƒ^ƒXƒN‚ª‚È‚¯‚ê‚ÎARequestQueue‚ğ“Ç‚İ‚Ş
-		//	ƒŠƒNƒGƒXƒg“à—e‚É‰ˆ‚Á‚ÄˆêŠ‡ƒRƒ“ƒo[ƒg‚ğ‹ì“®‚·‚é
-		//	ƒf[ƒ^“Ç‚İo‚µ‚ªŠ®—¹‚µ‚Ä‚¢‚ê‚ÎApromise&‚ğ‰î‚µ‚Ä’Ê’m‚·‚é
-		//	‚·‚×‚Ä‚ªŠ®—¹ŒãAƒ^ƒXƒN‚ğƒLƒ…[‚©‚çŠO‚·
+		//=== è¨­è¨ˆæ¦‚è¦ ===
+		//async_functional_adcã¯ã€å€‹åˆ¥ã‚³ãƒ³ãƒãƒ¼ãƒˆã‚’åˆ©ç”¨ã—ã¦adcã®ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—ã‚’æ‹…å½“ã™ã‚‹
+		//async_functional_adc::analog_pinã‹ã‚‰ã€operator()ã‚’å®Ÿè¡Œã™ã‚‹ã¨ã€
+		//	RequestQueueã«ãƒ‡ãƒ¼ã‚¿ãƒªã‚¯ã‚¨ã‚¹ãƒˆå†…å®¹ãŒç©ã¾ã‚Œã‚‹
+		//	ãƒªã‚¯ã‚¨ã‚¹ãƒˆã«ã¯ã€çµæœæ›¸ãè¾¼ã¿ç”¨ã®promise&ã‚‚å«ã¾ã‚Œã‚‹
+		//	æˆ»ã‚Šå€¤ã¨ã—ã¦ã€åˆ©ç”¨è€…ã¯futureã‚’å—ã‘å–ã‚‹
+		//adcã®operator()å®Ÿè¡Œã«ã‚ˆã£ã¦ã€
+		//	èµ°ã£ã¦ã„ã‚‹ã‚¿ã‚¹ã‚¯ãŒãªã‘ã‚Œã°ã€RequestQueueã‚’èª­ã¿è¾¼ã‚€
+		//	ãƒªã‚¯ã‚¨ã‚¹ãƒˆå†…å®¹ã«æ²¿ã£ã¦ä¸€æ‹¬ã‚³ãƒ³ãƒãƒ¼ãƒˆã‚’é§†å‹•ã™ã‚‹
+		//	ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—ãŒå®Œäº†ã—ã¦ã„ã‚Œã°ã€promise&ã‚’ä»‹ã—ã¦é€šçŸ¥ã™ã‚‹
+		//	ã™ã¹ã¦ãŒå®Œäº†å¾Œã€ã‚¿ã‚¹ã‚¯ã‚’ã‚­ãƒ¥ãƒ¼ã‹ã‚‰å¤–ã™
 	private:
 		typedef adc_block_register_ adc_block_register;
 		typedef async_functional_adc<adc_block_register_, identifier_> my_type;
 		struct my_identifier{};
 		typedef basic_shared_adc<adc_block_register_, my_identifier> my_adc;
 	private:
-		//ƒf[ƒ^ƒŠƒNƒGƒXƒg“à—e
+		//ãƒ‡ãƒ¼ã‚¿ãƒªã‚¯ã‚¨ã‚¹ãƒˆå†…å®¹
 		struct request{
 		public:
 			promise<uint16>& Ref;
@@ -764,16 +764,16 @@ namespace xc32{
 				, Num(1){
 			}
 		public:
-			//ConverterŒn start‚Í¸”s‚µ‚½‚çtrue‚ğ•Ô‚·
+			//Converterç³» startã¯å¤±æ•—ã—ãŸã‚‰trueã‚’è¿”ã™
 			virtual bool start() = 0;
 			virtual void stop() = 0;
-			//AN PinŒn
-			virtual uint16 try_read_data() = 0;	//¸”s‚µ‚½‚çA–ß‚è’l‚Í0xffff
+			//AN Pinç³»
+			virtual uint16 try_read_data() = 0;	//å¤±æ•—ã—ãŸã‚‰ã€æˆ»ã‚Šå€¤ã¯0xffff
 		};
 		typedef typename xc::chain<request*>::element request_ptr_element;
 	private:
 		struct converter_task_interface{
-			//taskŒp‘±’†‚Ítrue‚ğ•Ô‚·
+			//taskç¶™ç¶šä¸­ã¯trueã‚’è¿”ã™
 			virtual bool task() = 0;
 			virtual void clear() = 0;
 		};
@@ -789,65 +789,65 @@ namespace xc32{
 			uint32 DataSum;
 			uint16 DataCnt;
 		public:
-			//taskŒp‘±’†‚Ítrue‚ğ•Ô‚·
+			//taskç¶™ç¶šä¸­ã¯trueã‚’è¿”ã™
 			bool task(){
-				//ƒŠƒNƒGƒXƒg’†‚Ìƒf[ƒ^‚ª‚ ‚éê‡
+				//ãƒªã‚¯ã‚¨ã‚¹ãƒˆä¸­ã®ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹å ´åˆ
 				if(HandlingReqPtr){
 					uint16 Data = HandlingReqPtr->try_read_data();
 
-					//ƒf[ƒ^“Ç‚İæ‚è‚É¸”s‚µ‚Ä‚¢‚È‚¯‚ê‚Î
+					//ãƒ‡ãƒ¼ã‚¿èª­ã¿å–ã‚Šã«å¤±æ•—ã—ã¦ã„ãªã‘ã‚Œã°
 					if(Data != 0xffff){
 						DataSum += Data;
 						++DataCnt;
 
 						if(DataCnt >= HandlingReqPtr->Num){
-							//Converter‚ğ’â~
+							//Converterã‚’åœæ­¢
 							HandlingReqPtr->stop();
-							//Œ‹‰Ê‚ğ‘‚«‚İ
+							//çµæœã‚’æ›¸ãè¾¼ã¿
 							HandlingReqPtr->Ref.set_value(static_cast<uint16>(DataSum / DataCnt));
-							//ƒŠƒNƒGƒXƒgƒf[ƒ^I—¹
+							//ãƒªã‚¯ã‚¨ã‚¹ãƒˆãƒ‡ãƒ¼ã‚¿çµ‚äº†
 							HandlingReqPtr = 0;
 						} else{
-							//ŒÂ•ÊƒXƒLƒƒƒ“‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+							//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³ã™ã‚‹ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 							my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
 							__asm("nop");
-							//ƒgƒŠƒK‚ğˆø‚¢‚ÄAÅ‰‚ÌƒŠƒNƒGƒXƒg
+							//ãƒˆãƒªã‚¬ã‚’å¼•ã„ã¦ã€æœ€åˆã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 							my_adc::Block.individual_convert_trigger();
 						}
 					}
 				}
 
 
-				//ƒŠƒNƒGƒXƒg’†‚Ìƒf[ƒ^‚ª‚È‚¢ê‡
+				//ãƒªã‚¯ã‚¨ã‚¹ãƒˆä¸­ã®ãƒ‡ãƒ¼ã‚¿ãŒãªã„å ´åˆ
 				while(HandlingReqPtr == 0){
-					//ƒ^ƒXƒNƒLƒ…[‚ª‹ó‚È‚çAI—¹
+					//ã‚¿ã‚¹ã‚¯ã‚­ãƒ¥ãƒ¼ãŒç©ºãªã‚‰ã€çµ‚äº†
 					if(ReqPtrQueue.empty())return false;
 
-					//æ“ª‚©‚ç”²‚¢‚Ä‚­‚é
+					//å…ˆé ­ã‹ã‚‰æŠœã„ã¦ãã‚‹
 					HandlingReqPtr = ReqPtrQueue.front();
 					ReqPtrQueue.pop_front();
 
-					//ƒkƒ‹ƒ|‚ğ‚Í‚¶‚­iŒ´—“I‚É‚Í‚È‚¢‚Í‚¸j
+					//ãƒŒãƒ«ãƒã‚’ã¯ã˜ãï¼ˆåŸç†çš„ã«ã¯ãªã„ã¯ãšï¼‰
 					if(HandlingReqPtr == 0)continue;
 
-					//start‚É¸”s‚·‚é‚±‚Æ‚ÍAŒ´—“I‚É‚ ‚è“¾‚È‚¢‚Ì‚Å–³‹
+					//startã«å¤±æ•—ã™ã‚‹ã“ã¨ã¯ã€åŸç†çš„ã«ã‚ã‚Šå¾—ãªã„ã®ã§ç„¡è¦–
 					HandlingReqPtr->start();
 
 					DataSum = 0;
 					DataCnt = 0;
 
-					//ŒÂ•ÊƒXƒLƒƒƒ“‚·‚éƒ`ƒƒƒ“ƒlƒ‹‚ğİ’è
+					//å€‹åˆ¥ã‚¹ã‚­ãƒ£ãƒ³ã™ã‚‹ãƒãƒ£ãƒ³ãƒãƒ«ã‚’è¨­å®š
 					my_adc::Block.individual_convert_select(HandlingReqPtr->AN);
 					__asm("nop");
 
-					//ƒgƒŠƒK‚ğˆø‚¢‚ÄAÅ‰‚ÌƒŠƒNƒGƒXƒg
+					//ãƒˆãƒªã‚¬ã‚’å¼•ã„ã¦ã€æœ€åˆã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
 					my_adc::Block.individual_convert_trigger();
 				}
 
-				//ƒ^ƒXƒN’†
+				//ã‚¿ã‚¹ã‚¯ä¸­
 				return true;
 			}
-			//“o˜^‚³‚ê‚½‚·‚×‚Ä‚ÌƒŠƒNƒGƒXƒg‚ğ”jŠü
+			//ç™»éŒ²ã•ã‚ŒãŸã™ã¹ã¦ã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’ç ´æ£„
 			void clear(){
 				for(typename xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
 					if(*Itr != 0){
@@ -894,12 +894,12 @@ namespace xc32{
 				an_request(promise<uint16>& Ref_) :request(Ref_, analog_no::No){}
 			public:
 				virtual bool start(){
-					//‚±‚±‚ÅAConverterg—pŒ Šm•Û
+					//ã“ã“ã§ã€Converterä½¿ç”¨æ¨©ç¢ºä¿
 					if(my_converter::Converter.start())return true;
 
 					bool ForceReset = false;
 					if(this->pBlockSetting == 0){
-						//relock‚ªtrue‚ğ•Ô‚µ‚½ƒŠƒZƒbƒg‚·‚é•K—v‚ª‚È‚¢
+						//relockãŒtrueã‚’è¿”ã—ãŸï¼ãƒªã‚»ãƒƒãƒˆã™ã‚‹å¿…è¦ãŒãªã„
 						ForceReset = !my_adc::Block.relock(my_type::BlockSetting);
 					} else{
 						ForceReset = !my_adc::Block.relock(*(this->pBlockSetting));
@@ -911,23 +911,23 @@ namespace xc32{
 						my_converter::Converter.relock(*(this->pConverterSetting), ForceReset);
 					}
 
-					//‘ã‘Öƒsƒ“‚Ìİ’è‚Ì—L–³‚ğİ’è
+					//ä»£æ›¿ãƒ”ãƒ³ã®è¨­å®šã®æœ‰ç„¡ã‚’è¨­å®š
 					my_converter::Converter.use_alternative_pin(AN.is_alternative());
 
 					return false;
 				}
 				virtual void stop(){
-					//ƒRƒ“ƒo[ƒ^[g—pŒ •úŠü
+					//ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ä½¿ç”¨æ¨©æ”¾æ£„
 					my_converter::Converter.stop();
 				}
 				virtual uint16 try_read_data(){
-					//ƒXƒLƒƒƒ“‘Ò‚¿
+					//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 					if(!AN.data_ready())return 0xffff;
 					return AN.data();
 				}
 			};
 			an_request Request;
-			request_ptr_element ReqElement;	//Request‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğ’Í‚ñ‚Å‚¢‚é
+			request_ptr_element ReqElement;	//Requestã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’æ´ã‚“ã§ã„ã‚‹
 		private:
 			pin_register Pin;
 			bool IsLock;
@@ -989,22 +989,22 @@ namespace xc32{
 				IsLock = false;
 			}
 		public:
-			//ƒf[ƒ^“Ç‚İo‚µ
-			//	ƒŠƒNƒGƒXƒg‚ª‚»‚à‚»‚à•s‰Â”\‚Èê‡‚Í‹ó‚Ìfuture‚ª•Ô‚é
-			//	‰½‚ç‚©‚ÌŒ´ˆö‚Å¸”s‚µ‚½ê‡‚ÍA0xffff‚ªfuture‚É‘‚«‚Ü‚ê‚é
+			//ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—
+			//	ãƒªã‚¯ã‚¨ã‚¹ãƒˆãŒãã‚‚ãã‚‚ä¸å¯èƒ½ãªå ´åˆã¯ç©ºã®futureãŒè¿”ã‚‹
+			//	ä½•ã‚‰ã‹ã®åŸå› ã§å¤±æ•—ã—ãŸå ´åˆã¯ã€0xffffãŒfutureã«æ›¸ãè¾¼ã¾ã‚Œã‚‹
 			future<uint16> operator()(void){ return operator()(1); }
 			future<uint16> operator()(uint16 ObserveNum_){
 				if(owns_request())return future<uint16>();
 				if(ObserveNum_ == 0)return future<uint16>();
 
-				//Request‚ğ‘‚«Š·‚¦‚ÄA‚»‚Ìƒ|ƒCƒ“ƒ^‚ğ‚Â‚©‚ñ‚Å‚éReqElement‚ğQueue‚É‚Ô‚¿‚Ş
+				//Requestã‚’æ›¸ãæ›ãˆã¦ã€ãã®ãƒã‚¤ãƒ³ã‚¿ã‚’ã¤ã‹ã‚“ã§ã‚‹ReqElementã‚’Queueã«ã¶ã¡è¾¼ã‚€
 				Request.Num = ObserveNum_;
 				task_holder<converter_no>::ConverterTask.push(ReqElement);
 
 				return Promise.get_future();
 			}
 		public:
-			//Œ»İƒŠƒNƒGƒXƒg’†‚©H
+			//ç¾åœ¨ãƒªã‚¯ã‚¨ã‚¹ãƒˆä¸­ã‹ï¼Ÿ
 			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(ReqElement); }
 		};
 	public:
@@ -1043,11 +1043,11 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
 
-	//”ñ“¯ŠúŒ^ˆêŠ‡ƒRƒ“ƒo[ƒgADC
-	//	async_adc‚Íshared_adc“¯—lAÀ‘Ì‚ğ—pˆÓ‚·‚é•K—v‚ª‚È‚¢Banalog_pin‚©‚ç‚Ìlock/unclock‚Å“K‹X‰Šú‰»/I’[‰»‚³‚ê‚éB
-	//	analog_pin‚©‚ç“Ç‚İ‚¾‚µ‚Ä‚à’l‚Í‚»‚Ìê‚Å“Ç‚İ‚¾‚³‚ê‚¸‚ÉAfuture‚ª–ß‚è’l‚Æ‚µ‚Ä•Ô‚³‚ê‚éB
-	//	“à•”‚Å‚Íqueue‚Éadc—p‚Ìtask‚ªÏ‚Ü‚êAŠ„‚è‚İŠÖ”“à‚Å‡Ÿ“Ç‚İo‚µ‚ªs‚í‚ê‚éB
-	//	Š„‚è‚İ‚ğg‚Á‚Ä‹@”\‚·‚é‚½‚ßA—˜—pÒ‚Íanalog_pin‚ğG‚éˆÈŠO‚É‰½‚à‚µ‚È‚­‚Ä‚æ‚¢B
+	//éåŒæœŸå‹ä¸€æ‹¬ã‚³ãƒ³ãƒãƒ¼ãƒˆADC
+	//	async_adcã¯shared_adcåŒæ§˜ã€å®Ÿä½“ã‚’ç”¨æ„ã™ã‚‹å¿…è¦ãŒãªã„ã€‚analog_pinã‹ã‚‰ã®lock/unclockã§é©å®œåˆæœŸåŒ–/çµ‚ç«¯åŒ–ã•ã‚Œã‚‹ã€‚
+	//	analog_pinã‹ã‚‰èª­ã¿ã ã—ã¦ã‚‚å€¤ã¯ãã®å ´ã§èª­ã¿ã ã•ã‚Œãšã«ã€futureãŒæˆ»ã‚Šå€¤ã¨ã—ã¦è¿”ã•ã‚Œã‚‹ã€‚
+	//	å†…éƒ¨ã§ã¯queueã«adcç”¨ã®taskãŒç©ã¾ã‚Œã€å‰²ã‚Šè¾¼ã¿é–¢æ•°å†…ã§é †æ¬¡èª­ã¿å‡ºã—ãŒè¡Œã‚ã‚Œã‚‹ã€‚
+	//	å‰²ã‚Šè¾¼ã¿ã‚’ä½¿ã£ã¦æ©Ÿèƒ½ã™ã‚‹ãŸã‚ã€åˆ©ç”¨è€…ã¯analog_pinã‚’è§¦ã‚‹ä»¥å¤–ã«ä½•ã‚‚ã—ãªãã¦ã‚ˆã„ã€‚
 	template<typename adc_block_register_, typename identifier_>
 	class async_interrupt_adc{
 	private:
@@ -1056,10 +1056,10 @@ namespace xc32{
 		struct my_identifier{};
 		typedef basic_shared_adc<adc_block_register_, my_identifier> my_adc;
 	private:
-		//ƒf[ƒ^ƒŠƒNƒGƒXƒg“à—e
+		//ãƒ‡ãƒ¼ã‚¿ãƒªã‚¯ã‚¨ã‚¹ãƒˆå†…å®¹
 		struct read_task{
 		public:
-			//AN PinŒn
+			//AN Pinç³»
 			virtual void request_data() = 0;
 			virtual void read_data() = 0;
 			virtual uint16 remain_request() = 0;
@@ -1074,7 +1074,7 @@ namespace xc32{
 		static task_ptr_chain TaskPtrQueue;
 	private:
 		static void request(){
-			//ˆêÄƒXƒLƒƒƒ“‚É“o˜^‚µ‚½ƒ`ƒƒƒ“ƒlƒ‹‚ğƒŠƒZƒbƒg
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³ã«ç™»éŒ²ã—ãŸãƒãƒ£ãƒ³ãƒãƒ«ã‚’ãƒªã‚»ãƒƒãƒˆ
 			my_adc::Block.reset_request_global_convert();
 
 			//request
@@ -1082,13 +1082,13 @@ namespace xc32{
 				(*Itr)->request_data();				
 			}
 			
-			//Š„‚è‚İ‹–‰Â
+			//å‰²ã‚Šè¾¼ã¿è¨±å¯
 			my_adc::Block.global_convert_end_interrupt_enable(true);
-			//ƒgƒŠƒK[‚ğˆø‚­
+			//ãƒˆãƒªã‚¬ãƒ¼ã‚’å¼•ã
 			my_adc::Block.global_convert_trigger();
 		}
 	private:
-		//analog_pin‚©‚ç‚Ìread_task‚ğ“o˜^
+		//analog_pinã‹ã‚‰ã®read_taskã‚’ç™»éŒ²
 		static void regist(task_ptr_element& Task){
 			if(TaskPtrQueue.empty()){
 				TaskPtrQueue.push(Task);
@@ -1097,20 +1097,20 @@ namespace xc32{
 				TaskPtrQueue.push(Task);
 			}
 		}
-		//Š„‚è‚İŠÖ”
+		//å‰²ã‚Šè¾¼ã¿é–¢æ•°
 		static void interrupt_function(){
-			//‚Ü‚¸ARequestƒf[ƒ^“Ç‚İo‚µˆ—	
+			//ã¾ãšã€Requestãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—å‡¦ç†	
 			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
 				(*Itr)->read_data();
 			}
 
-			//	sorted_chain‚Íremain‚ª¬‚³‚¢‡‚Éƒ\[ƒgÏ‚İ
+			//	sorted_chainã¯remainãŒå°ã•ã„é †ã«ã‚½ãƒ¼ãƒˆæ¸ˆã¿
 			while(TaskPtrQueue.next() != *TaskPtrQueue.end() && TaskPtrQueue.next()->remain_request() == 0){
 				TaskPtrQueue.pop();
 			}
 
-			//æ“ª‚©‚ç‡‚ÉA‘Sƒf[ƒ^“Ç‚İo‚µÏ‚İ‚Ì‚â‚Â‚ç‚ğn––‚µ‚Ä‚¢‚­
-			//Ÿ‚ÉA‚Ü‚¾•K—v‚Èƒf[ƒ^‚Ì“Ç‚İo‚µ‚ğŠm”F
+			//å…ˆé ­ã‹ã‚‰é †ã«ã€å…¨ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—æ¸ˆã¿ã®ã‚„ã¤ã‚‰ã‚’å§‹æœ«ã—ã¦ã„ã
+			//æ¬¡ã«ã€ã¾ã å¿…è¦ãªãƒ‡ãƒ¼ã‚¿ã®èª­ã¿å‡ºã—ã‚’ç¢ºèª
 			if(!TaskPtrQueue.empty()){
 				request();
 			}
@@ -1147,19 +1147,19 @@ namespace xc32{
 					Data = 0;
 				}
 			public:
-				//AN PinŒn
+				//AN Pinç³»
 				virtual void request_data(){
 					AN.request_global_convert(true);
 				}
 				virtual void read_data(){
 					if(Remain == 0)return;
 
-					//ƒXƒLƒƒƒ“‘Ò‚¿
+					//ã‚¹ã‚­ãƒ£ãƒ³å¾…ã¡
 					//while(!AN.data_ready());
 					Data += AN.data();
 					--Remain;
 
-					//ƒf[ƒ^‚ªÅŒã‚Ì
+					//ãƒ‡ãƒ¼ã‚¿ãŒæœ€å¾Œã®æ™‚
 					if(Remain == 0){
 						Ref.set_value(static_cast<uint16>(Data/Num));
 					}
@@ -1169,7 +1169,7 @@ namespace xc32{
 				}
 			};
 			an_read_task ReadTask;
-			task_ptr_element ReqElement;	//Request‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğ’Í‚ñ‚Å‚¢‚é
+			task_ptr_element ReqElement;	//Requestã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’æ´ã‚“ã§ã„ã‚‹
 		private:
 			pin_register Pin;
 			bool IsLock;
@@ -1216,22 +1216,22 @@ namespace xc32{
 				IsLock = false;
 			}
 		public:
-			//ƒf[ƒ^“Ç‚İo‚µ
-			//	ƒŠƒNƒGƒXƒg‚ª‚»‚à‚»‚à•s‰Â”\‚Èê‡‚Í‹ó‚Ìfuture‚ª•Ô‚é
-			//	‰½‚ç‚©‚ÌŒ´ˆö‚Å¸”s‚µ‚½ê‡‚ÍA0xffff‚ªfuture‚É‘‚«‚Ü‚ê‚é
+			//ãƒ‡ãƒ¼ã‚¿èª­ã¿å‡ºã—
+			//	ãƒªã‚¯ã‚¨ã‚¹ãƒˆãŒãã‚‚ãã‚‚ä¸å¯èƒ½ãªå ´åˆã¯ç©ºã®futureãŒè¿”ã‚‹
+			//	ä½•ã‚‰ã‹ã®åŸå› ã§å¤±æ•—ã—ãŸå ´åˆã¯ã€0xffffãŒfutureã«æ›¸ãè¾¼ã¾ã‚Œã‚‹
 			future<uint16> operator()(void){ return operator()(1); }
 			future<uint16> operator()(uint16 ObserveNum_){
 				if(owns_request())return future<uint16>();
 				if(ObserveNum_ == 0)return future<uint16>();
 
-				//Request‚ğ‘‚«Š·‚¦‚ÄA‚»‚Ìƒ|ƒCƒ“ƒ^‚ğ‚Â‚©‚ñ‚Å‚éReqElement‚ğQueue‚É‚Ô‚¿‚Ş
+				//Requestã‚’æ›¸ãæ›ãˆã¦ã€ãã®ãƒã‚¤ãƒ³ã‚¿ã‚’ã¤ã‹ã‚“ã§ã‚‹ReqElementã‚’Queueã«ã¶ã¡è¾¼ã‚€
 				ReadTask.set(ObserveNum_);
 				future<uint16> Future = Promise.get_future();
 				regist(ReqElement);
 				return xc::move(Future);
 			}
 		public:
-			//Œ»İƒŠƒNƒGƒXƒg’†‚©H
+			//ç¾åœ¨ãƒªã‚¯ã‚¨ã‚¹ãƒˆä¸­ã‹ï¼Ÿ
 			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(ReqElement); }
 		};
 	private:
