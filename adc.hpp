@@ -770,21 +770,19 @@ namespace xc32{
 			//AN Pin系
 			virtual uint16 try_read_data() = 0;	//失敗したら、戻り値は0xffff
 		};
-		typedef typename xc::chain<request*>::element request_ptr_element;
 	private:
 		struct converter_task_interface{
 			//task継続中はtrueを返す
 			virtual bool task() = 0;
 			virtual void clear() = 0;
 		};
-		typedef typename xc::chain<converter_task_interface*>::element converter_task_element;
-		static xc::chain<converter_task_interface*> TaskChain;
+		static xc::chain<converter_task_interface> TaskChain;
 	private:
 		static adc::block_setting BlockSetting;
 		template<typename converter_no_>
 		struct converter_task:public converter_task_interface{
 		private:
-			xc::chain<request*> ReqPtrQueue;
+			xc::chain<request> RequestQueue;
 			request* HandlingReqPtr;
 			uint32 DataSum;
 			uint16 DataCnt;
@@ -821,11 +819,11 @@ namespace xc32{
 				//リクエスト中のデータがない場合
 				while(HandlingReqPtr == 0){
 					//タスクキューが空なら、終了
-					if(ReqPtrQueue.empty())return false;
+					if(Requestueue.empty())return false;
 
 					//先頭から抜いてくる
-					HandlingReqPtr = ReqPtrQueue.front();
-					ReqPtrQueue.pop_front();
+					HandlingReqPtr = RequestQueue.front();
+					RequestQueue.pop_front();
 
 					//ヌルポをはじく（原理的にはないはず）
 					if(HandlingReqPtr == 0)continue;
@@ -849,24 +847,23 @@ namespace xc32{
 			}
 			//登録されたすべてのリクエストを破棄
 			void clear(){
-				for(typename xc::chain<request*>::iterator Itr = ReqPtrQueue.begin(); Itr != ReqPtrQueue.end(); ++Itr){
+				for(typename xc::chain<request*>::iterator Itr = RequestQueue.begin(); Itr != RequestQueue.end(); ++Itr){
 					if(*Itr != 0){
 						(*Itr)->Ref.set_value(0xffff);
 					}
 				}
-				ReqPtrQueue.clear();
+				RequestQueue.clear();
 				if(HandlingReqPtr){
 					HandlingReqPtr->Ref.set_value(0xffff);
 				}
 				HandlingReqPtr = 0;
 			}
 			//push
-			void push(request_ptr_element& Elem){ ReqPtrQueue.push_back(Elem); }
+			void push(request& Request_){ RequestQueue.push_back(Request_); }
 		};
 		template<typename converter_no_>
 		struct task_holder{
 			static converter_task<converter_no_> ConverterTask;
-			static converter_task_element ConverterTaskElement;
 			static adc::converter_setting ConverterSetting;
 		};
 	public:
@@ -927,7 +924,6 @@ namespace xc32{
 				}
 			};
 			an_request Request;
-			request_ptr_element ReqElement;	//Requestへのポインタを掴んでいる
 		private:
 			pin_register Pin;
 			bool IsLock;
@@ -936,7 +932,6 @@ namespace xc32{
 			analog_pin()
 				: IsLock(false)
 				, Request(Promise){
-				*ReqElement = &Request;
 			}
 			~analog_pin(){ if(is_lock())unlock(); }
 			void config(const adc::block_setting* pBlockSetting_, const adc::converter_setting* pConverterSetting_){
@@ -957,9 +952,8 @@ namespace xc32{
 					return true;
 				}
 
-				if(my_task_holder::ConverterTaskElement){
-					*my_task_holder::ConverterTaskElement = &my_task_holder::ConverterTask;
-					TaskChain.push_back(my_task_holder::ConverterTaskElement);
+				if(!my_task_holder::ConverterTask.owned_by_chain()) {
+					TaskChain.push_back(my_task_holder::ConverterTask);
 				}
 
 				Pin.tris(true);
@@ -983,7 +977,7 @@ namespace xc32{
 				my_adc::Block.unlock();;
 
 				if(my_converter::Converter.use_count() == 0 && !my_task_holder::ConverterTaskElement){
-					TaskChain.erase(TaskChain.find(my_task_holder::ConverterTaskElement));
+					TaskChain.erase(TaskChain.find(my_task_holder::ConverterTask));
 				}
 
 				IsLock = false;
@@ -997,48 +991,45 @@ namespace xc32{
 				if(owns_request())return future<uint16>();
 				if(ObserveNum_ == 0)return future<uint16>();
 
-				//Requestを書き換えて、そのポインタをつかんでるReqElementをQueueにぶち込む
+				//Requestを書き換えてQueueにぶち込む
 				Request.Num = ObserveNum_;
-				task_holder<converter_no>::ConverterTask.push(ReqElement);
+				task_holder<converter_no>::ConverterTask.push(Request);
 
 				return Promise.get_future();
 			}
 		public:
 			//現在リクエスト中か？
-			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(ReqElement); }
+			bool owned_request()const{ return !Promise.can_get_future() || Request.owned_by_chain(); }
 		};
 	public:
 		void operator()(void){work();}
 		static void work(){
-			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
-			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
+			typename xc::chain<converter_task_interface>::iterator Itr = TaskChain.begin();
+			typename xc::chain<converter_task_interface>::iterator End = TaskChain.end();
 
 			bool StillWork;
 			do{
 				StillWork = false;
 				for(; Itr != End; ++Itr){
-					StillWork |= (*Itr)->task();
+					StillWork |= Itr->task();
 				}
 			} while(StillWork);
 		}
 		static void clear(){
-			typename xc::chain<converter_task_interface*>::iterator Itr = TaskChain.begin();
-			typename xc::chain<converter_task_interface*>::iterator End = TaskChain.end();
+			typename xc::chain<converter_task_interface>::iterator Itr = TaskChain.begin();
+			typename xc::chain<converter_task_interface>::iterator End = TaskChain.end();
 			for(; Itr != End; ++Itr){
-				(*Itr)->clear();
+				Itr->clear();
 			}
 		}
 	};
 	template<typename adc_block_register_, typename identifier_>
 	adc::block_setting async_functional_adc<adc_block_register_, identifier_>::BlockSetting;
 	template<typename adc_block_register_, typename identifier_>
-	xc::chain<typename async_functional_adc <adc_block_register_, identifier_>::converter_task_interface*> async_functional_adc<adc_block_register_, identifier_>::TaskChain;
+	xc::chain<typename async_functional_adc <adc_block_register_, identifier_>::converter_task_interface> async_functional_adc<adc_block_register_, identifier_>::TaskChain;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
 	typename async_functional_adc<adc_block_register_,identifier_>::template converter_task<converter_no_> async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterTask;
-	template<typename adc_block_register_, typename identifier_>
-	template<typename converter_no_>
-	typename async_functional_adc <adc_block_register_, identifier_>::converter_task_element async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterTaskElement;
 	template<typename adc_block_register_, typename identifier_>
 	template<typename converter_no_>
 	adc::converter_setting async_functional_adc<adc_block_register_, identifier_>::task_holder<converter_no_>::ConverterSetting;
@@ -1062,24 +1053,23 @@ namespace xc32{
 			//AN Pin系
 			virtual void request_data() = 0;
 			virtual void read_data() = 0;
-			virtual uint16 remain_request() = 0;
+			virtual uint16 remain_request()const = 0;
 		};
 		struct read_task_compare{
-			bool operator()(read_task* val1, read_task* val2){
-				return val1->remain_request() < val2->remain_request();
+			bool operator()(const read_task& val1, const read_task& val2){
+				return val1.remain_request() < val2.remain_request();
 			}
 		};
-		typedef xc::sorted_chain<read_task*, read_task_compare> task_ptr_chain;
-		typedef typename task_ptr_chain::element task_ptr_element;
-		static task_ptr_chain TaskPtrQueue;
+		typedef xc::sorted_chain<read_task, read_task_compare> read_task_chain;
+		static read_task_chain TaskQueue;
 	private:
 		static void request(){
 			//一斉スキャンに登録したチャンネルをリセット
 			my_adc::Block.reset_request_global_convert();
 
 			//request
-			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
-				(*Itr)->request_data();				
+			for(typename read_task_chain::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
+				Itr->request_data();				
 			}
 			
 			//割り込み許可
@@ -1089,29 +1079,29 @@ namespace xc32{
 		}
 	private:
 		//analog_pinからのread_taskを登録
-		static void regist(task_ptr_element& Task){
-			if(TaskPtrQueue.empty()){
-				TaskPtrQueue.push(Task);
+		static void regist(read_task& Task){
+			if(TaskQueue.empty()){
+				TaskQueue.push(Task);
 				request();
 			} else{
-				TaskPtrQueue.push(Task);
+				TaskQueue.push(Task);
 			}
 		}
 		//割り込み関数
 		static void interrupt_function(){
 			//まず、Requestデータ読み出し処理	
-			for(typename task_ptr_chain::iterator Itr = TaskPtrQueue.begin(); Itr != TaskPtrQueue.end(); ++Itr){
-				(*Itr)->read_data();
+			for(typename read_task::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
+				Itr->read_data();
 			}
 
 			//	sorted_chainはremainが小さい順にソート済み
-			while(TaskPtrQueue.next() != *TaskPtrQueue.end() && TaskPtrQueue.next()->remain_request() == 0){
-				TaskPtrQueue.pop();
+			while(!TaskQueue.empty() && TaskQueue.next().remain_request() == 0){
+				TaskQueue.pop();
 			}
 
 			//先頭から順に、全データ読み出し済みのやつらを始末していく
 			//次に、まだ必要なデータの読み出しを確認
-			if(!TaskPtrQueue.empty()){
+			if(!TaskQueue.empty()){
 				request();
 			}
 		}
@@ -1169,7 +1159,6 @@ namespace xc32{
 				}
 			};
 			an_read_task ReadTask;
-			task_ptr_element ReqElement;	//Requestへのポインタを掴んでいる
 		private:
 			pin_register Pin;
 			bool IsLock;
@@ -1178,7 +1167,6 @@ namespace xc32{
 			analog_pin()
 				: IsLock(false)
 				, ReadTask(Promise){
-				*ReqElement = &ReadTask;
 			}
 			~analog_pin(){ if(is_lock())unlock(); }
 			bool lock(){
@@ -1224,22 +1212,16 @@ namespace xc32{
 				if(owns_request())return future<uint16>();
 				if(ObserveNum_ == 0)return future<uint16>();
 
-				//Requestを書き換えて、そのポインタをつかんでるReqElementをQueueにぶち込む
+				//Requestを書き換えて、Queueにぶち込む
 				ReadTask.set(ObserveNum_);
 				future<uint16> Future = Promise.get_future();
-				regist(ReqElement);
+				regist(ReadTask);
 				return xc::move(Future);
 			}
 		public:
 			//現在リクエスト中か？
-			bool owns_request()const{ return !Promise.can_get_future() || !static_cast<bool>(ReqElement); }
+			bool owned_request()const{ return !Promise.can_get_future() || ReadTask.owned_request(); }
 		};
-	private:
-		struct converter_task_interface{
-			virtual void task() = 0;
-		};
-		typedef typename xc::chain<converter_task_interface*>::element converter_task_element;
-		static xc::chain<converter_task_interface*> TaskChain;
 	private:
 		static adc::block_setting BlockSetting;
 		template<typename converter_no_>
@@ -1261,7 +1243,7 @@ namespace xc32{
 	template<typename converter_no_>
 	adc::converter_setting async_interrupt_adc<adc_block_register_, identifier_>::cv<converter_no_>::ConverterSetting;
 	template<typename adc_block_register_, typename identifier_>
-	typename async_interrupt_adc<adc_block_register_, identifier_>::task_ptr_chain  async_interrupt_adc<adc_block_register_, identifier_>::TaskPtrQueue;
+	typename async_interrupt_adc<adc_block_register_, identifier_>::read_task_chain  async_interrupt_adc<adc_block_register_, identifier_>::TaskQueue;
 }
 
 #

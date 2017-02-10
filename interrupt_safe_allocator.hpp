@@ -6,6 +6,8 @@
 #include<cstdlib>
 #include"interrupt.hpp"
 namespace xc32{
+
+#ifndef _MSC_VER
 	// TEMPLATE CLASS interrupt_safe_allocator
 	//xc32コンパイラーの独自仕様に対応したクラス
 	template<class _Ty>
@@ -134,6 +136,10 @@ namespace xc32{
 	inline bool operator!=(const interrupt_safe_allocator<_Ty>& _Left,const interrupt_safe_allocator<_Other>& _Right) _THROW0(){	// test for allocator inequality
 		return (!(_Left == _Right));
 	}
+#else
+	template<class _Ty>
+	using interrupt_safe_allocator = std::allocator<_Ty>;
+#endif
 }
 #
 #endif
