@@ -819,7 +819,7 @@ namespace xc32{
 				//リクエスト中のデータがない場合
 				while(HandlingReqPtr == 0){
 					//タスクキューが空なら、終了
-					if(Requestueue.empty())return false;
+					if(RequestQueue.empty())return false;
 
 					//先頭から抜いてくる
 					HandlingReqPtr = RequestQueue.front();
@@ -999,7 +999,7 @@ namespace xc32{
 			}
 		public:
 			//現在リクエスト中か？
-			bool owned_request()const{ return !Promise.can_get_future() || Request.owned_by_chain(); }
+			bool owns_request()const{ return !Promise.can_get_future() || Request.owned_by_chain(); }
 		};
 	public:
 		void operator()(void){work();}
@@ -1154,7 +1154,7 @@ namespace xc32{
 						Ref.set_value(static_cast<uint16>(Data/Num));
 					}
 				}
-				virtual uint16 remain_request(){
+				virtual uint16 remain_request()const{
 					return Remain;
 				}
 			};
@@ -1220,7 +1220,7 @@ namespace xc32{
 			}
 		public:
 			//現在リクエスト中か？
-			bool owned_request()const{ return !Promise.can_get_future() || ReadTask.owned_request(); }
+			bool owns_request()const{ return !Promise.can_get_future() || ReadTask.remain_request(); }
 		};
 	private:
 		static adc::block_setting BlockSetting;
