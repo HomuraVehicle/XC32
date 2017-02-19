@@ -142,7 +142,7 @@ namespace xc32 {
 					);
 				}			
 			};
-			//32bit—ptimer‚Ì‘g‚İ‡‚í‚¹‚ª‘Ã“–‚©”»’f‚·‚é
+			//32bitç”¨timerã®çµ„ã¿åˆã‚ã›ãŒå¦¥å½“ã‹åˆ¤æ–­ã™ã‚‹
 			template<typename master_timer_register_, typename slave_timer_register_>
 			struct is_valid_combination:public xc::false_type{
 				typedef false_type type; 

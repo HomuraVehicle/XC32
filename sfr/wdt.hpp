@@ -1,7 +1,7 @@
 #ifndef XC32_SFR_WDT_INC
 #define XC32_SFR_WDT_INC 100
 #
-//*********** WDT�֘A�֐� ***********************
+//*********** WDT関連関数 ***********************
 #include<XC32_config.hpp>
 #include"device_include.h"
 #include"exclusive_mixin.hpp"

@@ -3,9 +3,9 @@
 #
 #include"exceptions.hpp"
 #include"sfr/interrupt.hpp"
-//*********** SPIŠÖ˜AŠÖ” ***********************
-//SPI‚Ì‰Šúİ’è‚ğs‚Á‚½ŒãA‘‚«‚ñ‚ÅA“Ç‚İæ‚Á‚ÄŠÖ”‚ğg‚¤
-// ‘I‘ğ‚µ‚Ä‚¢‚È‚¢PIN‚Í high‚Å•Û‚µ‚Ä‚¨‚­•K—v‚ª‚ ‚é 
+//*********** SPIé–¢é€£é–¢æ•° ***********************
+//SPIã®åˆæœŸè¨­å®šã‚’è¡Œã£ãŸå¾Œã€æ›¸ãè¾¼ã‚“ã§ã€èª­ã¿å–ã£ã¦é–¢æ•°ã‚’ä½¿ã†
+// é¸æŠã—ã¦ã„ãªã„PINã¯ highã§ä¿æŒã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ 
 //
 
 namespace xc32{
@@ -13,7 +13,7 @@ namespace xc32{
 		struct exception :public xc32::exception{};		
 		struct not_lock_exception :public exception{};
 	}
-	//“¯ŠúŠÖ”Œ^SPI
+	//åŒæœŸé–¢æ•°å‹SPI
 	template<typename spi_register_>
 	class synchronous_spi{
 	private:
@@ -43,31 +43,31 @@ namespace xc32{
 
 			if(ClockDiv==0 || ClockDiv>1024)return true;
 
-			//ƒƒbƒN
+			//ãƒ­ãƒƒã‚¯
 			if(Register.lock())return true;
 			
-			//İ’è‘SƒNƒŠƒA
+			//è¨­å®šå…¨ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//ƒoƒbƒtƒ@ƒNƒŠƒA
+			//ãƒãƒƒãƒ•ã‚¡ã‚¯ãƒªã‚¢
 			Register.buffer(0);
-			//óMƒI[ƒo[ƒtƒ[ƒtƒ‰ƒOƒNƒŠƒA
+			//å—ä¿¡ã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ãƒ•ãƒ©ã‚°ã‚¯ãƒªã‚¢
 			Register.receive_overflow(0);
-			//High to Low ‚©Low to High‚©‚Ìİ’è
+			//High to Low ã‹Low to Highã‹ã®è¨­å®š
 			Register.clock_polarity(ClockPolarity);
 			//Master or Slave
 			Register.master_mode(IsMaster);
-			//SS pin‚ğg‚¤‚©H(slave‚Ì‚Æ‚«‚¾‚¯g‚¤CMaster‚Ì‚Æ‚«‚Í©•ª‚Åã‚°‰º‚°‚·‚é)
+			//SS pinã‚’ä½¿ã†ã‹ï¼Ÿ(slaveã®ã¨ãã ã‘ä½¿ã†ï¼ŒMasterã®ã¨ãã¯è‡ªåˆ†ã§ä¸Šã’ä¸‹ã’ã™ã‚‹)
 			Register.slave_select_enable(!IsMaster);
 
-			//Master‚Ìê‡‚ÍSPI‚ÌƒNƒƒbƒN‘¬“x‚Ìİ’è
+			//Masterã®å ´åˆã¯SPIã®ã‚¯ãƒ­ãƒƒã‚¯é€Ÿåº¦ã®è¨­å®š
 			if(IsMaster){
-				//ˆê‰CŠï”‚ğw’è‚³‚ê‚½‚Æ‚«‚Ì‚½‚ß‚Ìˆ—
-				//F_SCK = systemclock_ / clockdiv_		clockdiv_‚Í2‚Ì”{”‚Å1024‚Ü‚ÅC2‚Ì”{”‚Å‚È‚¢‚ÍŸè‚É+1‚µ‚Ü‚·
+				//ä¸€å¿œï¼Œå¥‡æ•°ã‚’æŒ‡å®šã•ã‚ŒãŸã¨ãã®ãŸã‚ã®å‡¦ç†
+				//F_SCK = systemclock_ / clockdiv_		clockdiv_ã¯2ã®å€æ•°ã§1024ã¾ã§ï¼Œ2ã®å€æ•°ã§ãªã„æ™‚ã¯å‹æ‰‹ã«+1ã—ã¾ã™
 				if(ClockDiv % 2)Register.baud_rate_register((ClockDiv + 1) / 2 - 1);
 				else Register.baud_rate_register(ClockDiv/2 -1);
 			}
 
-			//“dŒ¹ON
+			//é›»æºON
 			Register.enable(true);
 
 			return false;
@@ -76,15 +76,15 @@ namespace xc32{
 			return Register.is_lock();
 		}
 		void unlock(){
-			//ƒƒbƒN—áŠO
+			//ãƒ­ãƒƒã‚¯ä¾‹å¤–
 			if(!is_lock())return;
 
-			//“dŒ¹OFF
+			//é›»æºOFF
 			Register.enable(false);
-			//İ’è‘SƒNƒŠƒA
+			//è¨­å®šå…¨ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
 
-			//ƒƒbƒN‰ğœ
+			//ãƒ­ãƒƒã‚¯è§£é™¤
 			Register.unlock();
 
 			return;
@@ -110,7 +110,7 @@ namespace xc32{
 		}
 	};
 
-	//“¯ŠúŠÖ”Œ^SPI
+	//åŒæœŸé–¢æ•°å‹SPI
 	template<typename spi_register_, typename identifier_>
 	class shared_spi{
 	private:
@@ -136,31 +136,31 @@ namespace xc32{
 
 			if(ClockDiv == 0 || ClockDiv>1024)return true;
 
-			//ƒƒbƒN
+			//ãƒ­ãƒƒã‚¯
 			if(Register.lock())return true;
 
-			//İ’è‘SƒNƒŠƒA
+			//è¨­å®šå…¨ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//ƒoƒbƒtƒ@ƒNƒŠƒA
+			//ãƒãƒƒãƒ•ã‚¡ã‚¯ãƒªã‚¢
 			Register.buffer(0);
-			//óMƒI[ƒo[ƒtƒ[ƒtƒ‰ƒOƒNƒŠƒA
+			//å—ä¿¡ã‚ªãƒ¼ãƒãƒ¼ãƒ•ãƒ­ãƒ¼ãƒ•ãƒ©ã‚°ã‚¯ãƒªã‚¢
 			Register.receive_overflow(0);
-			//High to Low ‚©Low to High‚©‚Ìİ’è
+			//High to Low ã‹Low to Highã‹ã®è¨­å®š
 			Register.clock_polarity(ClockPolarity);
 			//Master or Slave
 			Register.master_mode(IsMaster);
-			//SS pin‚ğg‚¤‚©H(slave‚Ì‚Æ‚«‚¾‚¯g‚¤CMaster‚Ì‚Æ‚«‚Í©•ª‚Åã‚°‰º‚°‚·‚é)
+			//SS pinã‚’ä½¿ã†ã‹ï¼Ÿ(slaveã®ã¨ãã ã‘ä½¿ã†ï¼ŒMasterã®ã¨ãã¯è‡ªåˆ†ã§ä¸Šã’ä¸‹ã’ã™ã‚‹)
 			Register.slave_select_enable(!IsMaster);
 
-			//Master‚Ìê‡‚ÍSPI‚ÌƒNƒƒbƒN‘¬“x‚Ìİ’è
+			//Masterã®å ´åˆã¯SPIã®ã‚¯ãƒ­ãƒƒã‚¯é€Ÿåº¦ã®è¨­å®š
 			if(IsMaster){
-				//ˆê‰CŠï”‚ğw’è‚³‚ê‚½‚Æ‚«‚Ì‚½‚ß‚Ìˆ—
-				//F_SCK = systemclock_ / clockdiv_		clockdiv_‚Í2‚Ì”{”‚Å1024‚Ü‚ÅC2‚Ì”{”‚Å‚È‚¢‚ÍŸè‚É+1‚µ‚Ü‚·
+				//ä¸€å¿œï¼Œå¥‡æ•°ã‚’æŒ‡å®šã•ã‚ŒãŸã¨ãã®ãŸã‚ã®å‡¦ç†
+				//F_SCK = systemclock_ / clockdiv_		clockdiv_ã¯2ã®å€æ•°ã§1024ã¾ã§ï¼Œ2ã®å€æ•°ã§ãªã„æ™‚ã¯å‹æ‰‹ã«+1ã—ã¾ã™
 				if(ClockDiv % 2)Register.baud_rate_register((ClockDiv + 1) / 2 - 1);
 				else Register.baud_rate_register(ClockDiv / 2 - 1);
 			}
 
-			//“dŒ¹ON
+			//é›»æºON
 			Register.enable(true);
 
 			return false;
@@ -169,15 +169,15 @@ namespace xc32{
 			return Register.is_lock();
 		}
 		static void unlock(){
-			//ƒƒbƒN—áŠO
+			//ãƒ­ãƒƒã‚¯ä¾‹å¤–
 			if(!is_lock())return;
 
-			//“dŒ¹OFF
+			//é›»æºOFF
 			Register.enable(false);
-			//İ’è‘SƒNƒŠƒA
+			//è¨­å®šå…¨ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
 
-			//ƒƒbƒN‰ğœ
+			//ãƒ­ãƒƒã‚¯è§£é™¤
 			Register.unlock();
 
 			return;
@@ -193,7 +193,7 @@ namespace xc32{
 				if(is_lock())return false;
 				if(!my_type::is_lock())return true;
 
-				//ƒƒbƒN
+				//ãƒ­ãƒƒã‚¯
 				if(IsUsed)return true;
 				IsUsed = true;
 				IsLock = true;
@@ -204,7 +204,7 @@ namespace xc32{
 				return IsLock;
 			}
 			void unlock(){
-				//ƒƒbƒN—áŠO
+				//ãƒ­ãƒƒã‚¯ä¾‹å¤–
 				if(!is_lock())return;
 
 				IsUsed = false;
@@ -242,7 +242,7 @@ namespace xc32{
 	template<typename spi_register_, typename identifier_>
 	unsigned int shared_spi<spi_register_, identifier_>::ClockDiv = 0;
 
-	//Š„‚è‚İŠÖ”Œ^SPI
+	//å‰²ã‚Šè¾¼ã¿é–¢æ•°å‹SPI
 	template<typename spi_register_>
 	class interrupt_spi{
 	private:
@@ -283,18 +283,18 @@ namespace xc32{
 
 			Register.interrupt_function(*pInterrupt);
 
-			//High to Low ‚©Low to High‚©‚Ìİ’è
+			//High to Low ã‹Low to Highã‹ã®è¨­å®š
 			Register.clock_polarity(ClockPolarity);
 			//Master or Slave
 			Register.master_mode(IsMaster);
-			//SS pin‚ğg‚¤‚©H(slave‚Ì‚Æ‚«‚¾‚¯g‚¤CMaster‚Ì‚Æ‚«‚Í©•ª‚Åã‚°‰º‚°‚·‚é)
+			//SS pinã‚’ä½¿ã†ã‹ï¼Ÿ(slaveã®ã¨ãã ã‘ä½¿ã†ï¼ŒMasterã®ã¨ãã¯è‡ªåˆ†ã§ä¸Šã’ä¸‹ã’ã™ã‚‹)
 			Register.slave_select(!IsMaster);
-			//Master‚Ìê‡‚ÍSPI‚ÌƒNƒƒbƒN‘¬“x‚Ìİ’è
+			//Masterã®å ´åˆã¯SPIã®ã‚¯ãƒ­ãƒƒã‚¯é€Ÿåº¦ã®è¨­å®š
 			if(IsMaster) {
-				//ˆê‰CŠï”‚ğw’è‚³‚ê‚½‚Æ‚«‚Ì‚½‚ß‚Ìˆ—
+				//ä¸€å¿œï¼Œå¥‡æ•°ã‚’æŒ‡å®šã•ã‚ŒãŸã¨ãã®ãŸã‚ã®å‡¦ç†
 				if(ClockDiv%2)Register.baud_rate_generator((ClockDiv+1)/2 -1);
 				else Register.baud_rate_generator(ClockDiv/2 -1);
-			}//slave‚Ì‚Æ‚«‚Íƒoƒbƒtƒ@ƒNƒŠƒA 
+			}//slaveã®ã¨ãã¯ãƒãƒƒãƒ•ã‚¡ã‚¯ãƒªã‚¢ 
 			else {
 				Register.buffer(0);
 			}
@@ -316,7 +316,7 @@ namespace xc32{
 			Register.unlock();
 		}
 	public:
-		//Š„‚è‚İŠÖ”“à‚Å•K‚¸s‚¤ˆ—‚É•K—v‚È‚à‚Ì‚ÍlockŠm”F‚µ‚È‚¢
+		//å‰²ã‚Šè¾¼ã¿é–¢æ•°å†…ã§å¿…ãšè¡Œã†å‡¦ç†ã«å¿…è¦ãªã‚‚ã®ã¯lockç¢ºèªã—ãªã„
 		bool is_enable()const {
 			xc32_assert(is_lock(), spi::not_lock_exception());
 
@@ -354,7 +354,7 @@ namespace xc32{
 		unsigned char data(unsigned char data_){
 			xc32_assert(is_lock(), spi::not_lock_exception());
 
-			//SPIŠ„‚è‚İ‚É•K‚¸‘—‚ç‚ê‚Ä‚«‚½ƒf[ƒ^‚ğ“Ç‚ñ‚Å‚ ‚°‚È‚¢‚Æ³í‚ÉŠ„‚è‚İ‚ª¶¬‚³‚ê‚È‚¢‚Ì‚Å“Ç‚İ‚±‚İ‚¾‚¯‚Í•K‚¸‚â‚Á‚Ä‚ ‚°‚é
+			//SPIå‰²ã‚Šè¾¼ã¿æ™‚ã«å¿…ãšé€ã‚‰ã‚Œã¦ããŸãƒ‡ãƒ¼ã‚¿ã‚’èª­ã‚“ã§ã‚ã’ãªã„ã¨æ­£å¸¸ã«å‰²ã‚Šè¾¼ã¿ãŒç”Ÿæˆã•ã‚Œãªã„ã®ã§èª­ã¿ã“ã¿ã ã‘ã¯å¿…ãšã‚„ã£ã¦ã‚ã’ã‚‹
 			unsigned char tmp=Register.buffer();
 			Register.buffer(data_);
 			return tmp;

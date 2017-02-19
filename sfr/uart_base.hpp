@@ -6,24 +6,24 @@ namespace xc32 {
 	namespace sfr {
 		namespace uart {
 			namespace tx_interrupt_mode {
-				//Š„‚èž‚Ýƒ^ƒCƒ~ƒ“ƒO‚ðŒˆ‚ß‚é
+				//å‰²ã‚Šè¾¼ã¿ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã‚’æ±ºã‚ã‚‹
 				enum mode {
-					//­‚È‚­‚Æ‚à1•¶Žš‚ªƒoƒbƒtƒ@‚©‚ç‘—MƒŒƒWƒXƒ^‚ÉˆÚ“®‚µ‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å°‘ãªãã¨ã‚‚1æ–‡å­—ãŒãƒãƒƒãƒ•ã‚¡ã‹ã‚‰é€ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã«ç§»å‹•ã—ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					move_each=0,
-					//‘S‚Ä‚Ì•¶Žš‚ªƒoƒbƒtƒ@‚©‚ç‘—MƒŒƒWƒXƒ^‚ÉˆÚ“®‚µA‚©‚Â‚·‚×‚Ä‘—M‚³‚ê‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å…¨ã¦ã®æ–‡å­—ãŒãƒãƒƒãƒ•ã‚¡ã‹ã‚‰é€ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã«ç§»å‹•ã—ã€ã‹ã¤ã™ã¹ã¦é€ä¿¡ã•ã‚ŒãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					send_all=1,
-					//‘S‚Ä‚Ì•¶Žš‚ªƒoƒbƒtƒ@‚©‚ç‘—MƒŒƒWƒXƒ^‚ÉˆÚ“®‚µ‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å…¨ã¦ã®æ–‡å­—ãŒãƒãƒƒãƒ•ã‚¡ã‹ã‚‰é€ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã«ç§»å‹•ã—ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					move_register_all=2
 				};
 			}
 			namespace rx_interrupt_mode {
-				//Š„‚èž‚Ýƒ^ƒCƒ~ƒ“ƒO‚ðŒˆ‚ß‚é
+				//å‰²ã‚Šè¾¼ã¿ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã‚’æ±ºã‚ã‚‹
 				enum mode {
-					//­‚È‚­‚Æ‚à1•¶Žš‚ªŽóMƒŒƒWƒXƒ^‚©‚çƒoƒbƒtƒ@‚ÉˆÚ“®‚µ‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å°‘ãªãã¨ã‚‚1æ–‡å­—ãŒå—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‹ã‚‰ãƒãƒƒãƒ•ã‚¡ã«ç§»å‹•ã—ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					move_each=0,
-					//ŽóMƒŒƒWƒXƒ^‚©‚çˆÚ“®‚³‚ê‚½•¶Žš‚ªƒoƒbƒtƒ@‚Ì3•ª‚Ì4‚ð’´‚¦‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‹ã‚‰ç§»å‹•ã•ã‚ŒãŸæ–‡å­—ãŒãƒãƒƒãƒ•ã‚¡ã®3åˆ†ã®4ã‚’è¶…ãˆãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					move_three_quarter=2,
-					//ŽóMƒŒƒWƒXƒ^‚©‚çˆÚ“®‚³‚ê‚½•¶Žš‚ªƒoƒbƒtƒ@ˆê”t‚É‚È‚Á‚½ƒ^ƒCƒ~ƒ“ƒO
+					//å—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‹ã‚‰ç§»å‹•ã•ã‚ŒãŸæ–‡å­—ãŒãƒãƒƒãƒ•ã‚¡ä¸€æ¯ã«ãªã£ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°
 					move_full=3
 				};
 			}
@@ -34,7 +34,7 @@ namespace xc32 {
 					0b01 = UxTX, UxRX and UxRTS pins are enabled and used; UxCTS pin is controlled by corresponding bits in the PORTx register
 					0b00 = UxTX and UxRX pins are enabled and used; UxCTS and UxRTS /UxBCLK pins are controlled by corresponding bits in the PORTx register
 				*/
-				//ƒtƒ[§Œäƒsƒ“‚ÌŽg—p—L–³‚ðÝ’è‚·‚é
+				//ãƒ•ãƒ­ãƒ¼åˆ¶å¾¡ãƒ”ãƒ³ã®ä½¿ç”¨æœ‰ç„¡ã‚’è¨­å®šã™ã‚‹
 				enum mode {
 					no_control=0,
 					rts_control=1,

@@ -22,7 +22,7 @@ namespace xc32 {
 		bool lock(){
 			if(is_lock())return false;
 
-			//Clockİ’è
+			//Clockè¨­å®š
 			WDTCONbits.ON = 0;
 			__asm("nop");
 			IEC0 = 0;

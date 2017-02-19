@@ -10,7 +10,7 @@ extern "C"{
 		static xc32::sfr::uart2 UART2;
 
 		if(UART2.tx_interrupt_flag()) {
-			//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+			//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 			if(UART2.tx_interrupt_function()) {
 				(*const_cast<xc32::sfr::interrupt::function*>(UART2.tx_interrupt_function()))();
 			}
@@ -31,7 +31,7 @@ extern "C"{
 	void x_xc32_sfr_uart2_tx_interrupt(void) {
 		static xc32::sfr::uart2 UART2;
 
-		//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+		//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 		if(UART2.tx_interrupt_function()) {
 			(*const_cast<xc32::sfr::interrupt::function*>(UART2.tx_interrupt_function()))();
 		}
@@ -40,7 +40,7 @@ extern "C"{
 	void x_xc32_sfr_uart2_rx_interrupt(void) {
 		static xc32::sfr::uart2 UART2;
 
-		//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+		//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 		if(UART2.rx_interrupt_function()) {
 			(*const_cast<xc32::sfr::interrupt::function*>(UART2.rx_interrupt_function()))();
 		}

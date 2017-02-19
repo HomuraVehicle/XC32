@@ -9,7 +9,7 @@ namespace xc32{
 
 #ifndef _MSC_VER
 	// TEMPLATE CLASS interrupt_safe_allocator
-	//xc32コンパイラーの独自仕様に対応したクラス
+	//xc32繧ｳ繝ｳ繝代う繝ｩ繝ｼ縺ｮ迢ｬ閾ｪ莉墓ｧ倥↓蟇ｾ蠢懊＠縺溘け繝ｩ繧ｹ
 	template<class _Ty>
 	class interrupt_safe_allocator: public std::_Allocator_base<_Ty>{
 	public:

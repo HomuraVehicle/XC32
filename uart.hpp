@@ -4,7 +4,7 @@
 /*
 === xc32::uart ===
 v1_01/140727 hmIto
-	register‚Æhardware‚ğ“‡
+	registerã¨hardwareã‚’çµ±åˆ
 */
 //#include"interrupt.hpp"
 #include"exceptions.hpp"

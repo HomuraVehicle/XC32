@@ -10,19 +10,19 @@ namespace xc32 {
 			struct function {
 				virtual void operator()(void)=0;
 			};			
-			// �S�Ă̊��荞�݂�����
+			// 全ての割り込みを許可
 			inline void enable_all(void) {
 			#ifndef XC32_DEBUGMODE
 				asm volatile("ei");
 			#endif
 			}
-			// �S�Ă̊��荞�݂��֎~
+			// 全ての割り込みを禁止
 			inline void disable_all(void) {
 			#ifndef XC32_DEBUGMODE
 				asm volatile("di");
 			#endif
 			}
-			// CPU�̊��荞�ݗD��x���擾
+			// CPUの割り込み優先度を取得
 			inline unsigned char cpu_priority(void) {
 			#ifndef XC32_DEBUGMODE
 				return (_CP0_GET_STATUS()&(_CP0_STATUS_IPL_MASK))>>_CP0_STATUS_IPL_POSITION;
@@ -35,7 +35,7 @@ namespace xc32 {
 				_CP0_SET_STATUS((_CP0_GET_STATUS()&(~_CP0_STATUS_IPL_MASK))|(Priority_<<_CP0_STATUS_IPL_POSITION));
 			#endif
 			}
-			// Multi Vector Mode�ɂ���
+			// Multi Vector Modeにする
 			inline void multivectormode(bool val_){
 			#ifndef XC32_DEBUGMODE
 				INTCONbits.MVEC = static_cast<unsigned char>(val_);
@@ -52,7 +52,7 @@ namespace xc32 {
 	}
 }
 
-//���荞�݊֐��pdefine�Ղ�	���荞�ݗD��x�ς����鍼�\�����P�����Εs�v�ɂȂ�͂�
+//割り込み関数用define祭り	割り込み優先度変えられる詐欺が改善されれば不要になるはず
 //I2C1
 #ifndef XC32_CONFIG_I2C1_IPL
 #	define XC32_I2C1_IPL 7

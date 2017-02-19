@@ -20,7 +20,7 @@ namespace xc32{
 	template<typename i2c_register_>
 	class synchronous_i2c{
 /*
-//I2C‚Ìg‚¢•û
+//I2Cã®ä½¿ã„æ–¹
 	i2c.start(slave_adress,0);
 	i2c.write('A');
 	i2c.write('B');
@@ -55,11 +55,11 @@ namespace xc32{
 
 			if(Register.lock())return true;
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//ƒ{[ƒŒ[ƒg‚©‚çI2CƒNƒƒbƒN‚ğ¶¬‚·‚é‚½‚ß‚Ì‰½‚©İ’è
+			//ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‹ã‚‰I2Cã‚¯ãƒ­ãƒƒã‚¯ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã®ä½•ã‹è¨­å®š
 			Register.baud_rate_register((static_cast<unsigned long>(static_cast<unsigned long>(ClockMode-nsPGD)*(clock::get_bus_clock()/100000))-20000)/10000);
-			//I2C—LŒø‰»
+			//I2Cæœ‰åŠ¹åŒ–
 			Register.enable(true);
 			Register.interrupt_flag(false);
 
@@ -71,37 +71,37 @@ namespace xc32{
 		void unlock(){
 			if(!is_lock())return;
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//I2C’â~
+			//I2Cåœæ­¢
 			Register.enable(false);
 
 			Register.unlock();
 		}
 	private:
-		//ACK‘—M
+		//ACKé€ä¿¡
 		void sendACK(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//ACK‘—Mƒ‚[ƒh‚Éİ’è
+			//ACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 			Register.ack_data(false);
-			//ACK‘—M
+			//ACKé€ä¿¡
 			Register.ack_enable(true);
-			//ACK‘—MI—¹‘Ò‹@
+			//ACKé€ä¿¡çµ‚äº†å¾…æ©Ÿ
 			while(Register.ack_enable()==1);
 		}
-		//NACK‘—M
+		//NACKé€ä¿¡
 		void sendNACK(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//NACK‘—Mƒ‚[ƒh‚Éİ’è
+			//NACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 			Register.ack_data(true);
-			//NACK‘—M
+			//NACKé€ä¿¡
 			Register.ack_enable(true);
-			//NACK‘—MI—¹‘Ò‹@
+			//NACKé€ä¿¡çµ‚äº†å¾…æ©Ÿ
 			while(Register.ack_enable()==1);
 		}
-		//NACKóMŠm”F
+		//NACKå—ä¿¡ç¢ºèª
 		bool checkNACK(){//const volatile{
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
@@ -111,14 +111,14 @@ namespace xc32{
 		bool start(unsigned char address_,bool IO_){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//’ÊMŠJn
+			//é€šä¿¡é–‹å§‹
 			Register.start_enable(true);
-			//’ÊMŠJnˆ—I—¹‘Ò‹@
+			//é€šä¿¡é–‹å§‹å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.start_enable()==1);
 
-			//slave address‚ÆIO(write or read)‚ğ‘—M
+			//slave addressã¨IO(write or read)ã‚’é€ä¿¡
 			Register.transmit_data((0x01&static_cast<unsigned char>(IO_))|(address_<<1));
-			//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+			//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.transmit_buf_full()==1);
 
 			return checkNACK();
@@ -126,14 +126,14 @@ namespace xc32{
 		bool restart(unsigned char address_,bool IO_){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//’ÊMÄŠJ
+			//é€šä¿¡å†é–‹
 			Register.restart_enable(true);
-			//’ÊMÄŠJˆ—I—¹‘Ò‹@
+			//é€šä¿¡å†é–‹å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.restart_enable()==1);
 
-			//slave address‚ÆIO(write or read)‚ğ‘—M
+			//slave addressã¨IO(write or read)ã‚’é€ä¿¡
 			Register.transmit_data((0x01&static_cast<unsigned char>(IO_))|(address_<<1));
-			//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+			//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.transmit_buf_full()==1);
 
 			return checkNACK();
@@ -141,12 +141,12 @@ namespace xc32{
 		void stop(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//’ÊMI—¹ˆ—ŠJn
+			//é€šä¿¡çµ‚äº†å‡¦ç†é–‹å§‹
 			Register.stop_enable(true);	
-			//’ÊMI—¹ˆ—I—¹‘Ò‹@
+			//é€šä¿¡çµ‚äº†å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.stop_enable()==1);
 
-			//PIC32MZŒn‚ÌƒoƒOH‚Ì‚¹‚¢‚ÅÄ‹N“®‚µ‚È‚¢‚Æ‚±‚êˆÈ~‚Ìˆ—‚ª‚¤‚Ü‚­“®ì‚µ‚È‚¢CÚ‚µ‚­‚ÍevernoteQÆ
+			//PIC32MZç³»ã®ãƒã‚°ï¼Ÿã®ã›ã„ã§å†èµ·å‹•ã—ãªã„ã¨ã“ã‚Œä»¥é™ã®å‡¦ç†ãŒã†ã¾ãå‹•ä½œã—ãªã„ï¼Œè©³ã—ãã¯evernoteå‚ç…§
 			Register.enable(false);
 			__asm("nop");
 			Register.enable(true);
@@ -154,9 +154,9 @@ namespace xc32{
 		}
 		bool write(unsigned char data_){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
-			//ƒoƒbƒtƒ@‚É‘‚«‚İ
+			//ãƒãƒƒãƒ•ã‚¡ã«æ›¸ãè¾¼ã¿
 			Register.transmit_data(data_);
-			//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+			//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.transmit_buf_full()==1);
 
 			return checkNACK();
@@ -164,16 +164,16 @@ namespace xc32{
 		unsigned char read(bool EndFlag_){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//óMenable
+			//å—ä¿¡enable
 			Register.receive_enable(true);
-			//ƒf[ƒ^óMˆ—I—¹‘Ò‹@
+			//ãƒ‡ãƒ¼ã‚¿å—ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 			while(Register.receive_enable()==1);
 
-			//slave‚ÖACK/NACK‘—M
-			if(EndFlag_)sendNACK();	//NACK‘—MióMˆ—I—¹j
-			else sendACK();			//ACK‘—MióMˆ—‘±‚­j
+			//slaveã¸ACK/NACKé€ä¿¡
+			if(EndFlag_)sendNACK();	//NACKé€ä¿¡ï¼ˆå—ä¿¡å‡¦ç†çµ‚äº†ï¼‰
+			else sendACK();			//ACKé€ä¿¡ï¼ˆå—ä¿¡å‡¦ç†ç¶šãï¼‰
 
-			//óMƒŒƒWƒXƒ^‚ğ•Ô‚·
+			//å—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’è¿”ã™
 			return Register.receive_data();
 		}
 	};
@@ -181,7 +181,7 @@ namespace xc32{
 	template<typename i2c_register_,typename identifier_>
 	class shared_i2c{
 		/*
-		//I2C‚Ìg‚¢•û
+		//I2Cã®ä½¿ã„æ–¹
 		i2c.start(slave_adress,0);
 		i2c.write('A');
 		i2c.write('B');
@@ -214,11 +214,11 @@ namespace xc32{
 
 			if(Register.lock())return true;
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//ƒ{[ƒŒ[ƒg‚©‚çI2CƒNƒƒbƒN‚ğ¶¬‚·‚é‚½‚ß‚Ì‰½‚©İ’è
+			//ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‹ã‚‰I2Cã‚¯ãƒ­ãƒƒã‚¯ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã®ä½•ã‹è¨­å®š
 			Register.baud_rate_register((static_cast<unsigned long>(static_cast<unsigned long>(ClockMode - nsPGD)*(clock::get_bus_clock() / 100000)) - 20000) / 10000);
-			//I2C—LŒø‰»
+			//I2Cæœ‰åŠ¹åŒ–
 			Register.enable(true);
 			Register.interrupt_flag(false);
 
@@ -230,9 +230,9 @@ namespace xc32{
 		static void unlock(){
 			if(!is_lock())return;
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//I2C’â~
+			//I2Cåœæ­¢
 			Register.enable(false);
 
 			Register.unlock();
@@ -248,7 +248,7 @@ namespace xc32{
 				if(is_lock())return false;
 				if(!my_type::is_lock())return true;
 
-				//ƒƒbƒN
+				//ãƒ­ãƒƒã‚¯
 				if(IsUsed)return true;
 				IsUsed = true;
 				IsLock = true;
@@ -259,7 +259,7 @@ namespace xc32{
 				return IsLock;
 			}
 			void unlock(){
-				//ƒƒbƒN—áŠO
+				//ãƒ­ãƒƒã‚¯ä¾‹å¤–
 				if(!is_lock())return;
 
 				IsUsed = false;
@@ -268,29 +268,29 @@ namespace xc32{
 				return;
 			}
 		private:
-			//ACK‘—M
+			//ACKé€ä¿¡
 			void sendACK(){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//ACK‘—Mƒ‚[ƒh‚Éİ’è
+				//ACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 				Register.ack_data(false);
-				//ACK‘—M
+				//ACKé€ä¿¡
 				Register.ack_enable(true);
-				//ACK‘—MI—¹‘Ò‹@
+				//ACKé€ä¿¡çµ‚äº†å¾…æ©Ÿ
 				while(Register.ack_enable() == 1);
 			}
-			//NACK‘—M
+			//NACKé€ä¿¡
 			void sendNACK(){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//NACK‘—Mƒ‚[ƒh‚Éİ’è
+				//NACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 				Register.ack_data(true);
-				//NACK‘—M
+				//NACKé€ä¿¡
 				Register.ack_enable(true);
-				//NACK‘—MI—¹‘Ò‹@
+				//NACKé€ä¿¡çµ‚äº†å¾…æ©Ÿ
 				while(Register.ack_enable() == 1);
 			}
-			//NACKóMŠm”F
+			//NACKå—ä¿¡ç¢ºèª
 			bool checkNACK(){//const volatile{
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
@@ -300,14 +300,14 @@ namespace xc32{
 			bool start(unsigned char address_, bool IO_){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//’ÊMŠJn
+				//é€šä¿¡é–‹å§‹
 				Register.start_enable(true);
-				//’ÊMŠJnˆ—I—¹‘Ò‹@
+				//é€šä¿¡é–‹å§‹å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.start_enable() == 1);
 
-				//slave address‚ÆIO(write or read)‚ğ‘—M
+				//slave addressã¨IO(write or read)ã‚’é€ä¿¡
 				Register.transmit_data((0x01 & static_cast<unsigned char>(IO_)) | (address_ << 1));
-				//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+				//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.transmit_buf_full() == 1);
 
 				return checkNACK();
@@ -315,14 +315,14 @@ namespace xc32{
 			bool restart(unsigned char address_, bool IO_){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//’ÊMÄŠJ
+				//é€šä¿¡å†é–‹
 				Register.restart_enable(true);
-				//’ÊMÄŠJˆ—I—¹‘Ò‹@
+				//é€šä¿¡å†é–‹å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.restart_enable() == 1);
 
-				//slave address‚ÆIO(write or read)‚ğ‘—M
+				//slave addressã¨IO(write or read)ã‚’é€ä¿¡
 				Register.transmit_data((0x01 & static_cast<unsigned char>(IO_)) | (address_ << 1));
-				//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+				//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.transmit_buf_full() == 1);
 
 				return checkNACK();
@@ -330,12 +330,12 @@ namespace xc32{
 			void stop(){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//’ÊMI—¹ˆ—ŠJn
+				//é€šä¿¡çµ‚äº†å‡¦ç†é–‹å§‹
 				Register.stop_enable(true);
-				//’ÊMI—¹ˆ—I—¹‘Ò‹@
+				//é€šä¿¡çµ‚äº†å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.stop_enable() == 1);
 
-				//PIC32MZŒn‚ÌƒoƒOH‚Ì‚¹‚¢‚ÅÄ‹N“®‚µ‚È‚¢‚Æ‚±‚êˆÈ~‚Ìˆ—‚ª‚¤‚Ü‚­“®ì‚µ‚È‚¢CÚ‚µ‚­‚ÍevernoteQÆ
+				//PIC32MZç³»ã®ãƒã‚°ï¼Ÿã®ã›ã„ã§å†èµ·å‹•ã—ãªã„ã¨ã“ã‚Œä»¥é™ã®å‡¦ç†ãŒã†ã¾ãå‹•ä½œã—ãªã„ï¼Œè©³ã—ãã¯evernoteå‚ç…§
 				Register.enable(false);
 				__asm("nop");
 				Register.enable(true);
@@ -343,9 +343,9 @@ namespace xc32{
 			}
 			bool write(unsigned char data_){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
-				//ƒoƒbƒtƒ@‚É‘‚«‚İ
+				//ãƒãƒƒãƒ•ã‚¡ã«æ›¸ãè¾¼ã¿
 				Register.transmit_data(data_);
-				//ƒf[ƒ^‘—Mˆ—I—¹‘Ò‹@
+				//ãƒ‡ãƒ¼ã‚¿é€ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.transmit_buf_full() == 1);
 
 				return checkNACK();
@@ -353,16 +353,16 @@ namespace xc32{
 			unsigned char read(bool EndFlag_){
 				xc32_assert(is_lock(), i2c::not_lock_exception());
 
-				//óMenable
+				//å—ä¿¡enable
 				Register.receive_enable(true);
-				//ƒf[ƒ^óMˆ—I—¹‘Ò‹@
+				//ãƒ‡ãƒ¼ã‚¿å—ä¿¡å‡¦ç†çµ‚äº†å¾…æ©Ÿ
 				while(Register.receive_enable() == 1);
 
-				//slave‚ÖACK/NACK‘—M
-				if(EndFlag_)sendNACK();	//NACK‘—MióMˆ—I—¹j
-				else sendACK();			//ACK‘—MióMˆ—‘±‚­j
+				//slaveã¸ACK/NACKé€ä¿¡
+				if(EndFlag_)sendNACK();	//NACKé€ä¿¡ï¼ˆå—ä¿¡å‡¦ç†çµ‚äº†ï¼‰
+				else sendACK();			//ACKé€ä¿¡ï¼ˆå—ä¿¡å‡¦ç†ç¶šãï¼‰
 
-				//óMƒŒƒWƒXƒ^‚ğ•Ô‚·
+				//å—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’è¿”ã™
 				return Register.receive_data();
 			}
 		};
@@ -379,7 +379,7 @@ namespace xc32{
 	template<typename i2c_register_>
 	class interrupt_i2c{
 /*
-//I2CŠ„‚è‚İg‚¢•û
+//I2Cå‰²ã‚Šè¾¼ã¿ä½¿ã„æ–¹
 void __attribute__((interrupt, no_auto_psv)) _MI2C2Interrupt(void){
 	static bool ACKFlag=0;
 	static uint8 status=0;
@@ -466,13 +466,13 @@ void __attribute__((interrupt, no_auto_psv)) _MI2C2Interrupt(void){
 
 			Register.interrupt_function(*pInterrupt);
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.control_register(0);
-			//ƒ{[ƒŒ[ƒg‚©‚çI2CƒNƒƒbƒN‚ğ¶¬‚·‚é‚½‚ß‚Ì‰½‚©İ’è
+			//ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‹ã‚‰I2Cã‚¯ãƒ­ãƒƒã‚¯ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã®ä½•ã‹è¨­å®š
 			Register.boud_rate_generator((static_cast<unsigned long>(ClockMode+nsPGD)*(clock::get_bus_clock()/100000)-10000)/10000);
-			//interrupt priority levelİ’è
+			//interrupt priority levelè¨­å®š
 			Register.interrupt_priority_level(InterruptPriorityLv);
-			//I2C—LŒø‰»
+			//I2Cæœ‰åŠ¹åŒ–
 			Register.enable(true);
 
 			return false;
@@ -483,34 +483,34 @@ void __attribute__((interrupt, no_auto_psv)) _MI2C2Interrupt(void){
 		void unlock(){
 			if(!is_lock())return;
 
-			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^‚ğƒNƒŠƒA
+			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’ã‚¯ãƒªã‚¢
 			Register.reset_all_config();
-			//I2C’â~
+			//I2Cåœæ­¢
 			Register.enable(false);
 
 			Register.unlock();
 		}
 	private:
-		//ACK‘—M
+		//ACKé€ä¿¡
 		inline void sendACK(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//ACK‘—Mƒ‚[ƒh‚Éİ’è
+			//ACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 			Register.ack_data(false);
-			//ACK‘—M
+			//ACKé€ä¿¡
 			Register.ack_enable(true);
 		}
-		//NACK‘—M
+		//NACKé€ä¿¡
 		inline void sendNACK(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
-			//NACK‘—Mƒ‚[ƒh‚Éİ’è
+			//NACKé€ä¿¡ãƒ¢ãƒ¼ãƒ‰ã«è¨­å®š
 			Register.ack_data(true);
-			//NACK‘—M
+			//NACKé€ä¿¡
 			Register.ack_enable(true);
 		}
 	public:
-		//Š„‚è‚İŠÖ”“à‚Å•K‚¸s‚¤ˆ—‚É•K—v‚È‚à‚Ì‚ÍlockŠm”F‚µ‚È‚¢
+		//å‰²ã‚Šè¾¼ã¿é–¢æ•°å†…ã§å¿…ãšè¡Œã†å‡¦ç†ã«å¿…è¦ãªã‚‚ã®ã¯lockç¢ºèªã—ãªã„
 		void enable(){
 			xc32_assert(is_lock(), i2c::not_lock_exception());
 
@@ -571,16 +571,16 @@ void __attribute__((interrupt, no_auto_psv)) _MI2C2Interrupt(void){
 
 			if(Register.is_lock())return 0;
 			Register.lock();
-			//slave‚ÖACK/NACK‘—M
-			if(EndFlag)sendNACK();		//NACK‘—MióMˆ—I—¹j
-			else sendACK();			//ACK‘—M
+			//slaveã¸ACK/NACKé€ä¿¡
+			if(EndFlag)sendNACK();		//NACKé€ä¿¡ï¼ˆå—ä¿¡å‡¦ç†çµ‚äº†ï¼‰
+			else sendACK();			//ACKé€ä¿¡
 
-			//óMƒŒƒWƒXƒ^‚ğ•Ô‚·
+			//å—ä¿¡ãƒ¬ã‚¸ã‚¹ã‚¿ã‚’è¿”ã™
 			unsigned char tmp=Register.receive_data();
 			Register.unlock();
 			return tmp;
 		}
-		//NACKóMŠm”F
+		//NACKå—ä¿¡ç¢ºèª
 		bool checkNACK()const volatile{return Register.ack_status();}
 	};
 }

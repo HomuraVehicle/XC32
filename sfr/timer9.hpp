@@ -72,7 +72,7 @@ namespace xc32{
 			unsigned int count()const {return TMR9;}
 			//control register : TxCON
 			void reset_all_config(){
-				T9CON &= 0x00010000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				T9CON &= 0x00010000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 
 				count(0);
 				interrupt_enable(false);

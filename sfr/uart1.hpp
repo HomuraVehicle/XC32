@@ -2,13 +2,13 @@
 #define XC32_SFR_UART1_INC 101
 #
 /*=== uart1 ===
-�V�^���荞�݊֐����ɕύX
+新型割り込み関数名に変更
 
 v1_01/140630 hmIto
-	�֐��Q��const/�𐮗�
-	�ύX��́A
-		const : ���W�X�^�̓��e�������ɂ���ĕύX����Ȃ����Ƃ��ۏ�ł��邩�H
-		 : ���W�X�^�̓��e��Pic���g�ɂ���Ď����I�ɕύX���꓾�邩�H
+	関数群のconst/を整理
+	変更基準は、
+		const : レジスタの内容が処理によって変更されないことが保障できるか？
+		 : レジスタの内容がPic自身によって自動的に変更され得るか？
 */
 #include"device_include.h"
 #include"exclusive_mixin.hpp"
@@ -145,7 +145,7 @@ namespace xc32{
 			//Reset all confige about UART
 			void reset_all_config(){
 				//UART MODE bits : UxMODE
-				U1MODE &= 0x00010000;			//ON�ȊO��0�Ńt�B��
+				U1MODE &= 0x00010000;			//ON以外を0でフィル
 
 				//UART Status and control bits : UxSTA
 				U1STA=0;

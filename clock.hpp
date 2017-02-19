@@ -10,10 +10,10 @@
 #include<XCBase/lock.hpp>
 
 
-//******* �K���K�v�ȏ������֐� ******
-//��ԏ��߂ɕK���I�V���[�^�̃N���b�N�w�肪�K�v
-//�N���b�N���̂́A�R���t�B�M�����[�V�����r�b�g�Ŏw��
-//�����܂ł��A�N���b�N��ݒ肷��̂ł͂Ȃ��A�����֐��ɃN���b�N�������Ă��邾���ł��邱�Ƃɒ��ӁI�I
+//******* 必ず必要な初期化関数 ******
+//一番初めに必ずオシレータのクロック指定が必要
+//クロック自体は、コンフィギュレーションビットで指定
+//あくまでも、クロックを設定するのではなく、ただ関数にクロックを教えているだけであることに注意！！
 namespace xc32{
 	using namespace xc;
 	namespace oscillator{
@@ -27,13 +27,13 @@ namespace xc32{
 				if(is_lock())return false;
 
 				__asm("nop");
-				//lock code1 0xAA996655,lock code2 0x556699AA �ȊO�̐��������邱�ƂŃ��b�N����
+				//lock code1 0xAA996655,lock code2 0x556699AA 以外の数字を入れることでロックする
 				SYSKEY = 0x00;
 				__asm("nop");
-				//lock code1 0xAA996655 ������
+				//lock code1 0xAA996655 を入れる
 				SYSKEY = 0xAA996655;
 				__asm("nop");
-				//lock code2 0x556699AA������
+				//lock code2 0x556699AAを入れる
 				SYSKEY = 0x556699AA;
 				__asm("nop");
 				//unlock
@@ -46,7 +46,7 @@ namespace xc32{
 				if(!is_lock())return;
 
 				__asm("nop");
-				//lock code1 0xAA996655,lock code2 0x556699AA �ȊO�̐��������邱�ƂŃ��b�N����
+				//lock code1 0xAA996655,lock code2 0x556699AA 以外の数字を入れることでロックする
 				SYSKEY = 0x00;
 
 				IsLock = false;
@@ -116,15 +116,15 @@ namespace xc32{
 		static void set_system_clock(uint64 Hz_) { SystemClock = Hz_; }
 		static uint64 get_system_clock() { return SystemClock; }
 		static void set_bus_div(clock_div::type Div_) {
-			//oscillator�ւ̏�������mutex�����b�N
+			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);
 
 #if defined(XC32_PIC32MX)
-			//�{����PBDIVRDY��҂��Ȃ���΂����Ȃ��͂������A�w�b�_�Ƀ��W�X�^�ݒ肳��Ă��Ȃ��E�E�E
+			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			//while(!OSCCONbits.PBDIVRDY);
 			OSCCONbits.PBDIV = static_cast<unsigned char>(Div_);
 #elif defined(XC32_PIC32MZ)
-			//�{����PBDIVRDY��҂��Ȃ���΂����Ȃ��͂������A�w�b�_�Ƀ��W�X�^�ݒ肳��Ă��Ȃ��E�E�E
+			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			while(!PB1DIVbits.PBDIVRDY);
 			PB1DIVbits.PBDIV = static_cast<unsigned char>(Div_);
 			while(!PB2DIVbits.PBDIVRDY);
@@ -152,15 +152,15 @@ namespace xc32{
 #endif
 		}
 		static void change_cpu_clock(clock_div::type Div_) {
-			//oscillator�ւ̏�������mutex�����b�N
+			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);
 
 #if defined(XC32_PIC32MX)
-			//�{����PBDIVRDY��҂��Ȃ���΂����Ȃ��͂������A�w�b�_�Ƀ��W�X�^�ݒ肳��Ă��Ȃ��E�E�E
+			//本当はPBDIVRDYを待たなければいけないはずだが、ヘッダにレジスタ設定されていない・・・
 			//while(!OSCCONbits.PBDIVRDY);
 			OSCCONbits.PBDIV = static_cast<unsigned char>(Div_);
 #elif defined(XC32_PIC32MZ)
-			//PBCLK7��CPU�ɑΉ�����
+			//PBCLK7がCPUに対応する
 			while(!PB7DIVbits.PBDIVRDY);
 			PB7DIVbits.PBDIV = static_cast<unsigned char>(Div_);
 #else
@@ -173,7 +173,7 @@ namespace xc32{
 			set_bus_div(Div_);
 #if defined(XC32_PIC32MZ)
 
-			//oscillator�ւ̏�������mutex�����b�N
+			//oscillatorへの書き込みmutexをロック
 			oscillator::lock_guard Lock(oscillator::Mutex);
 
 			__asm("nop");

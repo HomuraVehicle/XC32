@@ -1,9 +1,9 @@
 #ifndef XC32_SFR_SPI4_INC
 #define XC32_SFR_SPI4_INC 100
 #
-//*********** SPIŠÖ˜AŠÖ” ***********************
-//SPI‚Ì‰Šúİ’è‚ğs‚Á‚½ŒãA‘‚«‚ñ‚ÅA“Ç‚İæ‚Á‚ÄŠÖ”‚ğg‚¤
-// ‘I‘ğ‚µ‚Ä‚¢‚È‚¢PIN‚Í high‚Å•Û‚µ‚Ä‚¨‚­•K—v‚ª‚ ‚é 
+//*********** SPIé–¢é€£é–¢æ•° ***********************
+//SPIã®åˆæœŸè¨­å®šã‚’è¡Œã£ãŸå¾Œã€æ›¸ãè¾¼ã‚“ã§ã€èª­ã¿å–ã£ã¦é–¢æ•°ã‚’ä½¿ã†
+// é¸æŠã—ã¦ã„ãªã„PINã¯ highã§ä¿æŒã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ 
 //
 #include"device_include.h"
 #include"exclusive_mixin.hpp"
@@ -71,13 +71,13 @@ namespace xc32{
 			//SPI Baud Rate Ragister : SPIxBRG
 			/*
 				F_SCK = F_PB/(2*(BRG + 1))
-				F_SCKFSPI‚ÌMaster‚ÌƒNƒƒbƒNƒXƒs[ƒh
-				F_PB FƒVƒXƒeƒ€‘¤ƒNƒƒbƒN PLLŒã
+				F_SCKï¼šSPIã®Masterã®ã‚¯ãƒ­ãƒƒã‚¯ã‚¹ãƒ”ãƒ¼ãƒ‰
+				F_PB ï¼šã‚·ã‚¹ãƒ†ãƒ å´ã‚¯ãƒ­ãƒƒã‚¯ PLLå¾Œ
 			*/
 			void baud_rate_register(unsigned int val_){SPI4BRG=val_;}
 			//Control register : SPIxCON
 			void reset_all_config(){
-				SPI4CON &= 0x00010000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				SPI4CON &= 0x00010000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 				rx_interrupt_enable(false);
 				rx_interrupt_flag(false);
 				tx_interrupt_enable(false);

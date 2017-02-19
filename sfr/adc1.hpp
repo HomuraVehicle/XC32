@@ -34,24 +34,24 @@ namespace xc32 {
 	namespace sfr {
 		struct adc_block :public sfr_register_mixin<adc_block>, public exclusive_mixin<adc_block> {
 		public:
-			//ADCƒ‚ƒVƒ…[ƒ‹ON
+			//ADCãƒ¢ã‚·ãƒ¥ãƒ¼ãƒ«ON
 			void enable(bool val_) { ADCCON1bits.ON = static_cast<unsigned char>(val_); }
 			bool enable()const { return static_cast<bool>(ADCCON1bits.ON); }
-			//ADCƒ‚ƒWƒ…[ƒ‹‚Ìg—p€”õ‚ª‚Å‚«‚½‚©(ƒ‚ƒWƒ…[ƒ‹‚Ì©“®calibration‘Ò‚¿)
+			//ADCãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã®ä½¿ç”¨æº–å‚™ãŒã§ããŸã‹(ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã®è‡ªå‹•calibrationå¾…ã¡)
 			bool module_ready()const volatile { return static_cast<bool>(ADCCON2bits.BGVRRDY); }
-			//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,c
+			//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,â€¦
 			void scan_trigger_select(unsigned char val_) { ADCCON1bits.STRGSRC = val_; }
 			unsigned char scan_trigger_select()const { return ADCCON1bits.STRGSRC; }
-			//ˆêÄƒXƒLƒƒƒ“İ’è‚ğƒŠƒZƒbƒg
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³è¨­å®šã‚’ãƒªã‚»ãƒƒãƒˆ
 			void reset_request_global_convert(){
 				ADCCSS1 = 0;
 				ADCCSS2 = 0;
 			}
-			//ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒKƒrƒbƒg
+			//ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬ãƒ“ãƒƒãƒˆ
 			void global_convert_trigger(){ ADCCON3bits.GSWTRG = 1; }
-			//ˆêÄƒXƒLƒƒƒ“iGlobal Scanj‚ªI—¹‚µ‚½‚©@“Ç‚İ‚¾‚·‚Æ©“®“I‚É—‚¿‚é
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³ï¼ˆGlobal Scanï¼‰ãŒçµ‚äº†ã—ãŸã‹ã€€èª­ã¿ã ã™ã¨è‡ªå‹•çš„ã«è½ã¡ã‚‹
 			bool is_end_global_convert()const volatile{ return static_cast<bool>(ADCCON2bits.EOSRDY); }
-			//ˆêÄƒXƒLƒƒƒ“I—¹Š„‚è‚İ—LŒø
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³çµ‚äº†å‰²ã‚Šè¾¼ã¿æœ‰åŠ¹
 			void global_convert_end_interrupt_enable(bool val){
 				ADCCON2bits.EOSIEN = val;
 				IEC6bits.ADCEOSIE = val;
@@ -59,68 +59,68 @@ namespace xc32 {
 			bool  global_convert_end_interrupt_enable(void)const volatile{
 				return ADCCON2bits.EOSIEN;
 			}
-			//ˆêÄƒXƒLƒƒƒ“I—¹Š„‚è‚İƒtƒ‰ƒO
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³çµ‚äº†å‰²ã‚Šè¾¼ã¿ãƒ•ãƒ©ã‚°
 			void global_convert_end_interrupt_flag(bool val){IFS6bits.ADCEOSIF = val;}
 			bool  global_convert_end_interrupt_flag(void)const volatile{return IFS6bits.ADCEOSIF;}
-			//ˆêÄƒXƒLƒƒƒ“I—¹Š„‚è‚İ priority level
+			//ä¸€æ–‰ã‚¹ã‚­ãƒ£ãƒ³çµ‚äº†å‰²ã‚Šè¾¼ã¿ priority level
 			void global_convert_end_interrupt_priority_level(unsigned char val_){ IPC48bits.ADCEOSIP = val_; }
 			unsigned char global_convert_end_interrupt_priority_level(){ return IPC48bits.ADCEOSIP; }
-			//ADCƒ}ƒXƒ^[ƒNƒƒbƒNŒ¹(T_Q)ƒrƒbƒgC1:Tcy,2:REFCLK3,3:FRCƒIƒVƒŒ[ƒ^o—Í,0:—\–ñÏ‚İ
+			//ADCãƒã‚¹ã‚¿ãƒ¼ã‚¯ãƒ­ãƒƒã‚¯æº(T_Q)ãƒ“ãƒƒãƒˆï¼Œ1:Tcy,2:REFCLK3,3:FRCã‚ªã‚·ãƒ¬ãƒ¼ã‚¿å‡ºåŠ›,0:äºˆç´„æ¸ˆã¿
 			void clock_select(unsigned char val_) { ADCCON3bits.ADCSEL = val_; }
 			unsigned char clock_select()const { return ADCCON3bits.ADCSEL; }
-			//ADCƒ}ƒXƒ^[ƒNƒƒbƒN•ªü”äƒrƒbƒg(0`12XXX)Fclock_div==0‚È‚çT_AD = T_Q ,T_AD = 2 * T_Q * clock_div
+			//ADCãƒã‚¹ã‚¿ãƒ¼ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”ãƒ“ãƒƒãƒˆ(0ï½12XXX)ï¼šclock_div==0ãªã‚‰T_AD = T_Q ,T_AD = 2 * T_Q * clock_div
 			void clock_div(unsigned char val_) { ADCCON3bits.CONCLKDIV = val_; }
 			unsigned char clock_div()const { return ADCCON3bits.CONCLKDIV; }
-			//’P“ÆADC•ÏŠ·—v‹ƒrƒbƒg
+			//å˜ç‹¬ADCå¤‰æ›è¦æ±‚ãƒ“ãƒƒãƒˆ
 			void individual_convert_trigger(bool val_) { ADCCON3bits.RQCNVRT = static_cast<unsigned char>(val_); }
 			bool individual_convert_trigger()const { return static_cast<bool>(ADCCON3bits.RQCNVRT); }
-			//’P“ÆADC“ü—Í‘I‘ğƒrƒbƒg
+			//å˜ç‹¬ADCå…¥åŠ›é¸æŠãƒ“ãƒƒãƒˆ
 			void individual_convert_select(unsigned char val_) { ADCCON3bits.ADINSEL = val_; }
 			unsigned char individual_convert_select()const { return ADCCON3bits.ADINSEL; }
-			//Vref‘I‘ğƒrƒbƒg.0:VrefH=AVdd VrefL=AVss,1:VrefH=Vref+ VrefL=AVss,2:VrefH=AVdd VrefL=Vref-,3:VrefH=Vref+ VrefL=Vref-
+			//Vrefé¸æŠãƒ“ãƒƒãƒˆ.0:VrefH=AVdd VrefL=AVss,1:VrefH=Vref+ VrefL=AVss,2:VrefH=AVdd VrefL=Vref-,3:VrefH=Vref+ VrefL=Vref-
 			void reference_voltage(unsigned char val_) { ADCCON3bits.VREFSEL = val_; }
 			unsigned char reference_voltage()const { return ADCCON3bits.VREFSEL; }
 
-			//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-12XXX) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+			//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-12XXX) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 			template<typename converter_no_>
 			void converter_clock_div(unsigned char val_);
 			template<typename converter_no_>
 			unsigned char converter_clock_div();
-			//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+			//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 			template<typename converter_no_>
 			void converter_sampling_time(unsigned char val_);
 			template<typename converter_no_>
 			unsigned char converter_sampling_time();
-			//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+			//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 			template<typename converter_no_>
 			void converter_resolution_bits(unsigned char val_);
 			template<typename converter_no_>
 			unsigned char converter_resolution_bits();
-			//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+			//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 			template<typename converter_no_>
 			void converter_use_alternative_pin(bool val_);
 			template<typename converter_no_>
 			bool converter_use_alternative_pin();
-			//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+			//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 			template<typename converter_no_>
 			void converter_enable(bool val_);
 			template<typename converter_no_>
 			bool converter_enable();
-			//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+			//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 			template<typename converter_no_>
 			bool converter_work_ready();
-			//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+			//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 			template<typename converter_no_>
 			void converter_work_enable(bool val_);
 			template<typename converter_no_>
 			bool converter_work_enable();
-			//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+			//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 			template<typename converter_no_>
 			void converter_scan_trigger_select(unsigned char val_);
 
 			//Reset all confige about ADC
 			void reset_all_config(){
-				ADCCON1 &= 0x00008000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				ADCCON1 &= 0x00008000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 				ADCCON2 = 0;
 				ADCCON3 = 0;
 
@@ -128,7 +128,7 @@ namespace xc32 {
 				ADCIMCON1 = 0;
 				ADCIMCON2 = 0;
 				ADCIMCON3 = 0;
-				//Š„‚è‚İ‚Ìİ’è‚ğƒNƒŠƒA
+				//å‰²ã‚Šè¾¼ã¿ã®è¨­å®šã‚’ã‚¯ãƒªã‚¢
 				ADCGIRQEN1 = 0;
 				ADCGIRQEN2 = 0;
 
@@ -145,7 +145,7 @@ namespace xc32 {
 		};
 
 	#ifdef ADCXXX_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-12XXX) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-12XXX) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<XXX>>(unsigned char val_){
 			ADCXXXTIMEbits.ADCDIV = val_;
@@ -154,7 +154,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<XXX>>(){
 			return ADCXXXTIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<XXX>>(unsigned char val_){
 			ADCXXXTIMEbits.SAMC = val_;
@@ -163,7 +163,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<XXX>>(){
 			return ADCXXXTIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<XXX>>(unsigned char val_){
 			ADCXXXTIMEbits.SELRES = val_;
@@ -172,7 +172,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<XXX>>(){
 			return ADCXXXTIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<XXX>>(bool val_){
 			ADCTRGMODEbits.SHXXXALT = val_;
@@ -181,7 +181,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<XXX>>(){
 			return ADCTRGMODEbits.SHXXXALT;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<XXX>>(bool val_){
 			ADCANCONbits.ANENXXX = val_;
@@ -190,12 +190,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<XXX>>(){
 			return ADCANCONbits.ANENXXX;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<XXX>>(){
 			return ADCANCONbits.WKRDYXXX;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable(bool val_){
 			ADCCON3bits.DIGENXXX = val_;
@@ -206,35 +206,35 @@ namespace xc32 {
 		}
 	#endif
 	#ifdef ADCXXX_GENERALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-12XXX) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-12XXX) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<XXX>>(unsigned char val_){ ADCCON2bits.ADCDIV = val_; }
 		template<>
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<XXX>>(){ return ADCCON2bits.ADCDIV; }
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<XXX>>(unsigned char val_){ ADCCON2bits.SAMC = val_; }
 		template<>
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<XXX>>(){ return ADCCON2bits.SAMC; }
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<XXX>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
 		template<>
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<XXX>>(){ return ADCCON1bits.SELRES; }
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<XXX>>(bool val_){}
 		template<>
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<XXX>>(){ return false; }
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<XXX>>(bool val_){ ADCANCONbits.ANENXXX = val_; }
 		template<>
 		inline bool adc_block::converter_enable<constexpr_no<XXX>>(){ return ADCANCONbits.ANENXXX; }
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<XXX>>(){ return ADCANCONbits.WKRDYXXX; }
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable(bool val_){ ADCCON3bits.DIGENXXX = val_; }
 		template<>
@@ -242,7 +242,7 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC0_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-120) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-120) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<0>>(unsigned char val_){
 			ADC0TIMEbits.ADCDIV = val_;
@@ -251,7 +251,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<0>>(){
 			return ADC0TIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<0>>(unsigned char val_){
 			ADC0TIMEbits.SAMC = val_;
@@ -260,7 +260,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<0>>(){
 			return ADC0TIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<0>>(unsigned char val_){
 			ADC0TIMEbits.SELRES = val_;
@@ -269,7 +269,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<0>>(){
 			return ADC0TIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<0>>(bool val_){
 			ADCTRGMODEbits.SH0ALT = val_;
@@ -278,7 +278,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<0>>(){
 			return ADCTRGMODEbits.SH0ALT!=0;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<0>>(bool val_){
 			ADCANCONbits.ANEN0 = val_;
@@ -287,12 +287,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<0>>(){
 			return ADCANCONbits.ANEN0;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<0>>(){
 			return ADCANCONbits.WKRDY0;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<0>>(bool val_){
 			ADCCON3bits.DIGEN0 = val_;
@@ -301,7 +301,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<0>>(){
 			return ADCCON3bits.DIGEN0;
 		}
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC0 = val_;
@@ -309,7 +309,7 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC1_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-121) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-121) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<1>>(unsigned char val_){
 			ADC1TIMEbits.ADCDIV = val_;
@@ -318,7 +318,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<1>>(){
 			return ADC1TIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<1>>(unsigned char val_){
 			ADC1TIMEbits.SAMC = val_;
@@ -327,7 +327,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<1>>(){
 			return ADC1TIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<1>>(unsigned char val_){
 			ADC1TIMEbits.SELRES = val_;
@@ -336,7 +336,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<1>>(){
 			return ADC1TIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<1>>(bool val_){
 			ADCTRGMODEbits.SH1ALT = val_;
@@ -345,7 +345,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<1>>(){
 			return ADCTRGMODEbits.SH1ALT!=0;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<1>>(bool val_){
 			ADCANCONbits.ANEN1 = val_;
@@ -354,12 +354,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<1>>(){
 			return ADCANCONbits.ANEN1;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<1>>(){
 			return ADCANCONbits.WKRDY1;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<1>>(bool val_){
 			ADCCON3bits.DIGEN1 = val_;
@@ -368,7 +368,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<1>>(){
 			return ADCCON3bits.DIGEN1;
 		}
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<1>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC1 = val_;
@@ -376,7 +376,7 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC2_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-122) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-122) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<2>>(unsigned char val_){
 			ADC2TIMEbits.ADCDIV = val_;
@@ -385,7 +385,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<2>>(){
 			return ADC2TIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<2>>(unsigned char val_){
 			ADC2TIMEbits.SAMC = val_;
@@ -394,7 +394,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<2>>(){
 			return ADC2TIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<2>>(unsigned char val_){
 			ADC2TIMEbits.SELRES = val_;
@@ -403,7 +403,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<2>>(){
 			return ADC2TIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<2>>(bool val_){
 			ADCTRGMODEbits.SH2ALT = val_;
@@ -412,7 +412,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<2>>(){
 			return ADCTRGMODEbits.SH2ALT!=0;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<2>>(bool val_){
 			ADCANCONbits.ANEN2 = val_;
@@ -421,12 +421,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<2>>(){
 			return ADCANCONbits.ANEN2;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<2>>(){
 			return ADCANCONbits.WKRDY2;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<2>>(bool val_){
 			ADCCON3bits.DIGEN2 = val_;
@@ -435,7 +435,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<2>>(){
 			return ADCCON3bits.DIGEN2;
 		}
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<2>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC2 = val_;
@@ -444,7 +444,7 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC3_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-123) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-123) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<3>>(unsigned char val_){
 			ADC3TIMEbits.ADCDIV = val_;
@@ -453,7 +453,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<3>>(){
 			return ADC3TIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<3>>(unsigned char val_){
 			ADC3TIMEbits.SAMC = val_;
@@ -462,7 +462,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<3>>(){
 			return ADC3TIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<3>>(unsigned char val_){
 			ADC3TIMEbits.SELRES = val_;
@@ -471,7 +471,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<3>>(){
 			return ADC3TIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<3>>(bool val_){
 			ADCTRGMODEbits.SH3ALT = val_;
@@ -480,7 +480,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<3>>(){
 			return ADCTRGMODEbits.SH3ALT!=0;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<3>>(bool val_){
 			ADCANCONbits.ANEN3 = val_;
@@ -489,12 +489,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<3>>(){
 			return ADCANCONbits.ANEN3;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<3>>(){
 			return ADCANCONbits.WKRDY3;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<3>>(bool val_){
 			ADCCON3bits.DIGEN3 = val_;
@@ -503,7 +503,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<3>>(){
 			return ADCCON3bits.DIGEN3;
 		}
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<3>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC3 = val_;
@@ -511,7 +511,7 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC4_SPESIALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-124) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-124) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<4>>(unsigned char val_){
 			ADC4TIMEbits.ADCDIV = val_;
@@ -520,7 +520,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<4>>(){
 			return ADC4TIMEbits.ADCDIV;
 		}
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<4>>(unsigned char val_){
 			ADC4TIMEbits.SAMC = val_;
@@ -529,7 +529,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<4>>(){
 			return ADC4TIMEbits.SAMC;
 		}
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<4>>(unsigned char val_){
 			ADC4TIMEbits.SELRES = val_;
@@ -538,7 +538,7 @@ namespace xc32 {
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<4>>(){
 			return ADC4TIMEbits.SELRES;
 		}
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<4>>(bool val_){
 			ADCTRGMODEbits.SH4ALT = val_;
@@ -547,7 +547,7 @@ namespace xc32 {
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<4>>(){
 			return ADCTRGMODEbits.SH4ALT!=0;
 		}
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<4>>(bool val_){
 			ADCANCONbits.ANEN4 = val_;
@@ -556,12 +556,12 @@ namespace xc32 {
 		inline bool adc_block::converter_enable<constexpr_no<4>>(){
 			return ADCANCONbits.ANEN4;
 		}
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<4>>(){
 			return ADCANCONbits.WKRDY4;
 		}
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<4>>(bool val_){
 			ADCCON3bits.DIGEN4 = val_;
@@ -570,7 +570,7 @@ namespace xc32 {
 		inline bool adc_block::converter_work_enable<constexpr_no<4>>(){
 			return ADCCON3bits.DIGEN4;
 		}
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<4>>(unsigned char val_){
 			ADCTRG2bits.TRGSRC4 = val_;
@@ -578,40 +578,40 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC0_GENERALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-120) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-120) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<0>>(unsigned char val_){ ADCCON2bits.ADCDIV = val_; }
 		template<>
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<0>>(){ return ADCCON2bits.ADCDIV; }
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<0>>(unsigned char val_){ ADCCON2bits.SAMC = val_; }
 		template<>
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<0>>(){ return ADCCON2bits.SAMC; }
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<0>>(unsigned char val_){ { ADCCON1bits.SELRES = val_; }
 		template<>
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<0>>(){ return ADCCON1bits.SELRES; }
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<0>>(bool val_){}
 		template<>
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<0>>(){ return false; }
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<0>>(bool val_){ ADCANCONbits.ANEN0 = val_; }
 		template<>
 		inline bool adc_block::converter_enable<constexpr_no<0>>(){ return ADCANCONbits.ANEN0; }
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<0>>(){ return ADCANCONbits.WKRDY0; }
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<0>>(bool val_){ ADCCON3bits.DIGEN0 = val_; }
 		template<>
 		inline bool adc_block::converter_work_enable<constexpr_no<0>>(){ return ADCCON3bits.DIGEN0; }
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<0>>(unsigned char val_){
 			ADCTRG1bits.TRGSRC0 = val_;
@@ -619,40 +619,40 @@ namespace xc32 {
 	#endif
 
 	#ifdef ADC7_GENERALIZED
-		//ADC‚²‚Æ‚ÌŒÅ—L‚ÌƒNƒƒbƒN•ªü”ä(1-127) ‚±‚Ì’l‚Ì2”{‚ÌüŠú‚É‚È‚é
+		//ADCã”ã¨ã®å›ºæœ‰ã®ã‚¯ãƒ­ãƒƒã‚¯åˆ†å‘¨æ¯”(1-127) ã“ã®å€¤ã®2å€ã®å‘¨æœŸã«ãªã‚‹
 		template<>
 		inline void adc_block::converter_clock_div<constexpr_no<7>>(unsigned char val_){ ADCCON2bits.ADCDIV = val_; }
 		template<>
 		inline unsigned char adc_block::converter_clock_div<constexpr_no<7>>(){ return ADCCON2bits.ADCDIV; }
-		//ADC‚²‚Æ‚ÌƒTƒ“ƒvƒŠƒ“ƒOƒ^ƒCƒ€(0-1023)@val+2‚ÌƒNƒƒbƒNüŠú‚¾‚¯ƒTƒ“ƒvƒŠƒ“ƒO‚É‚©‚©‚éH
+		//ADCã”ã¨ã®ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã‚¿ã‚¤ãƒ (0-1023)ã€€val+2ã®ã‚¯ãƒ­ãƒƒã‚¯å‘¨æœŸã ã‘ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã«ã‹ã‹ã‚‹ï¼Ÿ
 		template<>
 		inline void adc_block::converter_sampling_time<constexpr_no<7>>(unsigned char val_){ ADCCON2bits.SAMC = val_; }
 		template<>
 		inline unsigned char adc_block::converter_sampling_time<constexpr_no<7>>(){ return ADCCON2bits.SAMC; }
-		//ADC‚Ìbit¸“x@resolution_mode‚©‚ç‘I‘ğ
+		//ADCã®bitç²¾åº¦ã€€resolution_modeã‹ã‚‰é¸æŠ
 		template<>
 		inline void adc_block::converter_resolution_bits<constexpr_no<7>>(unsigned char val_){ ADCCON1bits.SELRES = val_; }
 		template<>
 		inline unsigned char adc_block::converter_resolution_bits<constexpr_no<7>>(){ return ADCCON1bits.SELRES; }
-		//excluded ADCê—p@Š„‚è“–‚Ä‚Ì•Ê‚Ìpinw‚ğg‚¤‚©
+		//excluded ADCå°‚ç”¨ã€€å‰²ã‚Šå½“ã¦ã®åˆ¥ã®pinwã‚’ä½¿ã†ã‹
 		template<>
 		inline void adc_block::converter_use_alternative_pin<constexpr_no<7>>(bool val_){}
 		template<>
 		inline bool adc_block::converter_use_alternative_pin<constexpr_no<7>>(){ return false; }
-		//ADC‚²‚Æ‚ÌclockƒXƒ^[ƒg
+		//ADCã”ã¨ã®clockã‚¹ã‚¿ãƒ¼ãƒˆ
 		template<>
 		inline void adc_block::converter_enable<constexpr_no<7>>(bool val_){ ADCANCONbits.ANEN7 = val_; }
 		template<>
 		inline bool adc_block::converter_enable<constexpr_no<7>>(){ return ADCANCONbits.ANEN7; }
-		//ADC‚²‚Æ‚ÌƒNƒƒbƒN“¯’²Šm”F@clock_enableŒã‚Éwork_ready‚ğ‘Ò‚Â
+		//ADCã”ã¨ã®ã‚¯ãƒ­ãƒƒã‚¯åŒèª¿ç¢ºèªã€€clock_enableå¾Œã«work_readyã‚’å¾…ã¤
 		template<>
 		inline bool adc_block::converter_work_ready<constexpr_no<7>>(){ return ADCANCONbits.WKRDY7; }
-		//ADC‚²‚Æ‚Ì‚²‚Æ‚Ìƒ^ƒXƒNƒXƒ^[ƒg work_ready‚É‚È‚Á‚½‚çwork_enable‚·‚é‚ÆA—˜—p€”õ‚ª®‚¤
+		//ADCã”ã¨ã®ã”ã¨ã®ã‚¿ã‚¹ã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆ work_readyã«ãªã£ãŸã‚‰work_enableã™ã‚‹ã¨ã€åˆ©ç”¨æº–å‚™ãŒæ•´ã†
 		template<>
 		inline void adc_block::converter_work_enable<constexpr_no<7>>(bool val_){ ADCCON3bits.DIGEN7 = val_; }
 		template<>
 		inline bool adc_block::converter_work_enable<constexpr_no<7>>(){ return ADCCON3bits.DIGEN7; }
-		//ƒXƒLƒƒƒ“ƒgƒŠƒKŒ¹‘I‘ğƒrƒbƒg,0:ƒgƒŠƒK‚È‚µ,1:ƒOƒ[ƒoƒ‹ƒ\ƒtƒgƒEƒFƒAƒgƒŠƒK,...,3:STRG‚ğQÆ
+		//ã‚¹ã‚­ãƒ£ãƒ³ãƒˆãƒªã‚¬æºé¸æŠãƒ“ãƒƒãƒˆ,0:ãƒˆãƒªã‚¬ãªã—,1:ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒˆãƒªã‚¬,...,3:STRGã‚’å‚ç…§
 		template<>
 		inline void adc_block::converter_scan_trigger_select<constexpr_no<7>>(unsigned char val_){
 			ADCTRG2bits.TRGSRC7 = val_;
