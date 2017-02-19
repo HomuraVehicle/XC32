@@ -1048,7 +1048,7 @@ namespace xc32{
 		typedef basic_shared_adc<adc_block_register_, my_identifier> my_adc;
 	private:
 		//データリクエスト内容
-		struct read_task{
+		struct read_task : public xc::sorted_chain_element{
 		public:
 			//AN Pin系
 			virtual void request_data() = 0;
@@ -1090,7 +1090,7 @@ namespace xc32{
 		//割り込み関数
 		static void interrupt_function(){
 			//まず、Requestデータ読み出し処理	
-			for(typename read_task::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
+			for(typename read_task_chain::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
 				Itr->read_data();
 			}
 
