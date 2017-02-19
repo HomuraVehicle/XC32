@@ -819,7 +819,7 @@ namespace xc32{
 				//リクエスト中のデータがない場合
 				while(HandlingReqPtr == 0){
 					//タスクキューが空なら、終了
-					if(Requestueue.empty())return false;
+					if(RequestQueue.empty())return false;
 
 					//先頭から抜いてくる
 					HandlingReqPtr = RequestQueue.front();
@@ -999,7 +999,7 @@ namespace xc32{
 			}
 		public:
 			//現在リクエスト中か？
-			bool owned_request()const{ return !Promise.can_get_future() || Request.owned_by_chain(); }
+			bool owns_request()const{ return !Promise.can_get_future() || Request.owned_by_chain(); }
 		};
 	public:
 		void operator()(void){work();}
@@ -1048,7 +1048,7 @@ namespace xc32{
 		typedef basic_shared_adc<adc_block_register_, my_identifier> my_adc;
 	private:
 		//データリクエスト内容
-		struct read_task{
+		struct read_task : public xc::sorted_chain_element{
 		public:
 			//AN Pin系
 			virtual void request_data() = 0;
@@ -1090,7 +1090,7 @@ namespace xc32{
 		//割り込み関数
 		static void interrupt_function(){
 			//まず、Requestデータ読み出し処理	
-			for(typename read_task::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
+			for(typename read_task_chain::iterator Itr = TaskQueue.begin(); Itr != TaskQueue.end(); ++Itr){
 				Itr->read_data();
 			}
 
@@ -1154,7 +1154,7 @@ namespace xc32{
 						Ref.set_value(static_cast<uint16>(Data/Num));
 					}
 				}
-				virtual uint16 remain_request(){
+				virtual uint16 remain_request()const{
 					return Remain;
 				}
 			};
@@ -1220,7 +1220,7 @@ namespace xc32{
 			}
 		public:
 			//現在リクエスト中か？
-			bool owned_request()const{ return !Promise.can_get_future() || ReadTask.owned_request(); }
+			bool owns_request()const{ return !Promise.can_get_future() || ReadTask.remain_request(); }
 		};
 	private:
 		static adc::block_setting BlockSetting;
