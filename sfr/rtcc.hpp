@@ -90,7 +90,7 @@ namespace xc32{
 			unsigned char interrupt_sub_priority_level(){return XC32_RTCC_IS;}
 			//Control Register : I2CxCON
 			void reset_all_config(){
-				RTCCON &= 0x00010000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				RTCCON &= 0x00010000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 
 				interrupt_enable(false);
 				interrupt_flag(false);

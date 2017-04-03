@@ -84,16 +84,16 @@ namespace xc32{
 			//Transmit Buffer Full Status bit : I2CxSTATbits.TBF
 			bool transmit_buf_full()const{return static_cast<bool>(I2C5STATbits.TBF);}
 
-			//Boud Rate Generator bits : I2CxBRG (ƒ{[ƒŒ[ƒg‚©‚çI2CƒNƒƒbƒN‚ğ¶¬‚·‚é‚½‚ß‚Ì‰½‚©İ’è)
+			//Boud Rate Generator bits : I2CxBRG (ãƒœãƒ¼ãƒ¬ãƒ¼ãƒˆã‹ã‚‰I2Cã‚¯ãƒ­ãƒƒã‚¯ã‚’ç”Ÿæˆã™ã‚‹ãŸã‚ã®ä½•ã‹è¨­å®š)
 			/*
 				BRG= ( 1/(2*FSCL) - PGD ) * PBCLK -2
-				FSCLFI2C‘¤‚ÌƒNƒƒbƒNƒXƒs[ƒh 100k,400k,1M‚Ì3í—Ş‚ªå—¬‚ç‚µ‚¢
+				FSCLï¼šI2Cå´ã®ã‚¯ãƒ­ãƒƒã‚¯ã‚¹ãƒ”ãƒ¼ãƒ‰ 100k,400k,1Mã®3ç¨®é¡ãŒä¸»æµã‚‰ã—ã„
 					100k:1.0e-5s=10000ns
 					400k:2.5e-6s= 2500ns
 					  1M:1.0e-6s= 1000ns
-				PGD : Pulse_Gobbler_Delay ƒfƒoƒCƒXŒÅ—L@ƒf[ƒ^ƒV[ƒgQÆ
+				PGD : Pulse_Gobbler_Delay ãƒ‡ãƒã‚¤ã‚¹å›ºæœ‰ã€€ãƒ‡ãƒ¼ã‚¿ã‚·ãƒ¼ãƒˆå‚ç…§
 					Pic4EP512GU810:1.30e-7
-				FCY : ƒVƒXƒeƒ€‘¤‚ÌƒNƒƒbƒN PLLŒã@‚½‚¾‚µCDOZE—˜—p‚Ìê‡‚ÍCPUƒNƒƒbƒN‚Æˆê’v‚µ‚È‚¢
+				FCY : ã‚·ã‚¹ãƒ†ãƒ å´ã®ã‚¯ãƒ­ãƒƒã‚¯ PLLå¾Œã€€ãŸã ã—ï¼ŒDOZEåˆ©ç”¨ã®å ´åˆã¯CPUã‚¯ãƒ­ãƒƒã‚¯ã¨ä¸€è‡´ã—ãªã„
 			*/
 			void baud_rate_register(unsigned long val_){I2C5BRG=val_;}
 			//I2C Enable bit : I2CxCONbits.ON
@@ -101,7 +101,7 @@ namespace xc32{
 			bool enable()const{return static_cast<bool>(I2C5CONbits.ON);}
 			//I2C Control Register : I2CxCON
 			void reset_all_config(){
-				I2C5CON &= 0x00010000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				I2C5CON &= 0x00010000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 
 				interrupt_enable(false);
 				interrupt_flag(false);

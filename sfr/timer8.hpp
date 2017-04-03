@@ -77,7 +77,7 @@ namespace xc32{
 			bool enable_32bit()const{return static_cast<bool>(T8CONbits.T32);}
 			//control register : TxCON
 			void reset_all_config(){
-				T8CON &= 0x00010000;			//ONˆÈŠO‚ğ0‚ÅƒtƒBƒ‹
+				T8CON &= 0x00010000;			//ONä»¥å¤–ã‚’0ã§ãƒ•ã‚£ãƒ«
 
 				count(0);
 				interrupt_enable(false);

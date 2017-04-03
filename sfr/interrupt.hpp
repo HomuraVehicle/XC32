@@ -10,19 +10,19 @@ namespace xc32 {
 			struct function {
 				virtual void operator()(void)=0;
 			};			
-			// ‘S‚Ä‚ÌŠ„‚è‚İ‚ğ‹–‰Â
+			// å…¨ã¦ã®å‰²ã‚Šè¾¼ã¿ã‚’è¨±å¯
 			inline void enable_all(void) {
 			#ifndef XC32_DEBUGMODE
 				asm volatile("ei");
 			#endif
 			}
-			// ‘S‚Ä‚ÌŠ„‚è‚İ‚ğ‹Ö~
+			// å…¨ã¦ã®å‰²ã‚Šè¾¼ã¿ã‚’ç¦æ­¢
 			inline void disable_all(void) {
 			#ifndef XC32_DEBUGMODE
 				asm volatile("di");
 			#endif
 			}
-			// CPU‚ÌŠ„‚è‚İ—Dæ“x‚ğæ“¾
+			// CPUã®å‰²ã‚Šè¾¼ã¿å„ªå…ˆåº¦ã‚’å–å¾—
 			inline unsigned char cpu_priority(void) {
 			#ifndef XC32_DEBUGMODE
 				return (_CP0_GET_STATUS()&(_CP0_STATUS_IPL_MASK))>>_CP0_STATUS_IPL_POSITION;
@@ -35,7 +35,7 @@ namespace xc32 {
 				_CP0_SET_STATUS((_CP0_GET_STATUS()&(~_CP0_STATUS_IPL_MASK))|(Priority_<<_CP0_STATUS_IPL_POSITION));
 			#endif
 			}
-			// Multi Vector Mode‚É‚·‚é
+			// Multi Vector Modeã«ã™ã‚‹
 			inline void multivectormode(bool val_){
 			#ifndef XC32_DEBUGMODE
 				INTCONbits.MVEC = static_cast<unsigned char>(val_);
@@ -52,7 +52,7 @@ namespace xc32 {
 	}
 }
 
-//Š„‚è‚İŠÖ”—pdefineÕ‚è	Š„‚è‚İ—Dæ“x•Ï‚¦‚ç‚ê‚é¼‹\‚ª‰ü‘P‚³‚ê‚ê‚Î•s—v‚É‚È‚é‚Í‚¸
+//å‰²ã‚Šè¾¼ã¿é–¢æ•°ç”¨defineç¥­ã‚Š	å‰²ã‚Šè¾¼ã¿å„ªå…ˆåº¦å¤‰ãˆã‚‰ã‚Œã‚‹è©æ¬ºãŒæ”¹å–„ã•ã‚Œã‚Œã°ä¸è¦ã«ãªã‚‹ã¯ãš
 //I2C1
 #ifndef XC32_CONFIG_I2C1_IPL
 #	define XC32_I2C1_IPL 7
@@ -383,6 +383,16 @@ namespace xc32 {
 #else
 #	define XC32_TIMER9_IPL_FOR_ISR XC32_CONFIG_TIMER9_IPL_FOR_ISR
 #endif
-
+//ADC1
+#ifndef XC32_CONFIG_ADC1_IPL
+#	define XC32_ADC1_IPL 7
+#else
+#	define XC32_ADC1_IPL XC32_CONFIG_ADC1_IPL
+#endif
+#ifndef XC32_CONFIG_ADC1_IPL_FOR_ISR
+#	define XC32_ADC1_IPL_FOR_ISR IPL7AUTO
+#else
+#	define XC32_ADC1_IPL_FOR_ISR XC32_CONFIG_ADC1_IPL_FOR_ISR
+#endif
 #
 #endif

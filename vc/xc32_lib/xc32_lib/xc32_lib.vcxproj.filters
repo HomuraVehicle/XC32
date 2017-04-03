@@ -14,7 +14,13 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="XC32">
-      <UniqueIdentifier>{9d86793e-097f-409e-8f15-5c9629fcd456}</UniqueIdentifier>
+      <UniqueIdentifier>{e53ef9e3-0c64-4819-be29-6852fffc9090}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XC32\sfr">
+      <UniqueIdentifier>{7ede7a19-e0b4-4c27-a67a-b54f95ae8614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XC32\sfr\port">
+      <UniqueIdentifier>{b7076a32-9f6d-49b7-82ff-d72819273133}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +63,147 @@
     <ClInclude Include="..\..\..\wdt.hpp">
       <Filter>XC32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\sfr\adc_base.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\adc1.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\analog.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\exclusive_mixin.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\i2c1.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\i2c2.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\i2c3.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\i2c4.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\i2c5.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\interrupt.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\reset.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\rtcc.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\sfr_register_mixin.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\spi1.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\spi2.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\spi3.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\spi4.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer_base.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer1.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer2.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer3.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer4.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer5.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer6.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer7.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer8.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\timer9.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart_base.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart1.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart2.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart3.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart4.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart5.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\uart6.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\wdt.hpp">
+      <Filter>XC32\sfr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portA.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portB.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portC.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portD.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portE.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portF.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portG.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portH.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portI.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portJ.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sfr\port\portK.hpp">
+      <Filter>XC32\sfr\port</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\clock.cpp">
@@ -64,6 +211,93 @@
     </ClCompile>
     <ClCompile Include="..\..\..\interrupt.cpp">
       <Filter>XC32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\i2c1.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\i2c2.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\i2c3.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\i2c4.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\i2c5.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\rtcc.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\spi1.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\spi2.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\spi3.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\spi4.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer1.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer2.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer3.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer4.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer5.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer6.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer7.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer8.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\timer9.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart1.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart2.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart3.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart4.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart5.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\uart6.cpp">
+      <Filter>XC32\sfr</Filter>
+    </ClCompile>
+    <ClCompile Include="lab.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\homuraLib_v2\machine\device\p32mz2048efg100_forVC.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="test_XC32.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sfr\adc1.cpp">
+      <Filter>XC32\sfr</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,6 +10,12 @@ namespace xc32 {
 				vref_Vin_Vref=0x02,
 				vref_Vref_Vref=0x03
 			};
+			enum resolution_mode :unsigned{
+				resolution_12bits = 0b11,
+				resolution_10bits = 0b10,
+				resolution_8bits = 0b01,
+				resolution_6bits = 0b00
+			};
 
 		}
 	}

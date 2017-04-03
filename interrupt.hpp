@@ -86,14 +86,14 @@ namespace xc32{
 	}
 	struct interrupt_block{
 	private:
-		//interrupt‰Šú‰»ŠÖ”
+		//interruptåˆæœŸåŒ–é–¢æ•°
 		static void initialize() {
 #ifndef XC32_DEBUGMODE
 			__asm("nop");
 			sfr::interrupt::enable_all();
 			//			INTEnableInterrupts();
 			__asm("nop");
-			//multi-vector mode‚É‚·‚éD‚±‚ê‚ğ‚µ‚È‚¢‚ÆŠ„‚è‚İ‚ª¶¬‚³‚ê‚È‚¢‚Á‚Û‚¢
+			//multi-vector modeã«ã™ã‚‹ï¼ã“ã‚Œã‚’ã—ãªã„ã¨å‰²ã‚Šè¾¼ã¿ãŒç”Ÿæˆã•ã‚Œãªã„ã£ã½ã„
 			sfr::interrupt::multivectormode(true);
 #endif
 		}

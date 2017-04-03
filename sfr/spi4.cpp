@@ -7,20 +7,20 @@
 extern "C"{
 	void x_xc32_sfr_spi4_interrupt(void) {
 		static xc32::sfr::spi4 SPI4;
-		//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+		//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 		if(SPI4.rx_interrupt_function()) {
 			(*const_cast<xc32::sfr::interrupt::function*>(SPI4.rx_interrupt_function()))();
 		}
 		SPI4.rx_interrupt_flag(false);
 		/*
 		if(SPI4.tx_interrupt_flag()) {
-			//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+			//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 			if(SPI4.tx_interrupt_function()) {
 				(*const_cast<xc32::sfr::interrupt::function*>(SPI4.tx_interrupt_function()))();
 			}
 			SPI4.tx_interrupt_flag(false);
 		} else if(SPI4.rx_interrupt_flag()) {
-			//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+			//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 			if(SPI4.rx_interrupt_function()) {
 				(*const_cast<xc32::sfr::interrupt::function*>(SPI4.rx_interrupt_function()))();
 			}

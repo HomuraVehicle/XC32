@@ -6,6 +6,9 @@
 #include"clock.hpp"
 #include"sfr/interrupt.hpp"
 #include"sfr/timer_base.hpp"
+#ifndef __asm__
+#define __asm__(val)
+#endif
 namespace xc32{
 	using namespace xc;
 	namespace timer{
@@ -241,7 +244,7 @@ namespace xc32{
 			Register.interrupt_flag(false);
 			Register.enable(true);
 
-			//Š„‚è‚İŠÔ“à‚¾‚Á‚½ê‡
+			//å‰²ã‚Šè¾¼ã¿æ™‚é–“å†…ã ã£ãŸå ´åˆ
 			for(unsigned int RepeatCnt = 0; RepeatCnt<RepeatNum; ++RepeatCnt) {
 				while(!Register.interrupt_flag());
 				Register.count(0);
@@ -255,7 +258,7 @@ namespace xc32{
 		void operator()(unsigned int MSec_) {
 			xc32_assert(is_lock(), timer::not_lock_exception());
 
-			//“¯‚¶ŠÔ‚Å‚Ìdelay‚ğ‚‘¬‰»‚Å‚«‚é‚æ‚¤‚ÉAİ’è‚ğŠo‚¦‚Ä‚¨‚­
+			//åŒã˜æ™‚é–“ã§ã®delayã‚’é«˜é€ŸåŒ–ã§ãã‚‹ã‚ˆã†ã«ã€è¨­å®šã‚’è¦šãˆã¦ãŠã
 			if(MSec!=MSec_) {
 				uint16 DivCnt=0;
 				typename prescaler::div Div;
@@ -264,7 +267,7 @@ namespace xc32{
 				RepeatNum=1;
 
 				while(1) {
-					//Å‰‚Í1‚Å‚µ‚ÄAŸ‚Í2A‚»‚ÌŸ‚Í5AˆÈ~10A20A50EEE‚Æ‚¢‚¤‡‚ÅŠ„‚Á‚Ä‚İ‚é
+					//æœ€åˆã¯1ã§è©¦ã—ã¦ã€æ¬¡ã¯2ã€ãã®æ¬¡ã¯5ã€ä»¥é™10ã€20ã€50ãƒ»ãƒ»ãƒ»ã¨ã„ã†é †ã§å‰²ã£ã¦ã¿ã‚‹
 					if(DivCnt%3==0) {
 						Div=prescaler::auto_div(clock::get_bus_clock(),MSec_);
 						if(Div!=prescaler::diverr) {

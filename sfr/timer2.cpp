@@ -8,7 +8,7 @@ extern "C"{
 	void x_xc32_sfr_timer2_interrupt(void) {
 		static xc32::sfr::timer2 Timer2;
 //		LATFbits.LATF5 = 1;
-		//privateƒƒ“ƒo‚ÌŠÖ”ƒ|ƒCƒ“ƒ^‚ðŽÀs‚·‚é‚½‚ß‚ÉA‹­ˆø‚Éconst‚ðŠO‚µ‚Ä‚¢‚é
+		//privateãƒ¡ãƒ³ãƒã®é–¢æ•°ãƒã‚¤ãƒ³ã‚¿ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã€å¼·å¼•ã«constã‚’å¤–ã—ã¦ã„ã‚‹
 		if(Timer2.interrupt_function()) {
 			(*const_cast<xc32::sfr::interrupt::function*>(Timer2.interrupt_function()))();
 		}
